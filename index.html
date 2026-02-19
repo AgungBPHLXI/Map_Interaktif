@@ -1,42 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8" />
+<meta charset="utf-8">
 <title>WebGIS PBPH & Kawasan Hutan</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-body { margin:0; font-family: Arial, sans-serif; }
-#map { height:100vh; }
+body { margin:0; }
+#map { height:100vh; width:100%; }
 
+/* FILTER BOX */
 .filter-box {
     position:absolute;
     top:10px;
-    left:60px;
+    left:10px;
     background:white;
-    padding:10px;
-    border-radius:8px;
-    box-shadow:0 2px 6px rgba(0,0,0,0.3);
+    padding:12px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.3);
     z-index:1000;
+    width:220px;
+    font-family:Arial;
+}
+
+.filter-box select {
+    width:100%;
+    padding:6px;
+    margin-top:6px;
+}
+
+/* LEGEND DI BAWAH FILTER */
+.leaflet-top.leaflet-left .legend {
+    margin-top:110px;
 }
 
 .legend {
     background:white;
-    padding:10px;
-    border-radius:8px;
-    box-shadow:0 2px 6px rgba(0,0,0,0.3);
-    line-height:18px;
+    padding:12px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.3);
     font-size:13px;
+    font-family:Arial;
 }
 
-.legend i {
+.legend div {
+    margin-bottom:4px;
+}
+
+.legend span {
     width:15px;
     height:15px;
-    float:left;
+    display:inline-block;
     margin-right:6px;
-    opacity:0.7;
 }
 </style>
 </head>
@@ -44,162 +62,128 @@ body { margin:0; font-family: Arial, sans-serif; }
 
 <div id="map"></div>
 
+<!-- FILTER -->
 <div class="filter-box">
-<b>Filter Kawasan Hutan</b><br>
-<select id="filterF2025">
-<option value="ALL">Semua</option>
-<option value="HL">HL</option>
-<option value="HP">HP</option>
-<option value="HPT">HPT</option>
-<option value="HPK">HPK</option>
-</select>
+    <b>Filter Kawasan Hutan</b>
+    <select id="filterKH">
+        <option value="Semua">Semua</option>
+        <option value="HL">HL</option>
+        <option value="HP">HP</option>
+        <option value="HPT">HPT</option>
+        <option value="HPK">HPK</option>
+    </select>
 </div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-
-// =======================
-// BASEMAP
-// =======================
-
 var map = L.map('map').setView([-3.3,114.6],7);
 
+/* BASEMAP OSM */
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     attribution:'&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-// =======================
-// STYLE FUNCTIONS
-// =======================
+/* STYLE KAWASAN HUTAN */
+function styleKH(feature){
+    var warna = "#8bc34a";
 
-function stylePBPH(){
-    return {
-        color:"#ff6600",
-        weight:2,
-        fillColor:"#ff9800",
-        fillOpacity:0.5
-    };
-}
-
-function styleKawasan(feature){
-
-    var kategori = feature.properties.F2025;
-
-    var warna = {
-        "HL":"#1b5e20",
-        "HP":"#43a047",
-        "HPT":"#8bc34a",
-        "HPK":"#cddc39"
-    };
+    if(feature.properties.F2025 === "HL") warna="#1b5e20";
+    if(feature.properties.F2025 === "HP") warna="#43a047";
+    if(feature.properties.F2025 === "HPT") warna="#8bc34a";
+    if(feature.properties.F2025 === "HPK") warna="#cddc39";
 
     return {
         color:"#2e7d32",
         weight:1,
-        fillColor:warna[kategori] || "#999",
+        fillColor:warna,
         fillOpacity:0.6
     };
 }
 
-// =======================
-// LAYER PBPH
-// =======================
+/* STYLE PBPH */
+function stylePBPH(){
+    return {
+        color:"#e65100",
+        weight:2,
+        fillColor:"#ff9800",
+        fillOpacity:0.6
+    };
+}
 
-var pbphLayer = L.geoJSON(null,{
-    style:stylePBPH,
-    onEachFeature:function(feature,layer){
+/* LOAD KAWASAN HUTAN */
+var layerKH;
+fetch("Kawasanhutan.json")
+.then(res=>res.json())
+.then(data=>{
+    layerKH = L.geoJSON(data,{
+        style:styleKH,
+        onEachFeature:function(feature,layer){
 
-        layer.bindPopup(
-            "<b>"+feature.properties.NAMOBJ+"</b><br>"+
-            "Status: "+feature.properties.STAT_IZIN+"<br>"+
-            "Jenis: "+feature.properties.JENIS+"<br>"+
-            "Luas: "+Number(feature.properties.LUAS).toLocaleString()+" Ha"
-        );
+            var nama = feature.properties.NAMOBJ || "-";
+            var kab = feature.properties.KABUPATEN || feature.properties.KAB || "-";
+            var luas = feature.properties.LUAS || "-";
 
-    }
-}).addTo(map);
+            layer.bindPopup(`
+                <b>${nama}</b><br>
+                Kabupaten: ${kab}<br>
+                Luas: ${luas} Ha
+            `);
+        }
+    }).addTo(map);
+});
 
+/* LOAD PBPH */
 fetch("pbph.geojson")
 .then(res=>res.json())
 .then(data=>{
-    pbphLayer.addData(data);
+    L.geoJSON(data,{
+        style:stylePBPH,
+        onEachFeature:function(feature,layer){
+
+            var nama = feature.properties.NAMOBJ || "-";
+            var luas = feature.properties.LUAS || "-";
+
+            layer.bindPopup(`
+                <b>${nama}</b><br>
+                Luas: ${luas} Ha
+            `);
+        }
+    }).addTo(map);
 });
 
-// =======================
-// LAYER KAWASAN HUTAN
-// =======================
+/* FILTER FUNCTION */
+document.getElementById("filterKH").addEventListener("change",function(){
 
-var kawasanLayer = L.geoJSON(null,{
-    style:styleKawasan,
-    onEachFeature:function(feature,layer){
+    var selected = this.value;
 
-        layer.bindPopup(
-            "<b>Kawasan Hutan</b><br>"+
-            "Kabupaten: "+(feature.properties.KABUPATEN || "-")+"<br>"+
-            "Luas: "+Number(feature.properties.LUAS).toLocaleString()+" Ha"
-        );
+    layerKH.eachLayer(function(layer){
 
-    }
-}).addTo(map);
-
-fetch("Kawasanhutan.geojson")
-.then(res=>res.json())
-.then(data=>{
-    kawasanLayer.addData(data);
-});
-
-// =======================
-// FILTER
-// =======================
-
-document.getElementById("filterF2025").addEventListener("change",function(){
-
-    var value = this.value;
-
-    kawasanLayer.eachLayer(function(layer){
-
-        var kategori = layer.feature.properties.F2025;
-
-        if(value==="ALL"){
-            kawasanLayer.resetStyle(layer);
-            layer.addTo(map);
+        if(selected === "Semua"){
+            layer.setStyle({fillOpacity:0.6});
+        } else {
+            if(layer.feature.properties.F2025 === selected){
+                layer.setStyle({fillOpacity:0.6});
+            } else {
+                layer.setStyle({fillOpacity:0});
+            }
         }
-        else if(kategori===value){
-            kawasanLayer.resetStyle(layer);
-            layer.addTo(map);
-        }
-        else{
-            map.removeLayer(layer);
-        }
-
     });
-
 });
 
-// =======================
-// LEGEND
-// =======================
+/* LEGEND */
+var legend = L.control({position:"topleft"});
 
-var legend = L.control({position:"bottomright"});
-
-legend.onAdd = function(){
-
+legend.onAdd = function(map){
     var div = L.DomUtil.create("div","legend");
 
-    div.innerHTML = "<b>Kawasan Hutan</b><br>"+
-        '<i style="background:#1b5e20"></i>HL<br>'+
-        '<i style="background:#43a047"></i>HP<br>'+
-        '<i style="background:#8bc34a"></i>HPT<br>'+
-        '<i style="background:#cddc39"></i>HPK<br><br>'+
-        "<b>PBPH</b><br>"+
-        '<i style="background:#ff9800"></i>Area PBPH';
-
-    return div;
-};
-
-legend.addTo(map);
-
-</script>
-
-</body>
-</html>
+    div.innerHTML = `
+    <b>Kawasan Hutan</b><br>
+    <div><span style="background:#1b5e20"></span>HL</div>
+    <div><span style="background:#43a047"></span>HP</div>
+    <div><span style="background:#8bc34a"></span>HPT</div>
+    <div><span style="background:#cddc39"></span>HPK</div>
+    <hr>
+    <b>PBPH</b><br>
+    <div><span style="ba
