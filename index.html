@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>WebGIS PBPH & Kawasan Hutan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+body { margin:0; font-family: Arial, sans-serif; }
+#map { height:100vh; }
+
+.filter-box {
+    position:absolute;
+    top:10px;
+    left:60px;
+    background:white;
+    padding:10px;
+    border-radius:8px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.3);
+    z-index:1000;
+}
+
+.legend {
+    background:white;
+    padding:10px;
+    border-radius:8px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.3);
+    line-height:18px;
+    font-size:13px;
+}
+
+.legend i {
+    width:15px;
+    height:15px;
+    float:left;
+    margin-right:6px;
+    opacity:0.7;
+}
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="filter-box">
+<b>Filter Kawasan Hutan</b><br>
+<select id="filterF2025">
+<option value="ALL">Semua</option>
+<option value="HL">HL</option>
+<option value="HP">HP</option>
+<option value="HPT">HPT</option>
+<option value="HPK">HPK</option>
+</select>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+// =======================
+// BASEMAP
+// =======================
+
+var map = L.map('map').setView([-3.3,114.6],7);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+// =======================
+// STYLE FUNCTIONS
+// =======================
+
+function stylePBPH(){
+    return {
+        color:"#ff6600",
+        weight:2,
+        fillColor:"#ff9800",
+        fillOpacity:0.5
+    };
+}
+
+function styleKawasan(feature){
+
+    var kategori = feature.properties.F2025;
+
+    var warna = {
+        "HL":"#1b5e20",
+        "HP":"#43a047",
+        "HPT":"#8bc34a",
+        "HPK":"#cddc39"
+    };
+
+    return {
+        color:"#2e7d32",
+        weight:1,
+        fillColor:warna[kategori] || "#999",
+        fillOpacity:0.6
+    };
+}
+
+// =======================
+// LAYER PBPH
+// =======================
+
+var pbphLayer = L.geoJSON(null,{
+    style:stylePBPH,
+    onEachFeature:function(feature,layer){
+
+        layer.bindPopup(
+            "<b>"+feature.properties.NAMOBJ+"</b><br>"+
+            "Status: "+feature.properties.STAT_IZIN+"<br>"+
+            "Jenis: "+feature.properties.JENIS+"<br>"+
+            "Luas: "+Number(feature.properties.LUAS).toLocaleString()+" Ha"
+        );
+
+    }
+}).addTo(map);
+
+fetch("pbph.geojson")
+.then(res=>res.json())
+.then(data=>{
+    pbphLayer.addData(data);
+});
+
+// =======================
+// LAYER KAWASAN HUTAN
+// =======================
+
+var kawasanLayer = L.geoJSON(null,{
+    style:styleKawasan,
+    onEachFeature:function(feature,layer){
+
+        layer.bindPopup(
+            "<b>Kawasan Hutan</b><br>"+
+            "Kabupaten: "+(feature.properties.KABUPATEN || "-")+"<br>"+
+            "Luas: "+Number(feature.properties.LUAS).toLocaleString()+" Ha"
+        );
+
+    }
+}).addTo(map);
+
+fetch("Kawasanhutan.geojson")
+.then(res=>res.json())
+.then(data=>{
+    kawasanLayer.addData(data);
+});
+
+// =======================
+// FILTER
+// =======================
+
+document.getElementById("filterF2025").addEventListener("change",function(){
+
+    var value = this.value;
+
+    kawasanLayer.eachLayer(function(layer){
+
+        var kategori = layer.feature.properties.F2025;
+
+        if(value==="ALL"){
+            kawasanLayer.resetStyle(layer);
+            layer.addTo(map);
+        }
+        else if(kategori===value){
+            kawasanLayer.resetStyle(layer);
+            layer.addTo(map);
+        }
+        else{
+            map.removeLayer(layer);
+        }
+
+    });
+
+});
+
+// =======================
+// LEGEND
+// =======================
+
+var legend = L.control({position:"bottomright"});
+
+legend.onAdd = function(){
+
+    var div = L.DomUtil.create("div","legend");
+
+    div.innerHTML = "<b>Kawasan Hutan</b><br>"+
+        '<i style="background:#1b5e20"></i>HL<br>'+
+        '<i style="background:#43a047"></i>HP<br>'+
+        '<i style="background:#8bc34a"></i>HPT<br>'+
+        '<i style="background:#cddc39"></i>HPK<br><br>'+
+        "<b>PBPH</b><br>"+
+        '<i style="background:#ff9800"></i>Area PBPH';
+
+    return div;
+};
+
+legend.addTo(map);
+
+</script>
+
+</body>
+</html>
