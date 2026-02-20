@@ -281,6 +281,9 @@ function applyFilter(){
     var selectedKategori = $('#filterF2025').val();
     var selectedNama = $('#filterNama').val();
 
+    var bounds = L.latLngBounds([]);
+    var adaPBPH = false;
+
     // =====================
     // FILTER KAWASAN
     // =====================
@@ -289,10 +292,10 @@ function applyFilter(){
         var kategori = layer.feature.properties?.F2025;
 
         if(!selectedKategori || selectedKategori.length === 0){
-            map.removeLayer(layer); // tidak dipilih → tidak tampil
+            map.removeLayer(layer);
         }
         else if(selectedKategori.includes("ALL")){
-            layer.addTo(map); // pilih Semua → tampil semua
+            layer.addTo(map);
         }
         else if(selectedKategori.includes(kategori)){
             layer.addTo(map);
@@ -304,7 +307,7 @@ function applyFilter(){
     });
 
     // =====================
-    // FILTER PBPH
+    // FILTER PBPH + ZOOM
     // =====================
     pbphLayer.eachLayer(function(layer){
 
@@ -318,12 +321,25 @@ function applyFilter(){
         }
         else if(selectedNama.includes(nama)){
             layer.addTo(map);
+
+            bounds.extend(layer.getBounds());
+            adaPBPH = true;
         }
         else{
             map.removeLayer(layer);
         }
 
     });
+
+    // =====================
+    // AUTO ZOOM
+    // =====================
+    if(adaPBPH && bounds.isValid()){
+        map.flyToBounds(bounds, {
+            padding:[40,40],
+            duration:0.8
+        });
+    }
 
 }
 
@@ -333,6 +349,7 @@ $('#filterNama').on('change', applyFilter);
 </script>
 </body>
 </html>
+
 
 
 
