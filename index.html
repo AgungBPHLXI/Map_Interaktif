@@ -145,20 +145,26 @@ var pbphLayer = L.geoJSON(null,{
     style:stylePBPH,
     onEachFeature:function(feature,layer){
 
-        var props = feature.properties;
+       var props = feature.properties;
 
-        var luas = props?.LUAS
-            ? Number(props.LUAS).toLocaleString()
-            : "0";
+var luas = props?.LUAS
+    ? Number(props.LUAS).toLocaleString()
+    : "0";
 
-        layer.bindPopup(
-            "<b>"+(props?.NAMOBJ || "-")+"</b><br><br>" +
-            "NO SK : " + (props?.NO_SK || "-") + "<br>" +
-            "TGL SK : " + (props?.TGL_SK || "-") + "<br>" +
-            "JENIS : " + (props?.JENIS || "-") + "<br>" +
-            "STATUS IZIN : " + (props?.STAT_IZIN || "-") + "<br>" +
-            "LUAS : " + luas + " Ha"
-        );
+var tglSK = "-";
+if(props?.TGL_SK){
+    var date = new Date(Number(props.TGL_SK));
+    tglSK = date.toLocaleDateString("id-ID");
+}
+
+layer.bindPopup(
+    "<b>"+(props?.NAMOBJ || "-")+"</b><br><br>" +
+    "NO SK : " + (props?.NO_SK || "-") + "<br>" +
+    "TGL SK : " + tglSK + "<br>" +
+    "JENIS : " + (props?.JENIS || "-") + "<br>" +
+    "STATUS IZIN : " + (props?.STAT_IZIN || "-") + "<br>" +
+    "LUAS : " + luas + " Ha"
+);
 
         layer.on("click",function(){
             highlightFeature(layer);
@@ -267,4 +273,5 @@ $('#filterNama').on('change', applyFilter);
 </script>
 </body>
 </html>
+
 
