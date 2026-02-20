@@ -19,11 +19,38 @@ body { margin:0; font-family: Arial, sans-serif; }
     top:10px;
     left:60px;
     background:white;
-    padding:10px;
+    padding:8px 10px;
     border-radius:8px;
-    box-shadow:0 2px 6px rgba(0,0,0,0.3);
+    box-shadow:0 3px 8px rgba(0,0,0,0.25);
     z-index:1000;
-    width:260px;
+    width:220px;
+    font-size:13px;
+    transition:all 0.3s ease;
+}
+
+.filter-box label {
+    font-weight:600;
+    font-size:12px;
+}
+
+.select2-container--default .select2-selection--multiple {
+    min-height:32px;
+    font-size:12px;
+}
+
+/* MODE HP */
+@media (max-width:768px) {
+    .filter-box {
+        width:160px;
+        left:10px;
+        top:10px;
+        padding:6px 8px;
+        font-size:12px;
+    }
+
+    .select2-container {
+        width:100% !important;
+    }
 }
 
 .legend {
@@ -34,6 +61,7 @@ body { margin:0; font-family: Arial, sans-serif; }
     line-height:18px;
     font-size:13px;
 }
+</style>
 
 .legend i {
     width:15px;
@@ -273,5 +301,6 @@ $('#filterNama').on('change', applyFilter);
 </script>
 </body>
 </html>
+
 
 
