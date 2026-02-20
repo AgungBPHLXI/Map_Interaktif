@@ -244,9 +244,14 @@ $('#filterNama').select2({
 
 function loadKategoriOptions(){
     let set = new Set();
+
+    // Tambah opsi Semua
+    $('#filterF2025').append(`<option value="ALL">Semua</option>`);
+
     kawasanLayer.eachLayer(function(layer){
         set.add(layer.feature.properties?.F2025);
     });
+
     set.forEach(val=>{
         $('#filterF2025').append(`<option value="${val}">${val}</option>`);
     });
@@ -254,9 +259,14 @@ function loadKategoriOptions(){
 
 function loadNamaOptions(){
     let set = new Set();
+
+    // Tambah opsi Semua
+    $('#filterNama').append(`<option value="ALL">Semua</option>`);
+
     pbphLayer.eachLayer(function(layer){
         set.add(layer.feature.properties?.NAMOBJ);
     });
+
     set.forEach(val=>{
         $('#filterNama').append(`<option value="${val}">${val}</option>`);
     });
@@ -271,27 +281,50 @@ function applyFilter(){
     var selectedKategori = $('#filterF2025').val();
     var selectedNama = $('#filterNama').val();
 
+    // =====================
+    // FILTER KAWASAN
+    // =====================
     kawasanLayer.eachLayer(function(layer){
+
         var kategori = layer.feature.properties?.F2025;
-        var show = !selectedKategori || selectedKategori.length===0 || selectedKategori.includes(kategori);
 
-        if(show){
+        if(!selectedKategori || selectedKategori.length === 0){
+            map.removeLayer(layer); // tidak dipilih → tidak tampil
+        }
+        else if(selectedKategori.includes("ALL")){
+            layer.addTo(map); // pilih Semua → tampil semua
+        }
+        else if(selectedKategori.includes(kategori)){
             layer.addTo(map);
-        } else {
+        }
+        else{
             map.removeLayer(layer);
         }
+
     });
 
+    // =====================
+    // FILTER PBPH
+    // =====================
     pbphLayer.eachLayer(function(layer){
-        var nama = layer.feature.properties?.NAMOBJ;
-        var show = !selectedNama || selectedNama.length===0 || selectedNama.includes(nama);
 
-        if(show){
-            layer.addTo(map);
-        } else {
+        var nama = layer.feature.properties?.NAMOBJ;
+
+        if(!selectedNama || selectedNama.length === 0){
             map.removeLayer(layer);
         }
+        else if(selectedNama.includes("ALL")){
+            layer.addTo(map);
+        }
+        else if(selectedNama.includes(nama)){
+            layer.addTo(map);
+        }
+        else{
+            map.removeLayer(layer);
+        }
+
     });
+
 }
 
 $('#filterF2025').on('change', applyFilter);
@@ -300,6 +333,7 @@ $('#filterNama').on('change', applyFilter);
 </script>
 </body>
 </html>
+
 
 
 
