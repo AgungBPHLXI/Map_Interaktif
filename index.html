@@ -254,11 +254,25 @@ var kabupatenLayer = L.geoJSON(null,{
     },
     onEachFeature:function(feature,layer){
 
-        layer.bindPopup("<b>Kabupaten: </b>" + 
-            (feature.properties?.KABUPATEN || "-"));
+        let namaKab = feature.properties?.KABUPATEN;
 
         layer.on("click",function(){
+
             highlightFeature(layer);
+
+            if(dataLuasKab[namaKab]){
+
+                let d = dataLuasKab[namaKab];
+
+                layer.bindPopup(
+                    "<b>"+namaKab+"</b><br><br>" +
+                    "HL : " + d.HL.toLocaleString() + " Ha<br>" +
+                    "HP : " + d.HP.toLocaleString() + " Ha<br>" +
+                    "HPK : " + d.HPK.toLocaleString() + " Ha<br>" +
+                    "HPT : " + d.HPT.toLocaleString() + " Ha<br>" +
+                    "HK : " + d.HK.toLocaleString() + " Ha"
+                ).openPopup();
+            }
         });
     }
 }).addTo(map);
@@ -451,6 +465,7 @@ $('#filterKabupaten').on('change', applyFilter);
 </script>
 </body>
 </html>
+
 
 
 
