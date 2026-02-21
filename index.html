@@ -106,7 +106,11 @@ z-index:1000;
 <select id="filterNama" multiple style="width:100%"></select>
     
 <br><br>
+    
+<label>Industri 6000 UP</label>
+<select id="filterIndustri" multiple style="width:100%"></select>
 
+<br><br>
 <label>Kabupaten</label>
 <select id="filterKabupaten" multiple style="width:100%"></select>
     
@@ -241,12 +245,15 @@ function highlightFeature(layer){
 
     selectedLayer = layer;
 
+   if(layer.getBounds){
     map.flyToBounds(layer.getBounds(),{
         padding:[40,40],
         duration:0.8
     });
+}else if(layer.getLatLng){
+    map.flyTo(layer.getLatLng(), 12);
 }
-
+}
 // =======================
 // PBPH LAYER
 // =======================
@@ -325,6 +332,37 @@ fetch("./Kawasanhutan.geojson")
     loadKategoriOptions();
 });
 // =======================
+// INDUSTRI 6000 UP LAYER
+// =======================
+
+var industriLayer = L.geoJSON(null,{
+    pointToLayer: function(feature, latlng){
+        return L.circleMarker(latlng, {
+            radius: 6,
+            color: "#800000",
+            fillColor: "#cc0000",
+            fillOpacity: 0.9
+        });
+    },
+    onEachFeature:function(feature,layer){
+
+        var nama = feature.properties?.name;
+
+        layer.bindPopup("<b>"+nama+"</b>");
+
+        layer.on("click",function(){
+            highlightFeature(layer);
+        });
+    }
+}).addTo(map);
+
+fetch("./PBPHH_6000_KE_ATAS.geojson")
+.then(res=>res.json())
+.then(data=>{
+    industriLayer.addData(data);
+    loadIndustriOptions();
+});
+// =======================
 // KABUPATEN LAYER
 // =======================
 
@@ -375,6 +413,10 @@ $('#filterF2025').select2({
 
 $('#filterNama').select2({
     placeholder:"Pilih Nama PBPH"
+});
+
+$('#filterIndustri').select2({
+    placeholder:"Pilih Industri 6000 UP"
 });
     
 $('#filterKabupaten').select2({
@@ -439,11 +481,33 @@ function loadKabupatenOptions(){
         $('#filterKabupaten').append(`<option value="${val}">${val}</option>`);
     });
 }
+function loadIndustriOptions(){
+
+    let set = new Set();
+
+    $('#filterIndustri').empty();
+    $('#filterIndustri').append(`<option value="ALL">Semua</option>`);
+
+    industriLayer.eachLayer(function(layer){
+
+        let nama = layer.feature.properties?.name;
+
+        if(nama){
+            set.add(nama);
+        }
+    });
+
+    set.forEach(val=>{
+        $('#filterIndustri').append(`<option value="${val}">${val}</option>`);
+    });
+}
 // =======================
 // FILTER FUNCTION
 // =======================
 
 function applyFilter(){
+
+     map.closePopup();
 
     var selectedKategori = $('#filterF2025').val();
     var selectedNama = $('#filterNama').val();
@@ -529,6 +593,35 @@ function applyFilter(){
 
 });
 
+// =====================
+// FILTER INDUSTRI 6000 UP
+// =====================
+var selectedIndustri = $('#filterIndustri').val();
+
+industriLayer.eachLayer(function(layer){
+
+    var nama = layer.feature.properties?.name;
+
+    if(!selectedIndustri || selectedIndustri.length === 0){
+    layer.addTo(map);
+}
+    else if(selectedIndustri.includes("ALL")){
+        layer.addTo(map);
+    }
+    else if(selectedIndustri.includes(nama)){
+        layer.addTo(map);
+
+        let layerBounds = layer.getBounds();
+        if(layerBounds.isValid()){
+            bounds.extend(layerBounds);
+            adaZoom = true;
+        }
+    }
+    else{
+        map.removeLayer(layer);
+    }
+
+});
    // =====================
 // AUTO ZOOM
 // =====================
@@ -549,10 +642,12 @@ if(selectedKabupaten && selectedKabupaten.includes("ALL")){
 $('#filterF2025').on('change', applyFilter);
 $('#filterNama').on('change', applyFilter);
 $('#filterKabupaten').on('change', applyFilter);
+$('#filterIndustri').on('change', applyFilter);
     
 </script>
 </body>
 </html>
+
 
 
 
