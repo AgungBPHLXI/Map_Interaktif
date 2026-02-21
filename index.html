@@ -642,19 +642,24 @@ function applyFilter(){
     }
 
 });
-    // =====================
-    // FILTER KABUPATEN
-    // =====================
-  kabupatenLayer.eachLayer(function(layer){
+// =====================
+// FILTER KABUPATEN
+// =====================
+kabupatenLayer.eachLayer(function(layer){
 
     let nama = layer.feature.properties?.KABUPATEN;
 
+    // Jika tidak memilih apa-apa → SEMBUNYIKAN
     if(!selectedKabupaten || selectedKabupaten.length === 0){
-        layer.addTo(map);
+        map.removeLayer(layer);
     }
+
+    // Jika pilih SEMUA → tampilkan semua
     else if(selectedKabupaten.includes("ALL")){
         layer.addTo(map);
     }
+
+    // Jika pilih nama tertentu
     else if(selectedKabupaten.includes(nama)){
         layer.addTo(map);
 
@@ -664,6 +669,7 @@ function applyFilter(){
             adaZoom = true;
         }
     }
+
     else{
         map.removeLayer(layer);
     }
@@ -737,6 +743,7 @@ $('#filterIndustri').on('change', applyFilter);
 </script>
 </body>
 </html>
+
 
 
 
