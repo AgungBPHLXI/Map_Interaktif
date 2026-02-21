@@ -189,7 +189,70 @@ function tampilkanDiagramSemua(){
 // =======================
 
 var map = L.map('map').setView([-3.3,114.6],7);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'&copy; OpenStreetMap contributors'
+}).addTo(map);
 
+// =======================
+// FITUR POSISI SAYA
+// =======================
+
+var markerLokasi = null;
+var circleLokasi = null;
+
+function onLocationFound(e) {
+
+    var radius = e.accuracy;
+
+    if(markerLokasi){
+        map.removeLayer(markerLokasi);
+        map.removeLayer(circleLokasi);
+    }
+
+    markerLokasi = L.marker(e.latlng).addTo(map)
+        .bindPopup("📍 Anda berada di sini<br>Akurasi: " + Math.round(radius) + " meter")
+        .openPopup();
+
+    circleLokasi = L.circle(e.latlng, radius, {
+        color: "#136AEC",
+        fillColor: "#136AEC",
+        fillOpacity: 0.15
+    }).addTo(map);
+
+    map.flyTo(e.latlng, 15);
+}
+
+function onLocationError(e) {
+    alert("Tidak bisa mendeteksi lokasi: " + e.message);
+}
+
+map.on('locationfound', onLocationFound);
+map.on('locationerror', onLocationError);
+
+// Tombol otomatis aktif saat klik
+L.control.locate = function(opts) {
+    return new L.Control({
+        position: 'topleft',
+        onAdd: function(map) {
+            var btn = L.DomUtil.create('button', '');
+            btn.innerHTML = "📍";
+            btn.title = "Tampilkan Lokasi Saya";
+            btn.style.background = "white";
+            btn.style.width = "34px";
+            btn.style.height = "34px";
+            btn.style.border = "2px solid #ccc";
+            btn.style.cursor = "pointer";
+
+            btn.onclick = function(){
+                map.locate({setView: true, maxZoom: 16});
+            }
+
+            return btn;
+        }
+    });
+};
+
+L.control.locate().addTo(map);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     attribution:'&copy; OpenStreetMap contributors'
 }).addTo(map);
@@ -680,6 +743,7 @@ $('#filterIndustri').on('change', applyFilter);
 </script>
 </body>
 </html>
+
 
 
 
