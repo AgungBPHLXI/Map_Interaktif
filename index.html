@@ -80,17 +80,39 @@ body { margin:0; font-family: Arial, sans-serif; }
 position:absolute;
 right:20px;
 top:80px;
-width:380px;
+width:400px;
 background:white;
 padding:15px;
 border-radius:10px;
 box-shadow:0 4px 12px rgba(0,0,0,0.3);
-display:none;
 z-index:1000;
 ">
 
-<h3 style="margin-top:0">Statistik Kawasan Hutan Provinsi Kalimantan Selatan</h3>
-<canvas id="chartSemua" height="200"></canvas>
+<h3 style="margin-top:0;">
+Dashboard Monitoring Penanaman PBPH
+</h3>
+
+<label style="font-size:13px;font-weight:bold;">Tahun</label>
+<select id="filterTahun" style="width:100%;margin-bottom:10px;">
+    <option value="2023">2023</option>
+    <option value="2024">2024</option>
+    <option value="2025" selected>2025</option>
+</select>
+
+<div style="background:#f5f5f5;padding:10px;border-radius:8px;margin-bottom:8px;">
+    <b>Total Realisasi</b>
+    <div id="totalRealisasi" style="font-size:18px;color:#2e7d32;">0 Ha</div>
+</div>
+
+<div style="background:#f5f5f5;padding:10px;border-radius:8px;margin-bottom:8px;">
+    <b>Rata-rata Persentase</b>
+    <div id="avgPersen" style="font-size:18px;color:#1565c0;">0 %</div>
+</div>
+
+<div style="background:#f5f5f5;padding:10px;border-radius:8px;">
+    <b>Jumlah PBPH</b>
+    <div id="jumlahPBPH" style="font-size:18px;color:#6a1b9a;">0</div>
+</div>
 
 </div>
 
@@ -739,10 +761,51 @@ $('#filterF2025').on('change', applyFilter);
 $('#filterNama').on('change', applyFilter);
 $('#filterKabupaten').on('change', applyFilter);
 $('#filterIndustri').on('change', applyFilter);
-    
-</script>
+
+
+// =======================
+// SCRIPT DASHBOARD HEADER
+// =======================
+
+var dataPenanaman = [
+    {nama:"PT A", tahun:2025, realisasi:120, persen:65},
+    {nama:"PT B", tahun:2025, realisasi:80, persen:45},
+    {nama:"PT C", tahun:2025, realisasi:200, persen:90},
+    {nama:"PT D", tahun:2024, realisasi:150, persen:70},
+    {nama:"PT E", tahun:2023, realisasi:60, persen:40}
+];
+
+function updateHeaderDashboard(){
+
+    var tahunDipilih = parseInt(document.getElementById("filterTahun").value);
+
+    var total = 0;
+    var totalPersen = 0;
+    var jumlah = 0;
+
+    dataPenanaman.forEach(function(item){
+        if(item.tahun === tahunDipilih){
+            total += item.realisasi;
+            totalPersen += item.persen;
+            jumlah++;
+        }
+    });
+
+    var rata2 = jumlah > 0 ? (totalPersen / jumlah).toFixed(1) : 0;
+
+    document.getElementById("totalRealisasi").innerHTML = total + " Ha";
+    document.getElementById("avgPersen").innerHTML = rata2 + " %";
+    document.getElementById("jumlahPBPH").innerHTML = jumlah;
+}
+
+document.getElementById("filterTahun").addEventListener("change", updateHeaderDashboard);
+
+updateHeaderDashboard();
+
+</script>>
 </body>
 </html>
+
 
 
 
