@@ -732,20 +732,32 @@ fetch("Kawasanhutan.geojson")
 .then(data=>{
     kawasanLayer.addData(data);
 
-    // Setelah file pertama masuk, baru load HK
+    // Load HK
     return fetch("Konservasi.geojson");
 })
 .then(res=>res.json())
 .then(dataHK=>{
 
-    // Tambahkan properti F2025 = "HK"
     dataHK.features.forEach(function(f){
         f.properties.F2025 = "HK";
     });
 
     kawasanLayer.addData(dataHK);
 
-    // Load kategori setelah semua masuk
+    // LOAD PAPH
+    return fetch("PAPH.geojson");
+})
+.then(res=>res.json())
+.then(dataPAPH=>{
+
+    // Tambahkan kategori baru
+    dataPAPH.features.forEach(function(f){
+        f.properties.F2025 = "PAPH";
+    });
+
+    kawasanLayer.addData(dataPAPH);
+
+    // Reload filter kategori
     loadKategoriOptions();
 });
 // =======================
