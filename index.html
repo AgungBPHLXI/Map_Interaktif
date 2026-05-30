@@ -805,26 +805,27 @@ var kawasanLayer = L.geoJSON(null,{
                 "Luas : " + luas + " Ha"
             );
         }
+// =======================
+// LABEL SISTEM LAHAN
+// =======================
 
-        // =========================
-        // LABEL SISTEM LAHAN
-  if(feature.properties?.F2025 === "SISTEM LAHAN"){
+if(feature.properties?.KODE){
 
-    let kode = feature.properties?.KODE || "";
+    let kode = feature.properties.KODE;
 
-    if(kode){
+    let center = layer.getBounds().getCenter();
 
-        let center = layer.getBounds().getCenter();
+    L.marker(center,{
+        icon: L.divIcon({
+            className:"label-sistem-lahan",
+            html:'<div>'+kode+'</div>',
+            iconSize:[80,20],
+            iconAnchor:[40,10]
+        }),
+        interactive:false
+    }).addTo(map);
 
-      L.marker(center,{
-    icon: L.divIcon({
-        className:"label-sistem-lahan",
-        html:'<div>'+kode+'</div>',
-        iconSize:[80,20],
-        iconAnchor:[40,10]
-    }),
-    interactive:false
-}).addTo(map);
+}
 
     }
 }        layer.on("click",function(){
