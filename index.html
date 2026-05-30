@@ -827,14 +827,11 @@ onEachFeature:function(feature,layer){
     }
 
     // CLICK
-    layer.on("click",function(){
-        highlightFeature(layer);
-    });
+layer.on("click",function(){
+    highlightFeature(layer);
+});
 
 }
-            highlightFeature(layer);
-        });
-    }
 }).addTo(map);
 // Load Kawasan Hutan
 fetch("Kawasanhutan.geojson")
