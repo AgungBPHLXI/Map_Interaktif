@@ -987,17 +987,46 @@ function applyFilter(){
 
     var kategori = layer.feature.properties?.F2025;
 
-    if(!selectedKategori || selectedKategori.length === 0){
-        map.removeLayer(layer);   // tidak tampil kalau kosong
+    // tampil semua
+    if(selectedKategori.includes("ALL")){
+        layer.setStyle({
+            opacity:1,
+            fillOpacity: kategori === "PAPH" ? 0 : 0.6
+        });
     }
-    else if(selectedKategori.includes("ALL")){
-        layer.addTo(map);
-    }
+
+    // tampil kategori terpilih
     else if(selectedKategori.includes(kategori)){
-        layer.addTo(map);
+
+        // STYLE KHUSUS PAPH
+        if(kategori === "PAPH"){
+
+            layer.setStyle({
+                color:"#ff0000",
+                weight:2,
+                opacity:1,
+                fillOpacity:0
+            });
+
+        } else {
+
+            layer.setStyle({
+                opacity:1,
+                fillOpacity:0.6
+            });
+
+        }
+
     }
+
+    // sembunyikan layer lain
     else{
-        map.removeLayer(layer);
+
+        layer.setStyle({
+            opacity:0,
+            fillOpacity:0
+        });
+
     }
 
 });
