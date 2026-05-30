@@ -1161,10 +1161,10 @@ else{
 
     var bounds = L.latLngBounds([]);
     var adaZoom = false;
-
-    // =====================
-    // FILTER KAWASAN
-   kawasanLayer.eachLayer(function(layer){
+// =====================
+// FILTER KAWASAN
+// =====================
+kawasanLayer.eachLayer(function(layer){
 
     var kategori = layer.feature.properties?.F2025;
 
@@ -1193,41 +1193,42 @@ else{
         }
     }
 
-    // tampil semua
-    if(selectedKategori.includes("ALL")){
+    // =====================
+    // TAMPIL SEMUA
+    // =====================
 
-        layer.setStyle({
-            opacity:1,
-            fillOpacity: kategori === "PAPH" ? 0 : 0.6
-        });
+    if(
+        !selectedKategori ||
+        selectedKategori.length === 0 ||
+        selectedKategori.includes("ALL")
+    ){
 
-    }
-
-    // tampil kategori terpilih
-  else if(selectedKategori.includes(kategori)){
-
-    if(kategori === "PAPH"){
-
-        layer.setStyle({
-            color:"#ff0000",
-            weight:2,
-            fillColor:"#ff0000",
-            fillOpacity:0.15,
-            opacity:1
-        });
-
-    } else {
-
-        layer.setStyle({
-            opacity:1,
-            fillOpacity:0.6
-        });
+        layer.setStyle(styleKawasan(layer.feature));
 
     }
 
-}
+    // =====================
+    // TAMPIL KATEGORI TERPILIH
+    // =====================
 
-    // sembunyikan layer lain
+    else if(selectedKategori.includes(kategori)){
+
+        layer.setStyle(styleKawasan(layer.feature));
+
+        // zoom ke layer
+        if(layer.getBounds){
+
+            bounds.extend(layer.getBounds());
+            adaZoom = true;
+
+        }
+
+    }
+
+    // =====================
+    // SEMBUNYIKAN
+    // =====================
+
     else{
 
         layer.setStyle({
@@ -1235,67 +1236,6 @@ else{
             fillOpacity:0
         });
 
-    }
-
-});
-
-    // =====================
-    // FILTER PBPH
-    // =====================
- pbphLayer.eachLayer(function(layer){
-
-    var nama = layer.feature.properties?.NAMOBJ;
-
-    if(!selectedNama || selectedNama.length === 0){
-        map.removeLayer(layer);   // tidak tampil kalau kosong
-    }
-    else if(selectedNama.includes("ALL")){
-        layer.addTo(map);
-    }
-    else if(selectedNama.includes(nama)){
-        layer.addTo(map);
-
-        let layerBounds = layer.getBounds();
-        if(layerBounds.isValid()){
-            bounds.extend(layerBounds);
-            adaZoom = true;
-        }
-    }
-    else{
-        map.removeLayer(layer);
-    }
-
-});
-// =====================
-// FILTER KABUPATEN
-// =====================
-kabupatenLayer.eachLayer(function(layer){
-
-    let nama = layer.feature.properties?.KABUPATEN;
-
-    // Jika tidak memilih apa-apa → SEMBUNYIKAN
-    if(!selectedKabupaten || selectedKabupaten.length === 0){
-        map.removeLayer(layer);
-    }
-
-    // Jika pilih SEMUA → tampilkan semua
-    else if(selectedKabupaten.includes("ALL")){
-        layer.addTo(map);
-    }
-
-    // Jika pilih nama tertentu
-    else if(selectedKabupaten.includes(nama)){
-        layer.addTo(map);
-
-        let layerBounds = layer.getBounds();
-        if(layerBounds.isValid()){
-            bounds.extend(layerBounds);
-            adaZoom = true;
-        }
-    }
-
-    else{
-        map.removeLayer(layer);
     }
 
 });
