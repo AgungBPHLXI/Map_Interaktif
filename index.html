@@ -332,11 +332,42 @@ label{
     color: #1565c0;
     text-align: center;
 }
+    .ppt-info{
+    position:absolute;
+    right:10px;
+    top:80px;
+    width:320px;
+    max-height:80vh;
+    overflow:auto;
+    background:white;
+    padding:10px;
+    z-index:9999;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.3);
+}
+
+.ppt-info img{
+    width:100%;
+    margin-bottom:10px;
+    border-radius:8px;
+}
 </style>
 </head>
 <body>
 
 <div id="map"></div>
+
+<!-- PANEL POWERPOINT -->
+<div id="pptInfo" class="ppt-info" style="display:none;">
+
+    <img src="Slide1.png">
+    <img src="Slide2.png">
+    <img src="Slide3.png">
+    <img src="Slide4.png">
+
+</div>
+
+<div id="chartOverlay">
     <div id="chartOverlay">
     <button id="btnCloseChart">✖</button>
     <canvas id="chartKawasan"></canvas>
@@ -1065,6 +1096,19 @@ function applyFilter(){
      map.closePopup();
 
     var selectedKategori = $('#filterF2025').val();
+    // =====================
+    // PANEL POWERPOINT
+    // =====================
+
+if(
+    selectedKategori &&
+    selectedKategori.includes("SISTEM LAHAN")
+){
+    document.getElementById("pptInfo").style.display = "block";
+}
+else{
+    document.getElementById("pptInfo").style.display = "none";
+}
     var selectedNama = $('#filterNama').val();
     var selectedKabupaten = $('#filterKabupaten').val();
 
