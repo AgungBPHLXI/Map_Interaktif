@@ -19,21 +19,21 @@
 .label-sistem-lahan{
     background: transparent !important;
     border: none !important;
-    box-shadow: none !important;
+}
 
-    color: black !important;
-    font-size: 13px !important;
-    font-weight: bold !important;
+.label-sistem-lahan div{
+
+    color: black;
+    font-size: 16px;
+    font-weight: bold;
 
     text-align:center;
 
     text-shadow:
-        1px 1px 2px white,
-        -1px -1px 2px white,
-        1px -1px 2px white,
-        -1px 1px 2px white;
-
-    pointer-events:none;
+        1px 1px 3px white,
+        -1px -1px 3px white,
+        1px -1px 3px white,
+        -1px 1px 3px white;
 }
 body { margin:0; font-family: Arial, sans-serif; }
 #map { height:100vh; }
@@ -816,14 +816,15 @@ var kawasanLayer = L.geoJSON(null,{
 
         let center = layer.getBounds().getCenter();
 
-        L.marker(center,{
-            icon: L.divIcon({
-                className:"label-sistem-lahan",
-                html:kode,
-                iconSize:[40,20]
-            }),
-            interactive:false
-        }).addTo(map);
+      L.marker(center,{
+    icon: L.divIcon({
+        className:"label-sistem-lahan",
+        html:'<div>'+kode+'</div>',
+        iconSize:[80,20],
+        iconAnchor:[40,10]
+    }),
+    interactive:false
+}).addTo(map);
 
     }
 }        layer.on("click",function(){
