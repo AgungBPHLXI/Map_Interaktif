@@ -978,49 +978,27 @@ $('#filterKabupaten').select2({
 // =======================
 
 function loadKategoriOptions(){
+
     let set = new Set();
 
-    $('#filterF2025').empty(); // supaya tidak dobel
+    $('#filterF2025').empty();
 
     $('#filterF2025').append(`<option value="ALL">Semua</option>`);
 
-   kawasanLayer.eachLayer(function(layer){
+    kawasanLayer.eachLayer(function(layer){
 
-    var kategori = layer.feature.properties?.F2025;
+        let kategori = layer.feature.properties?.F2025;
 
-    // =========================
-    // LABEL SISTEM LAHAN
-    // =========================
-    if(kategori === "SISTEM LAHAN"){
-
-        // hapus tooltip lama dulu
-        layer.unbindTooltip();
-
-        // hanya muncul saat filter dipilih
-        if(selectedKategori.includes("SISTEM LAHAN")){
-
-            let kode = layer.feature.properties?.m_symlfac;
-
-            if(kode){
-
-                layer.bindTooltip(kode,{
-                    permanent:true,
-                    direction:"center",
-                    className:"label-sistem-lahan"
-                });
-
-            }
+        if(kategori){
+            set.add(kategori);
         }
-    }
-            set.add(layer.feature.properties.F2025);
-        }
+
     });
 
     set.forEach(val=>{
         $('#filterF2025').append(`<option value="${val}">${val}</option>`);
     });
 }
-
 function loadNamaOptions(){
     let set = new Set();
 
@@ -1095,17 +1073,43 @@ function applyFilter(){
 
     // =====================
     // FILTER KAWASAN
-    // =====================
    kawasanLayer.eachLayer(function(layer){
 
     var kategori = layer.feature.properties?.F2025;
 
+    // =====================
+    // LABEL SISTEM LAHAN
+    // =====================
+
+    layer.unbindTooltip();
+
+    if(
+        kategori === "SISTEM LAHAN" &&
+        selectedKategori &&
+        selectedKategori.includes("SISTEM LAHAN")
+    ){
+
+        let kode = layer.feature.properties?.m_symlfac;
+
+        if(kode){
+
+            layer.bindTooltip(kode,{
+                permanent:true,
+                direction:"center",
+                className:"label-sistem-lahan"
+            });
+
+        }
+    }
+
     // tampil semua
     if(selectedKategori.includes("ALL")){
+
         layer.setStyle({
             opacity:1,
             fillOpacity: kategori === "PAPH" ? 0 : 0.6
         });
+
     }
 
     // tampil kategori terpilih
