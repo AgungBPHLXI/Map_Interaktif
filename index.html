@@ -803,95 +803,138 @@ fetch("pbph.geojson")
 });
 
 // =======================
-// KAWASAN LAYER (GABUNG 2 FILE)
+// KAWASAN LAYER
 // =======================
+
 var kawasanLayer = L.geoJSON(null,{
 
     style: styleKawasan,
 
     onEachFeature:function(feature,layer){
 
-// =====================
-// POPUP KHUSUS PAPH
-// =====================
+        // =====================
+        // POPUP KHUSUS PAPH
+        // =====================
 
-if(feature.properties?.F2025 === "PAPH"){
+        if(feature.properties?.F2025 === "PAPH"){
 
-    let luas = feature.properties?.LUAS
-        ? parseFloat(
-            feature.properties.LUAS
-                .toString()
-                .replace(",", ".")
-          ).toLocaleString("id-ID",{
-                minimumFractionDigits:2,
-                maximumFractionDigits:2
-          })
-        : "0";
+            let luas = feature.properties?.LUAS
+                ? parseFloat(
+                    feature.properties.LUAS
+                        .toString()
+                        .replace(",", ".")
+                  ).toLocaleString("id-ID",{
+                        minimumFractionDigits:2,
+                        maximumFractionDigits:2
+                  })
+                : "0";
 
-    let isiPopup =
-        "<b>LUAS PAPH</b><br>" +
-        luas + " Ha";
+            let isiPopup =
+                "<b>LUAS PAPH</b><br>" +
+                luas + " Ha";
 
-    layer.bindPopup(isiPopup);
+            layer.bindPopup(isiPopup);
 
-    layer.on("click", function(e){
+            layer.on("click", function(){
 
-        highlightFeature(layer);
+                highlightFeature(layer);
 
-        layer.openPopup();
+                layer.openPopup();
 
-    });
-}
+            });
+
+        }
+
+        // =====================
+        // KLIK NORMAL
+        // =====================
+
+        else{
+
+            layer.on("click", function(){
+
+                highlightFeature(layer);
+
+            });
+
+        }
+
+    }
 
 }).addTo(map);
-// Load Kawasan Hutan
+
+// =======================
+// LOAD KAWASAN HUTAN
+// =======================
+
 fetch("Kawasanhutan.geojson")
 .then(res=>res.json())
 .then(data=>{
+
     kawasanLayer.addData(data);
 
-    // Load HK
     return fetch("Konservasi.geojson");
+
 })
+
 .then(res=>res.json())
 .then(dataHK=>{
 
     dataHK.features.forEach(function(f){
+
         f.properties.F2025 = "HK";
+
     });
 
     kawasanLayer.addData(dataHK);
 
-// LOAD PAPH
-return fetch("PAPH.geojson");
+    // =====================
+    // LOAD PAPH
+    // =====================
+
+    return fetch("PAPH.geojson");
+
 })
+
 .then(res=>res.json())
 .then(dataPAPH=>{
 
     dataPAPH.features.forEach(function(f){
+
         f.properties.F2025 = "PAPH";
+
     });
 
     kawasanLayer.addData(dataPAPH);
 
-    // =========================
+    // =====================
     // LOAD SISTEM LAHAN
-    // =========================
+    // =====================
+
     return fetch("SISTEM LAHAN.geojson");
+
 })
+
 .then(res=>res.json())
 .then(dataSL=>{
 
     dataSL.features.forEach(function(f){
 
-        // kategori baru
         f.properties.F2025 = "SISTEM LAHAN";
+
     });
 
     kawasanLayer.addData(dataSL);
 
     // reload filter
     loadKategoriOptions();
+
+})
+
+.catch(err=>{
+
+    console.log("ERROR LOAD KAWASAN:", err);
+
 });
 // =======================
 // INDUSTRI 6000 UP LAYER
