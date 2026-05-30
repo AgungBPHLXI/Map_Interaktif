@@ -733,11 +733,37 @@ fetch("pbph.geojson")
 
 var kawasanLayer = L.geoJSON(null,{
     style:styleKawasan,
-    onEachFeature:function(feature,layer){
-        layer.on("click",function(){
-            highlightFeature(layer);
-        });
+   onEachFeature:function(feature,layer){
+
+    // =========================
+    // POPUP KHUSUS PAPH
+    // =========================
+    if(feature.properties?.F2025 === "PAPH"){
+
+        let luas = feature.properties?.LUAS
+            ? parseFloat(
+                feature.properties.LUAS
+                    .toString()
+                    .replace(",", ".")
+              ).toLocaleString("id-ID",{
+                    minimumFractionDigits:2,
+                    maximumFractionDigits:2
+              })
+            : "0";
+
+        let arahan = feature.properties?.["Arahan Pemanfaatan"] || "-";
+
+        layer.bindPopup(
+            "<b>PETA ARAHAN PEMANFAATAN HUTAN</b><br><br>" +
+            "Arahan : " + arahan + "<br>" +
+            "Luas : " + luas + " Ha"
+        );
     }
+
+    layer.on("click",function(){
+        highlightFeature(layer);
+    });
+}
 }).addTo(map);
 
 // Load Kawasan Hutan
