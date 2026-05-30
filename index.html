@@ -628,20 +628,32 @@ function stylePBPH(){
 
 function styleKawasan(feature){
 
-  var warna = {
-    "HL":"#02AD00",
-    "HP":"#FFFF00",
-    "HPT":"#8AF200",
-    "HPK":"#FF5EFF",
-    "HK":"#AD3FFF",
-    "PAPH":"#FF0000"
-};
+    var kategori = feature.properties?.F2025;
+
+    // STYLE KHUSUS PAPH
+    if(kategori === "PAPH"){
+        return {
+            color:"#ff0000",   // garis merah
+            weight:2,
+            fill:false,        // TANPA FILL
+            opacity:1
+        };
+    }
+
+    // STYLE KAWASAN LAIN
+    var warna = {
+        "HL":"#02AD00",
+        "HP":"#FFFF00",
+        "HPT":"#8AF200",
+        "HPK":"#FF5EFF",
+        "HK":"#AD3FFF"
+    };
 
     return {
-        color:"#000000",
-        weight:3,
-        fillColor:warna[feature.properties?.F2025] || "#999",
-        fillOpacity:1
+        color:"#2e7d32",
+        weight:1,
+        fillColor:warna[kategori] || "#999",
+        fillOpacity:0.6
     };
 }
 
