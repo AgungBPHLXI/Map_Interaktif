@@ -20,12 +20,18 @@
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    color: black;
-    font-size: 10px;
-    font-weight: bold;
+
+    color: #000 !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+
     text-shadow:
-        1px 1px 2px white,
-        -1px -1px 2px white;
+        1px 1px 2px #fff,
+        -1px -1px 2px #fff,
+        1px -1px 2px #fff,
+        -1px 1px 2px #fff;
+
+    pointer-events: none;
 }
 body { margin:0; font-family: Arial, sans-serif; }
 #map { height:100vh; }
@@ -451,6 +457,8 @@ function tampilkanDiagramSemua(){
 // =======================
 
 var map = L.map('map', {
+map.createPane('labelPane');
+map.getPane('labelPane').style.zIndex = 650;
     zoomControl: false   
 }).setView([-3.3,114.6],7);
 
@@ -807,14 +815,17 @@ var kawasanLayer = L.geoJSON(null,{
 
             let kode = feature.properties?.KODE || "";
 
-            layer.bindTooltip(
-                kode,
-                {
-                    permanent:true,
-                    direction:"center",
-                    className:"label-sistem-lahan"
-                }
-            );
+           layer.bindTooltip(
+    kode,
+    {
+        permanent:true,
+        direction:"center",
+        className:"label-sistem-lahan",
+        opacity:1
+    }
+);
+
+layer.openTooltip();
         }
 
         layer.on("click",function(){
