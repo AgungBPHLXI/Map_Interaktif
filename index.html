@@ -625,22 +625,50 @@ function stylePBPH(){
         fillOpacity:0.5
     };
 }
-
 function styleKawasan(feature){
 
     var kategori = feature.properties?.F2025;
 
+    // =========================
     // STYLE KHUSUS PAPH
+    // =========================
     if(kategori === "PAPH"){
         return {
-            color:"#ff0000",     // garis merah
+            color:"#ff0000",
             weight:2,
-            fillOpacity:0,       // TANPA FILL
+            fillOpacity:0,
             opacity:1
         };
     }
 
-    // STYLE KAWASAN LAIN
+    // =========================
+    // STYLE SISTEM LAHAN
+    // =========================
+    if(kategori === "SISTEM LAHAN"){
+
+        let morfogen = feature.properties?.MORFOGEN;
+
+        let warnaMorfogen = {
+
+            "Denudasional":"#7B3F00",
+            "Fluvial":"#39FF14",
+            "Marin":"#00BFFF",
+            "Solusional":"#FFA500",
+            "Struktural":"#8000FF"
+        };
+
+        return {
+            color:"#555",
+            weight:0.5,
+            fillColor:warnaMorfogen[morfogen] || "#cccccc",
+            fillOpacity:0.7,
+            opacity:1
+        };
+    }
+
+    // =========================
+    // STYLE KAWASAN HUTAN
+    // =========================
     var warna = {
         "HL":"#02AD00",
         "HP":"#FFFF00",
@@ -784,20 +812,35 @@ fetch("Kawasanhutan.geojson")
 
     kawasanLayer.addData(dataHK);
 
-    // LOAD PAPH
-    return fetch("PAPH.geojson");
+// LOAD PAPH
+return fetch("PAPH.geojson");
 })
 .then(res=>res.json())
 .then(dataPAPH=>{
 
-    // Tambahkan kategori baru
     dataPAPH.features.forEach(function(f){
         f.properties.F2025 = "PAPH";
     });
 
     kawasanLayer.addData(dataPAPH);
 
-    // Reload filter kategori
+    // =========================
+    // LOAD SISTEM LAHAN
+    // =========================
+    return fetch("SSITEM LAHAN.geojson");
+})
+.then(res=>res.json())
+.then(dataSL=>{
+
+    dataSL.features.forEach(function(f){
+
+        // kategori baru
+        f.properties.F2025 = "SISTEM LAHAN";
+    });
+
+    kawasanLayer.addData(dataSL);
+
+    // reload filter
     loadKategoriOptions();
 });
 // =======================
