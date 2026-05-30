@@ -457,10 +457,12 @@ function tampilkanDiagramSemua(){
 // =======================
 
 var map = L.map('map', {
+    zoomControl: false
+}).setView([-3.3,114.6],7);
+
+// Pane khusus label
 map.createPane('labelPane');
 map.getPane('labelPane').style.zIndex = 650;
-    zoomControl: false   
-}).setView([-3.3,114.6],7);
 
 L.control.zoom({
     position: 'topright'
@@ -815,12 +817,13 @@ var kawasanLayer = L.geoJSON(null,{
 
             let kode = feature.properties?.KODE || "";
 
-           layer.bindTooltip(
+         layer.bindTooltip(
     kode,
     {
         permanent:true,
         direction:"center",
         className:"label-sistem-lahan",
+        pane:'labelPane',
         opacity:1
     }
 );
