@@ -16,6 +16,17 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
 
 <style>
+label-sistem-lahan{
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: black;
+    font-size: 10px;
+    font-weight: bold;
+    text-shadow:
+        1px 1px 2px white,
+        -1px -1px 2px white;
+}
 body { margin:0; font-family: Arial, sans-serif; }
 #map { height:100vh; }
 #chartOverlay{
@@ -761,7 +772,7 @@ fetch("pbph.geojson")
 
 var kawasanLayer = L.geoJSON(null,{
     style:styleKawasan,
-   onEachFeature:function(feature,layer){
+  onEachFeature:function(feature,layer){
 
     // =========================
     // POPUP KHUSUS PAPH
@@ -787,6 +798,28 @@ var kawasanLayer = L.geoJSON(null,{
             "Luas : " + luas + " Ha"
         );
     }
+
+    // =========================
+    // LABEL SISTEM LAHAN
+    // =========================
+    if(feature.properties?.F2025 === "SISTEM LAHAN"){
+
+        let kode = feature.properties?.KODE || "";
+
+        layer.bindTooltip(
+            kode,
+            {
+                permanent:true,
+                direction:"center",
+                className:"label-sistem-lahan"
+            }
+        );
+    }
+
+    layer.on("click",function(){
+        highlightFeature(layer);
+    });
+}
 
     layer.on("click",function(){
         highlightFeature(layer);
