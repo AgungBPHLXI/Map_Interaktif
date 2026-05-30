@@ -779,56 +779,59 @@ fetch("pbph.geojson")
 var kawasanLayer = L.geoJSON(null,{
     style:styleKawasan,
 
-    onEachFeature:function(feature,layer){
+onEachFeature:function(feature,layer){
 
-        // =========================
-        // POPUP KHUSUS PAPH
-        // =========================
-        if(feature.properties?.F2025 === "PAPH"){
+    // =========================
+    // POPUP KHUSUS PAPH
+    // =========================
+    if(feature.properties?.F2025 === "PAPH"){
 
-            let luas = feature.properties?.LUAS
-                ? parseFloat(
-                    feature.properties.LUAS
-                        .toString()
-                        .replace(",", ".")
-                  ).toLocaleString("id-ID",{
-                        minimumFractionDigits:2,
-                        maximumFractionDigits:2
-                  })
-                : "0";
+        let luas = feature.properties?.LUAS
+            ? parseFloat(
+                feature.properties.LUAS
+                    .toString()
+                    .replace(",", ".")
+              ).toLocaleString("id-ID",{
+                    minimumFractionDigits:2,
+                    maximumFractionDigits:2
+              })
+            : "0";
 
-            let arahan = feature.properties?.["Arahan Pemanfaatan"] || "-";
+        let arahan = feature.properties?.["Arahan Pemanfaatan"] || "-";
 
-            layer.bindPopup(
-                "<b>PETA ARAHAN PEMANFAATAN HUTAN</b><br><br>" +
-                "Arahan : " + arahan + "<br>" +
-                "Luas : " + luas + " Ha"
-            );
-        }
-// =======================
-// LABEL SISTEM LAHAN
-// =======================
+        layer.bindPopup(
+            "<b>PETA ARAHAN PEMANFAATAN HUTAN</b><br><br>" +
+            "Arahan : " + arahan + "<br>" +
+            "Luas : " + luas + " Ha"
+        );
+    }
 
-if(feature.properties?.KODE){
+    // =======================
+    // LABEL SISTEM LAHAN
+    // =======================
+    if(feature.properties?.KODE){
 
-    let kode = feature.properties.KODE;
+        let kode = feature.properties.KODE;
 
-    let center = layer.getBounds().getCenter();
+        let center = layer.getBounds().getCenter();
 
-    L.marker(center,{
-        icon: L.divIcon({
-            className:"label-sistem-lahan",
-            html:'<div>'+kode+'</div>',
-            iconSize:[80,20],
-            iconAnchor:[40,10]
-        }),
-        interactive:false
-    }).addTo(map);
+        L.marker(center,{
+            icon: L.divIcon({
+                className:"label-sistem-lahan",
+                html:'<div>'+kode+'</div>',
+                iconSize:[80,20],
+                iconAnchor:[40,10]
+            }),
+            interactive:false
+        }).addTo(map);
+    }
+
+    // CLICK
+    layer.on("click",function(){
+        highlightFeature(layer);
+    });
 
 }
-
-    }
-}        layer.on("click",function(){
             highlightFeature(layer);
         });
     }
