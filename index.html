@@ -774,11 +774,7 @@ fetch("pbph.geojson")
 // =======================
 // KAWASAN LAYER (GABUNG 2 FILE)
 // =======================
-
 var kawasanLayer = L.geoJSON(null,{
-
-    renderer:L.canvas(),
-
     style:styleKawasan,
 
     onEachFeature:function(feature,layer){
