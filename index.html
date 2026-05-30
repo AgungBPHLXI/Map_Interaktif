@@ -806,46 +806,48 @@ fetch("pbph.geojson")
 // KAWASAN LAYER (GABUNG 2 FILE)
 // =======================
 var kawasanLayer = L.geoJSON(null,{
-    style:styleKawasan,
 
-onEachFeature:function(feature,layer){
+    style: styleKawasan,
 
-// =========================
-// POPUP KHUSUS PAPH
-// =========================
-if(feature.properties?.F2025 === "PAPH"){
+    onEachFeature:function(feature,layer){
 
-    let luas = feature.properties?.LUAS
-        ? parseFloat(
-            feature.properties.LUAS
-                .toString()
-                .replace(",", ".")
-          ).toLocaleString("id-ID",{
-                minimumFractionDigits:2,
-                maximumFractionDigits:2
-          })
-        : "0";
+        // =========================
+        // POPUP KHUSUS PAPH
+        // =========================
+        if(feature.properties?.F2025 === "PAPH"){
 
-    let arahan = feature.properties?.["Arahan Pemanfaatan"] || "-";
+            let luas = feature.properties?.LUAS
+                ? parseFloat(
+                    feature.properties.LUAS
+                        .toString()
+                        .replace(",", ".")
+                  ).toLocaleString("id-ID",{
+                        minimumFractionDigits:2,
+                        maximumFractionDigits:2
+                  })
+                : "0";
 
-    let isiPopup =
-        "<b>PETA ARAHAN PEMANFAATAN HUTAN</b><br><br>" +
-        "Arahan : " + arahan + "<br>" +
-        "Luas : " + luas + " Ha";
+            let arahan =
+                feature.properties?.["Arahan Pemanfaatan"] || "-";
 
-    layer.bindPopup(isiPopup);
+            let isiPopup =
+                "<b>PETA ARAHAN PEMANFAATAN HUTAN</b><br><br>" +
+                "Arahan : " + arahan + "<br>" +
+                "Luas : " + luas + " Ha";
 
-    // =========================
-    // CLICK PAPH
-    // =========================
-    layer.on("click", function(e){
+            layer.bindPopup(isiPopup);
 
-        highlightFeature(layer);
+            layer.on("click", function(e){
 
-        layer.openPopup(e.latlng);
+                highlightFeature(layer);
 
-    });
-}
+                layer.openPopup();
+
+            });
+        }
+
+    }
+
 }).addTo(map);
 // Load Kawasan Hutan
 fetch("Kawasanhutan.geojson")
@@ -1684,7 +1686,16 @@ function loadSheetData(sheetName){
 // =======================
 // COLLAPSIBLE SIDEBAR
 // =======================
+function toggleMenu(element){
 
+    let child = element.nextElementSibling;
+
+    if(child.style.display === "block"){
+        child.style.display = "none";
+    } else {
+        child.style.display = "block";
+    }
+}
 document.getElementById("toggleSidebar").onclick = function(){
 
     if(window.innerWidth <= 768){
