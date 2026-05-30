@@ -21,15 +21,15 @@
     border: none !important;
     box-shadow: none !important;
 
-    color: #000 !important;
-    font-size: 11px !important;
+    color: black !important;
+    font-size: 14px !important;
     font-weight: bold !important;
 
     text-shadow:
-        1px 1px 2px #fff,
-        -1px -1px 2px #fff,
-        1px -1px 2px #fff,
-        -1px 1px 2px #fff;
+        1px 1px 3px white,
+        -1px -1px 3px white,
+        1px -1px 3px white,
+        -1px 1px 3px white;
 
     pointer-events: none;
 }
@@ -776,6 +776,9 @@ fetch("pbph.geojson")
 // =======================
 
 var kawasanLayer = L.geoJSON(null,{
+
+    renderer:L.canvas(),
+
     style:styleKawasan,
 
     onEachFeature:function(feature,layer){
@@ -807,23 +810,26 @@ var kawasanLayer = L.geoJSON(null,{
 
         // =========================
         // LABEL SISTEM LAHAN
-        // =========================
-       if(feature.properties?.F2025 === "SISTEM LAHAN"){
+      if(feature.properties?.F2025 === "SISTEM LAHAN"){
 
     let kode = feature.properties?.KODE || "";
 
-    layer.bindTooltip(
-        kode,
-        {
-            permanent:true,
-            direction:"center",
-            className:"label-sistem-lahan",
-            pane:'tooltipPane',
-            opacity:1
-        }
-    );
+    if(kode){
 
-    layer.openTooltip();
+        layer.bindTooltip(
+            kode,
+            {
+                permanent:true,
+                direction:"center",
+                className:"label-sistem-lahan",
+                pane:"tooltipPane",
+                opacity:1
+            }
+        );
+
+        layer.openTooltip();
+
+    }
 }
         layer.on("click",function(){
             highlightFeature(layer);
