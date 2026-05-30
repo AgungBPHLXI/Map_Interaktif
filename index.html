@@ -459,11 +459,6 @@ function tampilkanDiagramSemua(){
 var map = L.map('map', {
     zoomControl: false
 }).setView([-3.3,114.6],7);
-
-// Pane khusus label
-map.createPane('labelPane');
-map.getPane('labelPane').style.zIndex = 650;
-
 L.control.zoom({
     position: 'topright'
 }).addTo(map);
@@ -813,24 +808,23 @@ var kawasanLayer = L.geoJSON(null,{
         // =========================
         // LABEL SISTEM LAHAN
         // =========================
-        if(feature.properties?.F2025 === "SISTEM LAHAN"){
+       if(feature.properties?.F2025 === "SISTEM LAHAN"){
 
-            let kode = feature.properties?.KODE || "";
+    let kode = feature.properties?.KODE || "";
 
-         layer.bindTooltip(
-    kode,
-    {
-        permanent:true,
-        direction:"center",
-        className:"label-sistem-lahan",
-        pane:'labelPane',
-        opacity:1
-    }
-);
-
-layer.openTooltip();
+    layer.bindTooltip(
+        kode,
+        {
+            permanent:true,
+            direction:"center",
+            className:"label-sistem-lahan",
+            pane:'tooltipPane',
+            opacity:1
         }
+    );
 
+    layer.openTooltip();
+}
         layer.on("click",function(){
             highlightFeature(layer);
         });
