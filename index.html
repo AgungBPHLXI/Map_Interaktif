@@ -808,7 +808,7 @@ onEachFeature:function(feature,layer){
     // =======================
     // LABEL SISTEM LAHAN
     // =======================
-    iif(feature.properties?.m_symlfac){
+    if(feature.properties?.m_symlfac){
 
     let kode = feature.properties.m_symlfac;
 
@@ -862,7 +862,7 @@ return fetch("PAPH.geojson");
     // =========================
     // LOAD SISTEM LAHAN
     // =========================
-    return fetch("SSITEM LAHAN.geojson");
+    return fetch("SISTEM LAHAN.geojson");
 })
 .then(res=>res.json())
 .then(dataSL=>{
