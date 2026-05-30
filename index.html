@@ -804,63 +804,69 @@ fetch("pbph.geojson")
     pbphLayer.addData(data);
     loadNamaOptions(); // isi filter nama setelah data masuk
 });
-
 // =======================
-// KAWASAN LAYER
+// KAWASAN LAYER FINAL FIX
 // =======================
 
 var kawasanLayer = L.geoJSON(null,{
 
-    style: styleKawasan,
+    style:function(feature){
+
+        return styleKawasan(feature);
+
+    },
 
     onEachFeature:function(feature,layer){
 
-        // =====================
+        let props = feature.properties || {};
+        let kategori = props.F2025 || "";
+
+        // =========================
         // POPUP KHUSUS PAPH
-        // =====================
+        // =========================
 
-        if(feature.properties?.F2025 === "PAPH"){
+        if(kategori === "PAPH"){
 
-            let luas = feature.properties?.LUAS
-                ? parseFloat(
-                    feature.properties.LUAS
-                        .toString()
-                        .replace(",", ".")
-                  ).toLocaleString("id-ID",{
-                        minimumFractionDigits:2,
-                        maximumFractionDigits:2
-                  })
-                : "0";
+            let luas = 0;
 
-            let isiPopup =
-                "<b>LUAS PAPH</b><br>" +
-                luas + " Ha";
+            if(props.LUAS){
 
-            layer.bindPopup(isiPopup);
+                luas = parseFloat(
+                    props.LUAS.toString().replace(",", ".")
+                );
 
-            layer.on("click", function(){
+            }
 
-                highlightFeature(layer);
+            let luasFormat = luas.toLocaleString("id-ID",{
+                minimumFractionDigits:2,
+                maximumFractionDigits:2
+            });
+
+            let popupHTML =
+                "<div style='font-size:14px'>" +
+                "<b>📍 LUAS PAPH</b><br><br>" +
+                "<b>Luas :</b> " + luasFormat + " Ha" +
+                "</div>";
+
+            layer.bindPopup(popupHTML);
+
+        }
+
+        // =========================
+        // EVENT CLICK
+        // =========================
+
+        layer.on("click",function(e){
+
+            highlightFeature(layer);
+
+            if(layer.getPopup()){
 
                 layer.openPopup();
 
-            });
+            }
 
-        }
-
-        // =====================
-        // KLIK NORMAL
-        // =====================
-
-        else{
-
-            layer.on("click", function(){
-
-                highlightFeature(layer);
-
-            });
-
-        }
+        });
 
     }
 
@@ -1137,168 +1143,194 @@ function loadIndustriOptions(){
 // =======================
 // FILTER FUNCTION
 // =======================
-
 function applyFilter(){
 
-     map.closePopup();
+    map.closePopup();
 
-    var selectedKategori = $('#filterF2025').val();
+    var selectedKategori = $('#filterF2025').val() || [];
+    var selectedNama = $('#filterNama').val() || [];
+    var selectedKabupaten = $('#filterKabupaten').val() || [];
+    var selectedIndustri = $('#filterIndustri').val() || [];
+
     // =====================
-    // PANEL POWERPOINT
+    // PANEL PPT
     // =====================
 
-if(
-    selectedKategori &&
-    selectedKategori.includes("SISTEM LAHAN")
-){
-    document.getElementById("pptInfo").style.display = "block";
-}
-else{
-    document.getElementById("pptInfo").style.display = "none";
-}
-    var selectedNama = $('#filterNama').val();
-    var selectedKabupaten = $('#filterKabupaten').val();
+    if(selectedKategori.includes("SISTEM LAHAN")){
+
+        document.getElementById("pptInfo").style.display = "block";
+
+    }else{
+
+        document.getElementById("pptInfo").style.display = "none";
+
+    }
 
     var bounds = L.latLngBounds([]);
     var adaZoom = false;
-// =====================
-// FILTER KAWASAN
-// =====================
-kawasanLayer.eachLayer(function(layer){
-
-    var kategori = layer.feature.properties?.F2025;
 
     // =====================
-    // LABEL SISTEM LAHAN
+    // FILTER KAWASAN
     // =====================
 
-    layer.unbindTooltip();
+    kawasanLayer.eachLayer(function(layer){
 
-    if(
-        kategori === "SISTEM LAHAN" &&
-        selectedKategori &&
-        selectedKategori.includes("SISTEM LAHAN")
-    ){
+        var props = layer.feature.properties || {};
+        var kategori = props.F2025 || "";
 
-        let kode = layer.feature.properties?.m_symlfac;
+        // reset tooltip
+        layer.unbindTooltip();
 
-        if(kode){
+        // =====================
+        // LABEL SISTEM LAHAN
+        // =====================
 
-            layer.bindTooltip(kode,{
-                permanent:true,
-                direction:"center",
-                className:"label-sistem-lahan"
+        if(
+            kategori === "SISTEM LAHAN" &&
+            selectedKategori.includes("SISTEM LAHAN")
+        ){
+
+            let kode = props.m_symlfac;
+
+            if(kode){
+
+                layer.bindTooltip(kode,{
+                    permanent:true,
+                    direction:"center",
+                    className:"label-sistem-lahan"
+                });
+
+            }
+
+        }
+
+        // =====================
+        // TAMPILKAN
+        // =====================
+
+        if(
+
+            selectedKategori.length === 0 ||
+            selectedKategori.includes("ALL") ||
+            selectedKategori.includes(kategori)
+
+        ){
+
+            layer.setStyle(styleKawasan(layer.feature));
+
+            layer.addTo(map);
+
+            if(layer.getBounds){
+
+                bounds.extend(layer.getBounds());
+                adaZoom = true;
+
+            }
+
+        }
+
+        // =====================
+        // SEMBUNYIKAN
+        // =====================
+
+        else{
+
+            layer.setStyle({
+                opacity:0,
+                fillOpacity:0
             });
 
         }
-    }
+
+    });
 
     // =====================
-    // TAMPIL SEMUA
+    // FILTER INDUSTRI
     // =====================
 
-    if(
-        !selectedKategori ||
-        selectedKategori.length === 0 ||
-        selectedKategori.includes("ALL")
-    ){
+    industriLayer.eachLayer(function(layer){
 
-        layer.setStyle(styleKawasan(layer.feature));
+        let nama = layer.feature.properties?.name || "";
 
-    }
+        if(
+            selectedIndustri.length === 0 ||
+            selectedIndustri.includes("ALL") ||
+            selectedIndustri.includes(nama)
+        ){
 
-    // =====================
-    // TAMPIL KATEGORI TERPILIH
-    // =====================
+            layer.addTo(map);
 
-    else if(selectedKategori.includes(kategori)){
+        }else{
 
-        layer.setStyle(styleKawasan(layer.feature));
-
-        // zoom ke layer
-        if(layer.getBounds){
-
-            bounds.extend(layer.getBounds());
-            adaZoom = true;
+            map.removeLayer(layer);
 
         }
 
-    }
+    });
 
     // =====================
-    // SEMBUNYIKAN
+    // FILTER PBPH
     // =====================
 
-    else{
+    pbphLayer.eachLayer(function(layer){
 
-        layer.setStyle({
-            opacity:0,
-            fillOpacity:0
+        let nama = layer.feature.properties?.NAMOBJ || "";
+
+        if(
+            selectedNama.length === 0 ||
+            selectedNama.includes("ALL") ||
+            selectedNama.includes(nama)
+        ){
+
+            layer.addTo(map);
+
+        }else{
+
+            map.removeLayer(layer);
+
+        }
+
+    });
+
+    // =====================
+    // FILTER KABUPATEN
+    // =====================
+
+    kabupatenLayer.eachLayer(function(layer){
+
+        let namaKab = layer.feature.properties?.KABUPATEN || "";
+
+        if(
+            selectedKabupaten.length === 0 ||
+            selectedKabupaten.includes("ALL") ||
+            selectedKabupaten.includes(namaKab)
+        ){
+
+            layer.addTo(map);
+
+        }else{
+
+            map.removeLayer(layer);
+
+        }
+
+    });
+
+    // =====================
+    // AUTO ZOOM
+    // =====================
+
+    if(adaZoom && bounds.isValid()){
+
+        map.flyToBounds(bounds,{
+            padding:[40,40],
+            duration:0.8
         });
 
     }
 
-});
-
-/// =====================
-// FILTER INDUSTRI 6000 UP
-// =====================
-var selectedIndustri = $('#filterIndustri').val();
-
-var boundsIndustri = L.latLngBounds([]);
-
-industriLayer.eachLayer(function(layer){
-
-    var nama = layer.feature.properties?.name;
-
-    if(!selectedIndustri || selectedIndustri.length === 0){
-        map.removeLayer(layer);
-    }
-
-    else if(selectedIndustri.includes("ALL")){
-        layer.addTo(map);
-        boundsIndustri.extend(layer.getLatLng());
-
-        // AUTO POPUP
-        layer.openPopup();
-    }
-
-    else if(selectedIndustri.includes(nama)){
-        layer.addTo(map);
-        boundsIndustri.extend(layer.getLatLng());
-
-        // AUTO POPUP
-        layer.openPopup();
-    }
-
-    else{
-        map.removeLayer(layer);
-    }
-
-});
-//// =====================
-// PRIORITAS ZOOM
-// =====================
-if(boundsIndustri.isValid()){
-    map.flyToBounds(boundsIndustri,{
-        padding:[40,40],
-        duration:0.8
-    });
-}
-else if(adaZoom && bounds.isValid()){
-    map.flyToBounds(bounds,{
-        padding:[40,40],
-        duration:0.8
-    });
-}
-
-if(selectedKabupaten && selectedKabupaten.includes("ALL")){
-    tampilkanDiagramSemua();
-} else {
-    
 }
     
-}
 $('#filterF2025').on('change', applyFilter);
 $('#filterNama').on('change', applyFilter);
 $('#filterKabupaten').on('change', applyFilter);
