@@ -811,42 +811,37 @@ var kawasanLayer = L.geoJSON(null,{
 
     onEachFeature:function(feature,layer){
 
-        // =========================
-        // POPUP KHUSUS PAPH
-        // =========================
-        if(feature.properties?.F2025 === "PAPH"){
+// =====================
+// POPUP KHUSUS PAPH
+// =====================
 
-            let luas = feature.properties?.LUAS
-                ? parseFloat(
-                    feature.properties.LUAS
-                        .toString()
-                        .replace(",", ".")
-                  ).toLocaleString("id-ID",{
-                        minimumFractionDigits:2,
-                        maximumFractionDigits:2
-                  })
-                : "0";
+if(feature.properties?.F2025 === "PAPH"){
 
-            let arahan =
-                feature.properties?.["Arahan Pemanfaatan"] || "-";
+    let luas = feature.properties?.LUAS
+        ? parseFloat(
+            feature.properties.LUAS
+                .toString()
+                .replace(",", ".")
+          ).toLocaleString("id-ID",{
+                minimumFractionDigits:2,
+                maximumFractionDigits:2
+          })
+        : "0";
 
-            let isiPopup =
-                "<b>PETA ARAHAN PEMANFAATAN HUTAN</b><br><br>" +
-                "Arahan : " + arahan + "<br>" +
-                "Luas : " + luas + " Ha";
+    let isiPopup =
+        "<b>LUAS PAPH</b><br>" +
+        luas + " Ha";
 
-            layer.bindPopup(isiPopup);
+    layer.bindPopup(isiPopup);
 
-            layer.on("click", function(e){
+    layer.on("click", function(e){
 
-                highlightFeature(layer);
+        highlightFeature(layer);
 
-                layer.openPopup();
+        layer.openPopup();
 
-            });
-        }
-
-    }
+    });
+}
 
 }).addTo(map);
 // Load Kawasan Hutan
