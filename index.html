@@ -805,23 +805,6 @@ onEachFeature:function(feature,layer){
         );
     }
 
-    // =======================
-    // LABEL SISTEM LAHAN
-    // =======================
-    if(feature.properties?.m_symlfac){
-
-    let kode = feature.properties.m_symlfac;
-
-    layer.bindTooltip(
-        kode,
-        {
-            permanent:true,
-            direction:"center",
-            className:"label-sistem-lahan"
-        }
-    );
-
-}
     // CLICK
 layer.on("click",function(){
     highlightFeature(layer);
@@ -1001,8 +984,34 @@ function loadKategoriOptions(){
 
     $('#filterF2025').append(`<option value="ALL">Semua</option>`);
 
-    kawasanLayer.eachLayer(function(layer){
-        if(layer.feature.properties?.F2025){
+   kawasanLayer.eachLayer(function(layer){
+
+    var kategori = layer.feature.properties?.F2025;
+
+    // =========================
+    // LABEL SISTEM LAHAN
+    // =========================
+    if(kategori === "SISTEM LAHAN"){
+
+        // hapus tooltip lama dulu
+        layer.unbindTooltip();
+
+        // hanya muncul saat filter dipilih
+        if(selectedKategori.includes("SISTEM LAHAN")){
+
+            let kode = layer.feature.properties?.m_symlfac;
+
+            if(kode){
+
+                layer.bindTooltip(kode,{
+                    permanent:true,
+                    direction:"center",
+                    className:"label-sistem-lahan"
+                });
+
+            }
+        }
+    }
             set.add(layer.feature.properties.F2025);
         }
     });
