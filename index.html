@@ -22,16 +22,18 @@
     box-shadow: none !important;
 
     color: black !important;
-    font-size: 14px !important;
+    font-size: 13px !important;
     font-weight: bold !important;
 
-    text-shadow:
-        1px 1px 3px white,
-        -1px -1px 3px white,
-        1px -1px 3px white,
-        -1px 1px 3px white;
+    text-align:center;
 
-    pointer-events: none;
+    text-shadow:
+        1px 1px 2px white,
+        -1px -1px 2px white,
+        1px -1px 2px white,
+        -1px 1px 2px white;
+
+    pointer-events:none;
 }
 body { margin:0; font-family: Arial, sans-serif; }
 #map { height:100vh; }
@@ -806,29 +808,25 @@ var kawasanLayer = L.geoJSON(null,{
 
         // =========================
         // LABEL SISTEM LAHAN
-    if(feature.properties?.F2025 === "SISTEM LAHAN"){
+  if(feature.properties?.F2025 === "SISTEM LAHAN"){
 
     let kode = feature.properties?.KODE || "";
 
     if(kode){
 
-        layer.bindTooltip(
-            kode,
-            {
-                permanent:true,
-                direction:"center",
-                sticky:false,
+        let center = layer.getBounds().getCenter();
+
+        L.marker(center,{
+            icon: L.divIcon({
                 className:"label-sistem-lahan",
-                opacity:1
-            }
-        );
+                html:kode,
+                iconSize:[40,20]
+            }),
+            interactive:false
+        }).addTo(map);
 
-        layer.openTooltip();
-
-        layer.bringToFront();
     }
-}
-        layer.on("click",function(){
+}        layer.on("click",function(){
             highlightFeature(layer);
         });
     }
