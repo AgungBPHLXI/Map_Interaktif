@@ -1243,38 +1243,47 @@ function applyFilter(){
 
     });
 
-    // =====================
-    // FILTER PBPH
-    // =====================
+  // =====================
+// FILTER PBPH
+// =====================
 
-    pbphLayer.eachLayer(function(layer){
+pbphLayer.eachLayer(function(layer){
 
-        var nama = layer.feature.properties?.NAMOBJ || "";
+    var nama = layer.feature.properties?.NAMOBJ || "";
 
-        var tampil = false;
+    // HAPUS DULU SEMUA
+    map.removeLayer(layer);
 
-        if(
-            selectedNama.length === 0 ||
-            selectedNama.includes("ALL")
-        ){
-            tampil = true;
+    // tampil semua jika filter kosong
+    if(selectedNama.length === 0){
+
+        return;
+
+    }
+
+    // tampil semua PBPH
+    if(selectedNama.includes("ALL")){
+
+        layer.addTo(map);
+
+        if(layer.getBounds){
+            bounds.extend(layer.getBounds());
         }
 
-        else if(selectedNama.includes(nama)){
-            tampil = true;
+    }
+
+    // tampil PBPH tertentu
+    else if(selectedNama.includes(nama)){
+
+        layer.addTo(map);
+
+        if(layer.getBounds){
+            bounds.extend(layer.getBounds());
         }
 
-        if(tampil){
+    }
 
-            layer.addTo(map);
-
-            if(layer.getBounds){
-                bounds.extend(layer.getBounds());
-            }
-
-        }
-
-    });
+});
 
     // =====================
     // FILTER INDUSTRI
