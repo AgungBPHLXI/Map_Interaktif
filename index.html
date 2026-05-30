@@ -810,7 +810,7 @@ var kawasanLayer = L.geoJSON(null,{
 
         // =========================
         // LABEL SISTEM LAHAN
-      if(feature.properties?.F2025 === "SISTEM LAHAN"){
+    if(feature.properties?.F2025 === "SISTEM LAHAN"){
 
     let kode = feature.properties?.KODE || "";
 
@@ -821,14 +821,15 @@ var kawasanLayer = L.geoJSON(null,{
             {
                 permanent:true,
                 direction:"center",
+                sticky:false,
                 className:"label-sistem-lahan",
-                pane:"tooltipPane",
                 opacity:1
             }
         );
 
         layer.openTooltip();
 
+        layer.bringToFront();
     }
 }
         layer.on("click",function(){
