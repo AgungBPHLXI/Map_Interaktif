@@ -1226,10 +1226,10 @@ if(selectedKategori.includes("ALL")){
 
 }
 
-// jika kosong jangan tampil
+// jika belum pilih filter
 else if(selectedKategori.length === 0){
 
-    tampil = true;
+    tampil = false;
 
 }
 
@@ -1239,7 +1239,6 @@ else if(selectedKategori.includes(kategori)){
     tampil = true;
 
 }
-
         if(tampil){
 
             layer.addTo(map);
