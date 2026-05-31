@@ -16,6 +16,8 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
 
 <style>
+<style>
+
 .label-sistem-lahan{
     background: rgba(255,255,255,0.7) !important;
     border:none !important;
@@ -33,6 +35,17 @@
         -1px -1px 3px white,
         0px 0px 4px white;
 }
+
+/* ===================== */
+/* POPUP STYLE */
+/* ===================== */
+
+.leaflet-popup-content{
+    font-size:14px;
+    font-weight:bold;
+}
+
+</style>
 body { margin:0; font-family: Arial, sans-serif; }
 #map { height:100vh; }
 #chartOverlay{
@@ -1076,7 +1089,7 @@ function loadKategoriOptions(){
     kawasanLayer.eachLayer(function(layer){
 
         let kategori = layer.feature.properties?.F2025;
-
+    
         if(kategori){
             set.add(kategori);
         }
@@ -1201,7 +1214,29 @@ function applyFilter(){
 
         var props = layer.feature.properties || {};
         var kategori = props.F2025 || "";
+    // =====================
+    // POPUP SISTEM LAHAN
+    // =====================
 
+if(kategori === "SISTEM LAHAN"){
+
+    let kode = props.m_symlfac || "-";
+
+    layer.off("click");
+
+    layer.on("click", function(e){
+
+        L.popup()
+            .setLatLng(e.latlng)
+            .setContent(
+                "<b>KODE SISTEM LAHAN</b><br>" +
+                kode
+            )
+            .openOn(map);
+
+    });
+
+}
         var tampil = false;
 
         // tampil semua
@@ -1233,27 +1268,6 @@ else if(selectedKategori.includes(kategori)){
 
             // LABEL SISTEM LAHAN
            layer.unbindTooltip();
-layer.closeTooltip();
-if(
-    kategori === "SISTEM LAHAN" &&
-    selectedKategori.includes("SISTEM LAHAN") &&
-    map.getZoom() >= 14
-){
-
-    let kode = props.m_symlfac;
-
-    if(kode){
-
-        layer.bindTooltip(kode,{
-    permanent:true,
-    interactive:false,
-    direction:"auto",
-    className:"label-sistem-lahan"
-});
-
-    }
-
-}
 
             if(layer.getBounds){
                 bounds.extend(layer.getBounds());
