@@ -814,11 +814,11 @@ fetch("pbph.geojson")
 // KAWASAN LAYER
 // =======================
 
-var kawasanLayer = L.geoJSON(null,{
+var kawasanLayer = L.geoJSON(null, {
 
     style: styleKawasan,
 
-    onEachFeature:function(feature,layer){
+    onEachFeature: function(feature, layer){
 
         // =====================
         // POPUP KHUSUS PAPH
@@ -854,29 +854,31 @@ var kawasanLayer = L.geoJSON(null,{
         }
 
         // =====================
-// KLIK NORMAL
-// =====================
+        // KLIK NORMAL
+        // =====================
 
-else{
+        else {
 
-    layer.on("click", function(e){
+            layer.on("click", function(e){
 
-        highlightFeature(layer);
+                highlightFeature(layer);
 
-        // popup khusus sistem lahan
-if(feature.properties?.F2025 === "SISTEM LAHAN"){
+                // popup khusus sistem lahan
+                if(feature.properties?.F2025 === "SISTEM LAHAN"){
 
-    let kode = feature.properties?.m_symlfac || "-";
-layer.bindPopup(
-    "<b>KODE SISTEM LAHAN</b><br>" +
-    kode
-).openPopup();
+                    let kode = feature.properties?.m_symlfac || "-";
 
-}
+                    layer.bindPopup(
+                        "<b>KODE SISTEM LAHAN</b><br>" + kode
+                    ).openPopup();
 
-    });
+                }
 
-}
+            });
+
+        }
+
+    }
 
 }).addTo(map);
 
