@@ -18,11 +18,6 @@
 <style>
 .label-sistem-lahan{
     background: transparent !important;
-    border: none !important;
-}
-
-.l.label-sistem-lahan{
-    background: transparent !important;
     border:none !important;
     box-shadow:none !important;
 
@@ -42,7 +37,7 @@ body { margin:0; font-family: Arial, sans-serif; }
     left:50%;
     transform:translate(-50%, -50%);
     width:90%;
-    height:85%;
+    height:80vh;
     background:white;
     border-radius:15px;
     box-shadow:0 10px 40px rgba(0,0,0,0.4);
@@ -332,24 +327,20 @@ label{
     color: #1565c0;
     text-align: center;
 }
-    .ppt-info{
-    position:absolute;
-    right:10px;
-    top:80px;
-    width:320px;
-    max-height:80vh;
-    overflow:auto;
-    background:white;
-    padding:10px;
-    z-index:9999;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,0.3);
+   #pptInfo{
+    width:260px;
+    max-height:500px;
+    overflow-y:auto;
+    margin-top:15px;
 }
-
-.ppt-info img{
+#chartSemua{
+    display:none;
+}
+.slide-img{
     width:100%;
     margin-bottom:10px;
-    border-radius:8px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.2);
 }
 </style>
 </head>
@@ -357,18 +348,14 @@ label{
 
 <div id="map"></div>
 
-<!-- PANEL POWERPOINT -->
-<div id="pptInfo" class="ppt-info" style="display:none;">
-
-    <img src="Slide1.1.png">
-    <img src="Slide2.png">
-    <img src="Slide3.png">
-    <img src="Slide4.png">
-
-</div>
 <div id="chartOverlay">
+
     <button id="btnCloseChart">✖</button>
+
     <canvas id="chartKawasan"></canvas>
+
+    <canvas id="chartSemua"></canvas>
+
 </div>
     
 <div id="sidebar">
@@ -392,7 +379,7 @@ label{
     <div onclick="loadKawasan(); closeSidebarMobile()">Luas Kawasan Hutan</div>
     <div onclick="loadPenanaman(); closeSidebarMobile()">Penanaman PBPH</div>
     <div onclick="loadProduksi(); closeSidebarMobile()">Produksi PBPH</div>
-    <div onclick="loadProduksi(); closeSidebarMobile()">Produksi Industri 6000 UP</div>
+    <div onclick="loadProduksiIndustri(); closeSidebarMobile()">Produksi Industri 6000 UP</div>
 </div>
     </div>
 
@@ -414,6 +401,15 @@ label{
 
             <label>Industri 6000 UP</label>
             <select id="filterIndustri" multiple></select>
+            <!-- PANEL POWERPOINT -->
+<div id="pptInfo" style="display:none; margin-top:15px;">
+
+    <img src="Slide1.1.png" class="slide-img">
+    <img src="Slide2.png" class="slide-img">
+    <img src="Slide3.png" class="slide-img">
+    <img src="Slide4.png" class="slide-img">
+
+</div>
 
         </div>
     </div>
@@ -443,6 +439,9 @@ fetch("data_luas_kabupaten.json")
 let chartSemuaInstance = null;
 
 function tampilkanDiagramSemua(){
+
+    document.getElementById("chartSemua").style.display = "block";
+    document.getElementById("chartKawasan").style.display = "none";
 
     let totalHL = 0;
     let totalHP = 0;
@@ -709,9 +708,9 @@ function styleKawasan(feature){
 
         return {
             color:"#555",
-            weight:0.5,
+            weight:0.2,
             fillColor:warnaMorfogen[morfogen] || "#cccccc",
-            fillOpacity:0.7,
+            fillOpacity:0.35,
             opacity:1
         };
     }
@@ -927,7 +926,10 @@ fetch("Kawasanhutan.geojson")
 
     });
 
-    kawasanLayer.addData(dataSL);
+ // sederhanakan geometri jika ada
+dataSL.features = dataSL.features.filter(f => f.geometry);
+
+kawasanLayer.addData(dataSL);
 
     // reload filter
     loadKategoriOptions();
@@ -958,7 +960,8 @@ var industriLayer = L.geoJSON(null,{
         
 layer.bindPopup("<b>" + nama + "</b>");
        layer.bindTooltip(nama, {
-    permanent: true,
+permanent: false,
+sticky:true,
     direction: "top",
     offset: [0, -8]
 });
@@ -980,14 +983,17 @@ fetch("PBPHH_6000_KE_ATAS.geojson")
 // =======================
 map.on("zoomend", function() {
 
-    var zoomLevel = map.getZoom();
+    if(map.getZoom() < 12){
+
+        industriLayer.eachLayer(function(layer){
+            layer.closeTooltip();
+        });
+
+        return;
+    }
 
     industriLayer.eachLayer(function(layer){
-        if(zoomLevel >= 12){
-            layer.openTooltip();
-        } else {
-            layer.closeTooltip();
-        }
+        layer.openTooltip();
     });
 
 });
@@ -1195,17 +1201,25 @@ function applyFilter(){
         var tampil = false;
 
         // tampil semua
-        if(
-            selectedKategori.length === 0 ||
-            selectedKategori.includes("ALL")
-        ){
-            tampil = true;
-        }
+if(selectedKategori.includes("ALL")){
 
-        // tampil kategori tertentu
-        else if(selectedKategori.includes(kategori)){
-            tampil = true;
-        }
+    tampil = true;
+
+}
+
+// jika kosong jangan tampil
+else if(selectedKategori.length === 0){
+
+    tampil = false;
+
+}
+
+// tampil kategori tertentu
+else if(selectedKategori.includes(kategori)){
+
+    tampil = true;
+
+}
 
         if(tampil){
 
@@ -1214,26 +1228,28 @@ function applyFilter(){
             layer.setStyle(styleKawasan(layer.feature));
 
             // LABEL SISTEM LAHAN
-            layer.unbindTooltip();
+           layer.unbindTooltip();
+layer.closeTooltip();
+if(
+    kategori === "SISTEM LAHAN" &&
+    selectedKategori.includes("SISTEM LAHAN") &&
+    map.getZoom() >= 13
+){
 
-            if(
-                kategori === "SISTEM LAHAN" &&
-                selectedKategori.includes("SISTEM LAHAN")
-            ){
+    let kode = props.m_symlfac;
 
-                let kode = props.m_symlfac;
+    if(kode){
 
-                if(kode){
+        layer.bindTooltip(kode,{
+    permanent:false,
+    interactive:false,
+    direction:"top",
+    className:"label-sistem-lahan"
+});
 
-                    layer.bindTooltip(kode,{
-                        permanent:true,
-                        direction:"center",
-                        className:"label-sistem-lahan"
-                    });
+    }
 
-                }
-
-            }
+}
 
             if(layer.getBounds){
                 bounds.extend(layer.getBounds());
@@ -1295,17 +1311,23 @@ pbphLayer.eachLayer(function(layer){
 
         var tampil = false;
 
-        if(
-            selectedIndustri.length === 0 ||
-            selectedIndustri.includes("ALL")
-        ){
-            tampil = true;
-        }
+       if(selectedIndustri.includes("ALL")){
 
-        else if(selectedIndustri.includes(nama)){
-            tampil = true;
-        }
+    tampil = true;
 
+}
+
+else if(selectedIndustri.length === 0){
+
+    tampil = false;
+
+}
+
+else if(selectedIndustri.includes(nama)){
+
+    tampil = true;
+
+}
         if(tampil){
 
             layer.addTo(map);
@@ -1363,12 +1385,14 @@ kabupatenLayer.eachLayer(function(layer){
     // =====================
     // AUTO ZOOM
     // =====================
-
+    if(selectedKabupaten.includes("ALL")){
+    tampilkanDiagramSemua();
+}
     if(bounds.isValid()){
 
         map.flyToBounds(bounds,{
             padding:[40,40],
-            duration:0.8
+            duration:0.3
         });
 
     }
@@ -1406,6 +1430,9 @@ function loadPenanaman(){
 
     document.getElementById("chartOverlay").style.display = "block";
 
+    document.getElementById("chartSemua").style.display = "none";
+
+    document.getElementById("chartKawasan").style.display = "block";
     // Hapus header lama
     let oldTotal = document.getElementById("totalBox");
     if(oldTotal) oldTotal.remove();
@@ -1504,6 +1531,9 @@ document.getElementById("chartOverlay").insertAdjacentHTML(
 // =======================
 function loadKawasan(){
 
+    document.getElementById("chartSemua").style.display = "none";
+    document.getElementById("chartKawasan").style.display = "block";
+
     document.getElementById("chartOverlay").style.display = "block";
 
     // Hapus header lama
@@ -1593,9 +1623,12 @@ function loadKawasan(){
 // =======================
 // LOAD PRODUKSI KAYU BULAT
 // =======================
-   function loadProduksi(){
+ function loadProduksi(){
 
     document.getElementById("chartOverlay").style.display = "block";
+
+    document.getElementById("chartSemua").style.display = "none";
+    document.getElementById("chartKawasan").style.display = "block";
 
     let oldTotal = document.getElementById("totalBox");
     if(oldTotal) oldTotal.remove();
@@ -1707,6 +1740,55 @@ function toggleMenu(element){
         child.style.display = "block";
     }
 }
+function loadProduksiIndustri(){
+
+    document.getElementById("chartSemua").style.display = "none";
+    document.getElementById("chartKawasan").style.display = "block";
+
+    document.getElementById("chartOverlay").style.display = "block";
+
+    let oldTotal = document.getElementById("totalBox");
+    if(oldTotal) oldTotal.remove();
+
+    if(chartInstance){
+        chartInstance.destroy();
+    }
+
+    document.getElementById("chartOverlay").insertAdjacentHTML(
+        "afterbegin",
+        `<div id="totalBox"
+            style="
+                background:linear-gradient(90deg,#6a1b9a,#4a148c);
+                color:white;
+                padding:10px;
+                border-radius:8px;
+                margin-bottom:10px;
+                font-weight:bold;
+                font-size:15px;
+                text-align:center">
+            🏭 PRODUKSI INDUSTRI 6000 UP
+        </div>`
+    );
+
+    chartInstance = new Chart(
+        document.getElementById("chartKawasan"),
+        {
+            type:'bar',
+            data:{
+                labels:['Data Belum Tersedia'],
+                datasets:[{
+                    label:'Produksi',
+                    data:[0]
+                }]
+            },
+            options:{
+                responsive:true,
+                maintainAspectRatio:false
+            }
+        }
+    );
+
+}
 function loadSheetData(sheetName){
 
     const spreadsheetID = "1u9Wx1pUc2M-KzE9997_osg-8NHG5wH4etq4H9am7Rmc";
@@ -1744,19 +1826,7 @@ function loadSheetData(sheetName){
         "Gagal mengambil data Google Sheet.";
     });
 }
-// =======================
-// COLLAPSIBLE SIDEBAR
-// =======================
-function toggleMenu(element){
 
-    let child = element.nextElementSibling;
-
-    if(child.style.display === "block"){
-        child.style.display = "none";
-    } else {
-        child.style.display = "block";
-    }
-}
 document.getElementById("toggleSidebar").onclick = function(){
 
     if(window.innerWidth <= 768){
@@ -1807,6 +1877,10 @@ document.addEventListener("DOMContentLoaded", function(){
 
     if(btnClose){
         btnClose.addEventListener("click", function(){
+    if(chartSemuaInstance){
+    chartSemuaInstance.destroy();
+    chartSemuaInstance = null;
+}
 
             // Tutup overlay
             overlay.style.display = "none";
