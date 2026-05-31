@@ -16,7 +16,6 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
 
 <style>
-
 .label-sistem-lahan{
     background: rgba(255,255,255,0.7) !important;
     border:none !important;
@@ -45,20 +44,28 @@ body {
     font-family: Arial, sans-serif;
 }
 
-</style>
-body {
-    margin:0;
-    font-family: Arial, sans-serif;
-}
-
-#map {
+#map{
     height:100vh;
 }
+
+/* =========================
+   POPUP
+========================= */
+
+.leaflet-popup-content{
+    font-size:14px;
+    font-weight:bold;
+}
+
+/* =========================
+   CHART OVERLAY
+========================= */
+
 #chartOverlay{
     position:absolute;
     top:50%;
     left:50%;
-    transform:translate(-50%, -50%);
+    transform:translate(-50%,-50%);
     width:90%;
     height:80vh;
     background:white;
@@ -67,9 +74,8 @@ body {
     padding:20px;
     z-index:2000;
     display:none;
-
-    resize: both;      
-    overflow: auto;   
+    resize:both;
+    overflow:auto;
 }
 
 #chartOverlay button{
@@ -84,55 +90,56 @@ body {
     height:30px;
     cursor:pointer;
 }
-    .select2-container {
-        width:100% !important;
+
+#chartSemua{
+    display:none;
 }
 
-.legend {
-    background:white;
-    padding:10px;
-    border-radius:8px;
-    box-shadow:0 2px 6px rgba(0,0,0,0.3);
-    line-height:18px;
-    font-size:13px;
+/* =========================
+   SELECT2
+========================= */
+
+.select2-container{
+    width:100% !important;
 }
 
-.legend i {
-    width:15px;
-    height:15px;
-    float:left;
-    margin-right:6px;
-    opacity:0.7;
+/* =========================
+   SIDEBAR
+========================= */
+
+#sidebar{
+    position:absolute;
+    top:0;
+    left:0;
+    width:350px;
+    height:95vh;
+
+    background:rgba(255,255,255,0.6);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+
+    border:1px solid rgba(255,255,255,0.4);
+    border-radius:0 15px 15px 0;
+    box-shadow:0 15px 30px rgba(0,0,0,0.15);
+
+    padding:15px;
+    overflow-y:auto;
+    transition:0.3s ease;
+    z-index:1000;
 }
 
-#dashboardContent {
-    overflow-y: auto;
-    max-height: 45vh;
+#sidebar.collapsed{
+    transform:translateX(-110%);
 }
 
-#dashboardContent table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 11px;
-}
+/* =========================
+   TOGGLE SIDEBAR
+========================= */
 
-#dashboardContent th {
-    background: #2e7d32;
-    color: white;
-    padding: 4px;
-    position: sticky;
-    top: 0;
-}
-
-#dashboardContent td {
-    padding: 4px;
-    border: 1px solid #ddd;
-}
-  /* TOGGLE BUTTON */
 #toggleSidebar{
     position:absolute;
     top:20px;
-    left:320px;   /* sesuaikan dengan lebar sidebar */
+    left:320px;
     z-index:2000;
 
     background:white;
@@ -146,53 +153,26 @@ body {
     transition:0.3s;
 }
 
-/* Saat sidebar ditutup */
 #sidebar.collapsed + #toggleSidebar{
     left:20px;
 }
-/* SIDEBAR */
-#sidebar{
-    position:absolute;
-    top:0px;
-    left:0px;   /* ini saja */
-    width:350px;
-    height:95vh;
 
-    background: rgba(255,255,255,0.6);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+/* =========================
+   HEADER
+========================= */
 
-    border: 1px solid rgba(255,255,255,0.4);
-    border-radius:0 15px 15px 0;
-    box-shadow:0 15px 30px rgba(0,0,0,0.15);
-
-    padding:15px;
-    overflow-y:auto;
-    transition:0.3s ease;
-    z-index:1000;
-}
-#dashboardContent{
-    margin-top:15px;
-    padding:10px;
-    background:white;
-    border-radius:10px;
-    max-height:40vh;
-    overflow-y:auto;
-}
-#sidebar.collapsed{
-    transform: translateX(-110%);
-}
-   .sidebar-header{
+.sidebar-header{
     display:flex;
     align-items:center;
     justify-content:space-between;
 }
-    .logo-area{
+
+.logo-area{
     display:flex;
     align-items:center;
     gap:10px;
 }
-    
+
 .sidebar-header img{
     height:45px;
 }
@@ -206,12 +186,11 @@ body {
 .sidebar-title .sub-title{
     font-size:11px;
     color:#555;
-} 
-.menu-title{
-    font-weight:bold;
-    margin-bottom:15px;
-    color:#2e7d32;
 }
+
+/* =========================
+   MENU
+========================= */
 
 .menu-parent{
     padding:10px;
@@ -237,19 +216,112 @@ body {
     background:#e8f5e9;
 }
 
+/* =========================
+   LABEL
+========================= */
+
 label{
     font-size:12px;
     font-weight:600;
     margin-top:10px;
     display:block;
 }
-/* RESPONSIVE */
-/* ============================= */
-/* MOBILE VERSION CLEAN */
-/* ============================= */
+
+/* =========================
+   PPT INFO
+========================= */
+
+#pptInfo{
+    width:260px;
+    max-height:500px;
+    overflow-y:auto;
+    margin-top:15px;
+}
+
+.slide-img{
+    width:100%;
+    margin-bottom:10px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* =========================
+   DASHBOARD
+========================= */
+
+#dashboardContent{
+    overflow-y:auto;
+    max-height:45vh;
+    margin-top:15px;
+    padding:10px;
+    background:white;
+    border-radius:10px;
+}
+
+#dashboardContent table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:11px;
+}
+
+#dashboardContent th{
+    background:#2e7d32;
+    color:white;
+    padding:4px;
+    position:sticky;
+    top:0;
+}
+
+#dashboardContent td{
+    padding:4px;
+    border:1px solid #ddd;
+}
+
+/* =========================
+   ROUTING
+========================= */
+
+.routing-btn{
+    background:white;
+    width:40px;
+    height:40px;
+    border-radius:10px;
+    border:2px solid #ddd;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    font-size:18px;
+}
+
+.routing-btn.active{
+    background:#2e7d32;
+    color:white;
+    border-color:#2e7d32;
+}
+
+.leaflet-routing-container{
+    display:none !important;
+}
+
+.leaflet-routing-alt{
+    display:none !important;
+}
+
+.distance-popup{
+    font-size:14px;
+    font-weight:600;
+    color:#1565c0;
+    text-align:center;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
 @media(max-width:768px){
 
-    /* Sidebar jadi full screen */
     #sidebar{
         width:100%;
         height:100vh;
@@ -265,7 +337,6 @@ label{
         left:0;
     }
 
-    /* Tombol toggle selalu di kiri atas */
     #toggleSidebar{
         left:15px !important;
         top:15px;
@@ -274,7 +345,6 @@ label{
         font-size:20px;
     }
 
-    /* Chart full screen */
     #chartOverlay{
         width:100%;
         height:100%;
@@ -294,7 +364,6 @@ label{
         height:80% !important;
     }
 
-    /* Font lebih readable */
     .menu-parent{
         font-size:16px;
     }
@@ -304,67 +373,7 @@ label{
         padding:10px;
     }
 }
-/* =========================
-   ROUTING BUTTON MODERN
-========================= */
 
-.leaflet-control button {
-    transition: all 0.2s ease;
-}
-
-.leaflet-control button:hover {
-    transform: scale(1.05);
-}
-
-.routing-btn {
-    background: white;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    border: 2px solid #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    font-size: 18px;
-}
-
-.routing-btn.active {
-    background: #2e7d32;
-    color: white;
-    border-color: #2e7d32;
-}
-
-.leaflet-routing-container {
-    display: none !important;
-}
-
-.leaflet-routing-alt {
-    display: none !important;
-}
-
-.distance-popup {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1565c0;
-    text-align: center;
-}
-   #pptInfo{
-    width:260px;
-    max-height:500px;
-    overflow-y:auto;
-    margin-top:15px;
-}
-#chartSemua{
-    display:none;
-}
-.slide-img{
-    width:100%;
-    margin-bottom:10px;
-    border-radius:10px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.2);
-}
 </style>
 </head>
 <body>
