@@ -16,24 +16,6 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
 
 <style>
-.label-sistem-lahan{
-    background: rgba(255,255,255,0.7) !important;
-    border:none !important;
-    box-shadow:none !important;
-
-    color:#000 !important;
-    font-size:14px !important;
-    font-weight:bold !important;
-
-    padding:2px 4px;
-    border-radius:4px;
-
-    text-shadow:
-        1px 1px 3px white,
-        -1px -1px 3px white,
-        0px 0px 4px white;
-}
-
 .leaflet-popup-content{
     font-size:14px;
     font-weight:bold;
@@ -46,15 +28,6 @@ body {
 
 #map{
     height:100vh;
-}
-
-/* =========================
-   POPUP
-========================= */
-
-.leaflet-popup-content{
-    font-size:14px;
-    font-weight:bold;
 }
 
 /* =========================
@@ -722,30 +695,31 @@ function styleKawasan(feature){
 
     }
 
-    // =========================
-    // STYLE SISTEM LAHAN
-    // =========================
-    if(kategori === "SISTEM LAHAN"){
+   // =========================
+// STYLE SISTEM LAHAN
+// =========================
 
-        let morfogen = feature.properties?.MORFOGEN;
+if(kategori === "SISTEM LAHAN"){
 
-        let warnaMorfogen = {
+    let morfogen = feature.properties?.MORFOGEN;
 
-            "Denudasional":"#7B3F00",
-            "Fluvial":"#39FF14",
-            "Marin":"#00BFFF",
-            "Solusional":"#FFA500",
-            "Struktural":"#8000FF"
-        };
+    let warnaMorfogen = {
 
-        return {
-            color:"#555",
-            weight:0.2,
-            fillColor:warnaMorfogen[morfogen] || "#cccccc",
-            fillOpacity:0.35,
-            opacity:1
-        };
-    }
+        "Denudasional":"#7B3F00",
+        "Fluvial":"#39FF14",
+        "Marin":"#00BFFF",
+        "Solusional":"#FFA500",
+        "Struktural":"#8000FF"
+    };
+
+    return {
+        color:"#555",
+        weight:1,
+        fillColor:warnaMorfogen[morfogen] || "#cccccc",
+        fillOpacity:0.35,
+        opacity:1
+    };
+}
 
     // =========================
     // STYLE KAWASAN HUTAN
@@ -779,7 +753,7 @@ function highlightFeature(layer){
     layer.originalStyle = {...layer.options};
 
     layer.setStyle({
-        weight:4,
+        weight:3,
         color:"#000000"
     });
 
@@ -880,20 +854,29 @@ var kawasanLayer = L.geoJSON(null,{
         }
 
         // =====================
-        // KLIK NORMAL
-        // =====================
+// KLIK NORMAL
+// =====================
 
-        else{
+else{
 
-            layer.on("click", function(){
+    layer.on("click", function(e){
 
-                highlightFeature(layer);
+        highlightFeature(layer);
 
-            });
+        // popup khusus sistem lahan
+if(feature.properties?.F2025 === "SISTEM LAHAN"){
 
-        }
+    let kode = feature.properties?.m_symlfac || "-";
+layer.bindPopup(
+    "<b>KODE SISTEM LAHAN</b><br>" +
+    kode
+).openPopup();
 
-    }
+}
+
+    });
+
+}
 
 }).addTo(map);
 
@@ -1015,7 +998,7 @@ fetch("PBPHH_6000_KE_ATAS.geojson")
 // =======================
 map.on("zoomend", function() {
 
-    if(map.getZoom() < 12){
+    if(map.getZoom() < 13){
 
         industriLayer.eachLayer(function(layer){
             layer.closeTooltip();
@@ -1175,14 +1158,17 @@ function loadIndustriOptions(){
 // =======================
 // FILTER FUNCTION FINAL
 // =======================
-
+   
 function applyFilter(){
 
     map.closePopup();
 
     var selectedKategori = $('#filterF2025').val() || [];
+
     var selectedNama = $('#filterNama').val() || [];
+
     var selectedKabupaten = $('#filterKabupaten').val() || [];
+
     var selectedIndustri = $('#filterIndustri').val() || [];
 
     // =====================
@@ -1229,29 +1215,6 @@ function applyFilter(){
 
         var props = layer.feature.properties || {};
         var kategori = props.F2025 || "";
-    // =====================
-    // POPUP SISTEM LAHAN
-    // =====================
-
-if(kategori === "SISTEM LAHAN"){
-
-    let kode = props.m_symlfac || "-";
-
-    layer.off("click");
-
-    layer.on("click", function(e){
-
-        L.popup()
-            .setLatLng(e.latlng)
-            .setContent(
-                "<b>KODE SISTEM LAHAN</b><br>" +
-                kode
-            )
-            .openOn(map);
-
-    });
-
-}
         var tampil = false;
 
         // tampil semua
@@ -1264,7 +1227,7 @@ if(selectedKategori.includes("ALL")){
 // jika kosong jangan tampil
 else if(selectedKategori.length === 0){
 
-    tampil = false;
+    tampil = true;
 
 }
 
@@ -2043,6 +2006,22 @@ function resetRouting(){
 
     map.closePopup();
 }
+    map.on("click", function(e){
+
+    if(routingActive) return;
+
+    if(!e.originalEvent.target.closest(".leaflet-interactive")){
+
+        if(selectedLayer){
+
+            selectedLayer.setStyle(selectedLayer.originalStyle);
+
+            selectedLayer = null;
+
+        }
+
+    }
+});
 </script>
 </body>
 </html>
