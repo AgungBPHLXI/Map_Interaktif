@@ -406,6 +406,39 @@ label{
 
             <label>Industri 6000 UP</label>
             <select id="filterIndustri" multiple></select>
+      
+<select id="filterIndustri" multiple></select>
+
+<label>Upload SHP (.zip)</label>
+
+<input type="file" id="uploadShp" accept=".zip"
+style="
+width:100%;
+padding:6px;
+border-radius:6px;
+border:1px solid #ccc;
+background:white;
+">
+<div style="
+font-size:11px;
+color:#555;
+margin-top:6px;
+line-height:1.5;
+background:#f5f5f5;
+padding:8px;
+border-radius:6px;
+">
+
+<b>Format Upload:</b><br>
+File harus dalam bentuk <b>.zip</b><br>
+dan berisi file:<br>
+
+• .shp<br>
+• .dbf<br>
+• .shx<br>
+• .prj
+
+</div>
             <!-- PANEL POWERPOINT -->
 <div id="pptInfo" style="display:none; margin-top:15px;">
 
@@ -427,6 +460,7 @@ label{
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://unpkg.com/shpjs@latest/dist/shp.min.js"></script>
 
 <script>
 // =======================
@@ -663,7 +697,52 @@ locateControl.onAdd = function(map){
 locateControl.addTo(map);
 
 var selectedLayer = null;
+// =======================
+// LAYER UPLOAD SHP
+// =======================
 
+var uploadLayer = L.geoJSON(null,{
+
+    style:{
+        color:"#ff0000",
+        weight:3,
+        fillOpacity:0.15
+    },
+
+    pointToLayer:function(feature,latlng){
+
+        return L.circleMarker(latlng,{
+            radius:6,
+            color:"#ff0000",
+            fillColor:"#ff5555",
+            fillOpacity:0.8
+        });
+
+    },
+
+    onEachFeature:function(feature,layer){
+
+        let props = feature.properties || {};
+
+        let html = "<b>INFORMASI SHP</b><br><br>";
+
+        for(let key in props){
+
+            html += "<b>"+key+"</b> : "+props[key]+"<br>";
+
+        }
+
+        layer.bindPopup(html);
+
+        layer.on("click",function(){
+
+            highlightFeature(layer);
+
+        });
+
+    }
+
+}).addTo(map);
 // =======================
 // STYLE
 // =======================
@@ -2110,6 +2189,55 @@ function resetRouting(){
         }
 
     }
+});
+    // =======================
+// UPLOAD SHP ZIP
+// =======================
+
+document.getElementById("uploadShp")
+.addEventListener("change", function(e){
+
+    let file = e.target.files[0];
+
+    if(!file){
+
+        return;
+
+    }
+
+    let reader = new FileReader();
+
+    reader.onload = function(event){
+
+        shp(event.target.result)
+
+        .then(function(geojson){
+
+            // HAPUS LAYER LAMA
+            uploadLayer.clearLayers();
+
+            // TAMBAH KE PETA
+            uploadLayer.addData(geojson);
+
+            // ZOOM KE LAYER
+            map.fitBounds(uploadLayer.getBounds());
+
+            alert("SHP berhasil dimuat!");
+
+        })
+
+        .catch(function(err){
+
+            console.log(err);
+
+            alert("Gagal membaca SHP");
+
+        });
+
+    };
+
+    reader.readAsArrayBuffer(file);
+
 });
 </script>
 </body>
