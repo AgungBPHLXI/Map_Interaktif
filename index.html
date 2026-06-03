@@ -671,7 +671,7 @@ var selectedLayer = null;
 function stylePBPH(){
     return {
         color:"#ff6600",
-        weight:2,
+        weight:5,
         fillOpacity:0
     };
 }
@@ -752,7 +752,7 @@ function highlightFeature(layer){
     layer.originalStyle = {...layer.options};
 
     layer.setStyle({
-        weight:3,
+        weight:7,
         color:"#000000"
     });
 
@@ -806,8 +806,13 @@ var pbphLayer = L.geoJSON(null,{
 fetch("pbph.geojson")
 .then(res=>res.json())
 .then(data=>{
+
     pbphLayer.addData(data);
-    loadNamaOptions(); // isi filter nama setelah data masuk
+
+    pbphLayer.bringToFront();
+
+    loadNamaOptions();
+
 });
 
 // =======================
@@ -1019,6 +1024,9 @@ map.on("zoomend", function() {
 // =======================
 
 var kabupatenLayer = L.geoJSON(null,{
+
+    interactive:false,
+
     style:{
         color:"#005eff",
         weight:2,
@@ -1159,6 +1167,76 @@ function loadIndustriOptions(){
         $('#filterIndustri').append(`<option value="${val}">${val}</option>`);
     });
 }
+   function setLayerInteractivity(){
+
+    // NONAKTIFKAN SEMUA DULU
+    kabupatenLayer.eachLayer(l=>{
+        l.options.interactive = false;
+    });
+
+    kawasanLayer.eachLayer(l=>{
+        l.options.interactive = false;
+    });
+
+    pbphLayer.eachLayer(l=>{
+        l.options.interactive = false;
+    });
+
+    industriLayer.eachLayer(l=>{
+        l.options.interactive = false;
+    });
+
+    // AKTIFKAN SESUAI FILTER
+
+    let selectedKategori = $('#filterF2025').val() || [];
+    let selectedNama = $('#filterNama').val() || [];
+    let selectedKabupaten = $('#filterKabupaten').val() || [];
+    let selectedIndustri = $('#filterIndustri').val() || [];
+
+    // PRIORITAS 1 = PBPH
+    if(selectedNama.length > 0){
+
+        pbphLayer.eachLayer(l=>{
+            l.options.interactive = true;
+        });
+
+        pbphLayer.bringToFront();
+
+        return;
+    }
+
+    // PRIORITAS 2 = INDUSTRI
+    if(selectedIndustri.length > 0){
+
+        industriLayer.eachLayer(l=>{
+            l.options.interactive = true;
+        });
+
+        industriLayer.bringToFront();
+
+        return;
+    }
+
+    // PRIORITAS 3 = KAWASAN
+    if(selectedKategori.length > 0){
+
+        kawasanLayer.eachLayer(l=>{
+            l.options.interactive = true;
+        });
+
+        kawasanLayer.bringToFront();
+
+        return;
+    }
+
+    // PRIORITAS 4 = KABUPATEN
+    kabupatenLayer.eachLayer(l=>{
+        l.options.interactive = true;
+    });
+
+    kabupatenLayer.bringToFront();
+
+} 
 // =======================
 // FILTER FUNCTION FINAL
 // =======================
@@ -1392,14 +1470,17 @@ kabupatenLayer.eachLayer(function(layer){
     if(selectedKabupaten.includes("ALL")){
     tampilkanDiagramSemua();
 }
-    if(bounds.isValid()){
+  if(bounds.isValid()){
 
-        map.flyToBounds(bounds,{
-            padding:[40,40],
-            duration:0.3
-        });
+    map.flyToBounds(bounds,{
+        padding:[40,40],
+        duration:0.3
+    });
 
-    }
+}
+
+// AKTIFKAN PRIORITAS KLIK
+setLayerInteractivity();
 
 }
 
