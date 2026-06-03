@@ -773,35 +773,36 @@ function highlightFeature(layer){
 
 var pbphLayer = L.geoJSON(null,{
     style:stylePBPH,
+
     onEachFeature:function(feature,layer){
 
        var props = feature.properties;
 
-var luas = props?.LUAS
-    ? Number(props.LUAS).toLocaleString()
-    : "0";
+       var luas = props?.LUAS
+            ? Number(props.LUAS).toLocaleString()
+            : "0";
 
-var tglSK = "-";
-if(props?.TGL_SK){
-    var date = new Date(Number(props.TGL_SK));
-    tglSK = date.toLocaleDateString("id-ID");
-}
+       var tglSK = "-";
 
-layer.bindPopup(
-    "<b>"+(props?.NAMOBJ || "-")+"</b><br><br>" +
-    "NO SK : " + (props?.NO_SK || "-") + "<br>" +
-    "TGL SK : " + tglSK + "<br>" +
-    "JENIS : " + (props?.JENIS || "-") + "<br>" +
-    "STATUS IZIN : " + (props?.STAT_IZIN || "-") + "<br>" +
-    "LUAS : " + luas + " Ha"
-);
+       if(props?.TGL_SK){
+            var date = new Date(Number(props.TGL_SK));
+            tglSK = date.toLocaleDateString("id-ID");
+       }
 
-        layer.on("click",function(){
+       layer.bindPopup(
+            "<b>"+(props?.NAMOBJ || "-")+"</b><br><br>" +
+            "NO SK : " + (props?.NO_SK || "-") + "<br>" +
+            "TGL SK : " + tglSK + "<br>" +
+            "JENIS : " + (props?.JENIS || "-") + "<br>" +
+            "STATUS IZIN : " + (props?.STAT_IZIN || "-") + "<br>" +
+            "LUAS : " + luas + " Ha"
+       );
+
+       layer.on("click",function(){
             highlightFeature(layer);
-        });
+       });
     }
-}).addTo(map);
-
+});
 fetch("pbph.geojson")
 .then(res=>res.json())
 .then(data=>{
@@ -879,7 +880,7 @@ var kawasanLayer = L.geoJSON(null, {
 
     }
 
-}).addTo(map);
+});
 
 // =======================
 // LOAD KAWASAN HUTAN
@@ -986,7 +987,7 @@ sticky:true,
             highlightFeature(layer);
         });
     }
-}).addTo(map);
+});
 
 fetch("PBPHH_6000_KE_ATAS.geojson")
 .then(res=>res.json())
@@ -1053,6 +1054,8 @@ fetch("Kabupaten.geojson")
 .then(data=>{
     kabupatenLayer.addData(data);
     loadKabupatenOptions();
+
+    map.fitBounds(kabupatenLayer.getBounds());
 });
 // =======================
 // AKTIFKAN SELECT2
@@ -1348,11 +1351,16 @@ kabupatenLayer.eachLayer(function(layer){
     map.removeLayer(layer);
 
     // jika kosong -> jangan tampil
-    if(selectedKabupaten.length === 0){
+   if(selectedKabupaten.length === 0){
 
-        return;
+    layer.addTo(map);
 
+    if(layer.getBounds){
+        bounds.extend(layer.getBounds());
     }
+
+    return;
+}
 
     // tampil semua kabupaten
     if(selectedKabupaten.includes("ALL")){
