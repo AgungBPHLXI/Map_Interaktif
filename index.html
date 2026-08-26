@@ -2,7 +2,7 @@
 <html>
 <head>
 
-    <meta charset="utf-8" />
+    <meta charset="utf-8">
 
     <title>INFORMASI SPASIAL BPHL Wilayah XI</title>
 
@@ -31,9 +31,6 @@
         href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"
     >
 
-    <!-- CHART JS -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <!-- SELECT2 CSS -->
     <link
         href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
@@ -56,9 +53,7 @@
     ========================== -->
     <div id="chartOverlay">
 
-        <button id="btnCloseChart">
-            ✖
-        </button>
+        <button id="btnCloseChart">✖</button>
 
         <canvas id="chartKawasan"></canvas>
 
@@ -148,7 +143,6 @@
 
             <div class="menu-child">
 
-
                 <!-- FILTER KABUPATEN -->
                 <label>Kabupaten</label>
 
@@ -190,7 +184,6 @@
                 ========================== -->
                 <label>Upload SHP (.zip)</label>
 
-
                 <input
                     type="file"
                     id="uploadShp"
@@ -205,6 +198,7 @@
                 >
 
 
+                <!-- INFO FORMAT SHP -->
                 <div
                     style="
                         font-size:11px;
@@ -270,11 +264,9 @@
 
                 </div>
 
-
             </div>
 
         </div>
-
 
     </div>
 
@@ -282,37 +274,45 @@
     <!-- =========================
          TOGGLE SIDEBAR
     ========================== -->
-    <button id="toggleSidebar">
-        ☰
-    </button>
-
+    <button id="toggleSidebar">☰</button>
 
 
     <!-- =========================
          JAVASCRIPT LIBRARIES
     ========================== -->
 
+    <!-- CHART.JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- LEAFLET -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- LEAFLET -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-<!-- LEAFLET ROUTING -->
-<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+    <!-- LEAFLET ROUTING -->
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
-<!-- JQUERY -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- JQUERY -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- SELECT2 -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- SELECT2 -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<!-- SHAPEFILE -->
-<script src="https://unpkg.com/shpjs@latest/dist/shp.min.js"></script>
+    <!-- SHAPEFILE -->
+    <script src="https://unpkg.com/shpjs@latest/dist/shp.min.js"></script>
 
-<!-- KONFIGURASI -->
-<script src="assets/js/config.js"></script>
 
-<!-- APLIKASI UTAMA -->
-<script src="assets/js/app.js"></script>
+    <!-- =========================
+         MODUL APLIKASI
+    ========================== -->
+
+    <!-- KONFIGURASI -->
+    <script src="assets/js/config.js"></script>
+
+    <!-- MODUL PETA -->
+    <script src="assets/js/map.js"></script>
+
+    <!-- APLIKASI UTAMA -->
+    <script src="assets/js/app.js"></script>
+
 
 </body>
 </html>
