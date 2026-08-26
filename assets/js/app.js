@@ -1567,10 +1567,33 @@ document.addEventListener("DOMContentLoaded", function(){
 // =======================
 // CLOSE SIDEBAR MOBILE
 // =======================
-function closeSidebarMobile(){
-    if(window.innerWidth <= 768){
-        document.getElementById("sidebar").classList.remove("active");
+
+function closeSidebarMobile() {
+
+    if (window.innerWidth <= 768) {
+
+        const sidebar = document.getElementById("sidebar");
+
+        if (sidebar) {
+
+            sidebar.classList.remove("active");
+
+        }
+
+
+        // Refresh ukuran Leaflet setelah sidebar tertutup
+        setTimeout(function () {
+
+            if (typeof map !== "undefined" && map) {
+
+                map.invalidateSize(true);
+
+            }
+
+        }, 400);
+
     }
+
 }
 // =======================
 // ROUTING MODE PROFESIONAL
@@ -1789,6 +1812,49 @@ $(document).on(
                 refreshMapMobile();
 
             }, 200);
+
+        }
+
+    }
+);
+// =====================================================
+// FIX KONTROL LEAFLET SETELAH FILTER MOBILE
+// =====================================================
+
+$(document).on(
+    "select2:select select2:unselect select2:clear",
+    "#filterKabupaten, #filterF2025, #filterNama, #filterIndustri",
+    function () {
+
+        if (window.innerWidth <= 768) {
+
+            setTimeout(function () {
+
+                if (typeof map !== "undefined" && map) {
+
+                    // Paksa Leaflet menghitung ulang ukuran peta
+                    map.invalidateSize(true);
+
+                }
+
+
+                // Pastikan kontrol Leaflet dirender ulang
+                const controls =
+                    document.querySelector(".leaflet-control-container");
+
+                if (controls) {
+
+                    controls.style.display = "none";
+
+                    setTimeout(function () {
+
+                        controls.style.display = "";
+
+                    }, 50);
+
+                }
+
+            }, 300);
 
         }
 
