@@ -58,15 +58,14 @@ function tampilkanDiagramSemua(){
     );
 }
 // =======================
-// BASEMAP
+// PETA
 // =======================
 
-var map = L.map('map', {
-    zoomControl: false
-}).setView([-3.3,114.6],7);
-L.control.zoom({
-    position: 'topright'
-}).addTo(map);
+// Variabel `map` sudah dibuat dan diinisialisasi
+// di file assets/js/map.js.
+// Jangan membuat L.map('map') lagi di file ini,
+// karena akan menyebabkan error:
+// "Map container is already initialized".
 // =======================
 // BASEMAP OSM & SATELIT
 // =======================
@@ -1775,3 +1774,4 @@ document.getElementById("uploadShp")
     reader.readAsArrayBuffer(file);
 
 });
+
