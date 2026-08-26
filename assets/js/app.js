@@ -63,7 +63,6 @@ function tampilkanDiagramSemua(){
 
 // Variabel `map` sudah dibuat dan diinisialisasi
 // di file assets/js/map.js.
-// Jangan membuat L.map('map') lagi di file ini,
 // karena akan menyebabkan error:
 // "Map container is already initialized".
 // =======================
