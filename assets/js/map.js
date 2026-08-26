@@ -450,9 +450,3 @@ locateControl.onAdd = function() {
 
 locateControl.addTo(map);
 
-
-// =====================================================
-// LAYER TERPILIH
-// =====================================================
-
-var selectedLayer = null;
