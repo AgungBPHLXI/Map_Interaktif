@@ -4,196 +4,296 @@
 // =====================================================
 
 
-// =======================
-// BASEMAP
-// =======================
+// =====================================================
+// INISIALISASI PETA
+// =====================================================
 
-var map = L.map('map', {
+var map = L.map("map", {
     zoomControl: false
-}).setView([-3.3, 114.6], 7);
+}).setView(
+    MAP_CONFIG.center,
+    MAP_CONFIG.zoom
+);
 
+
+// =====================================================
+// TOMBOL ZOOM
+// =====================================================
 
 L.control.zoom({
-    position: 'topright'
+    position: "topright"
 }).addTo(map);
 
 
-// =======================
-// BASEMAP OSM & SATELIT
-// =======================
+// =====================================================
+// BASEMAP
+// =====================================================
 
 var osm = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
     {
-        attribution: '©OpenStreetMap ©Carto'
+        attribution: "© OpenStreetMap © CARTO"
     }
 );
 
 
 var satellite = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     {
-        attribution: 'Tiles © Esri'
+        attribution: "Tiles © Esri"
     }
 );
 
 
-// DEFAULT TAMPIL OSM
+// =====================================================
+// DEFAULT BASEMAP
+// =====================================================
 
 osm.addTo(map);
 
 
-// =======================
-// MODE STYLE OTOMATIS
-// =======================
-
-
-// Mode Transparan (Satelit)
-
-function setTransparentMode() {
-
-    pbphLayer.eachLayer(function(layer) {
-
-        layer.setStyle({
-            weight: 1,
-            fillOpacity: 0.12,
-            opacity: 0.6
-        });
-
-    });
-
-
-    kawasanLayer.eachLayer(function(layer) {
-
-        layer.setStyle({
-            weight: 1,
-            fillOpacity: 0.12,
-            opacity: 0.6
-        });
-
-    });
-
-}
-
-
-// Mode Normal (OSM)
-
-function setNormalMode() {
-
-    pbphLayer.eachLayer(function(layer) {
-
-        layer.setStyle(stylePBPH());
-
-    });
-
-
-    kawasanLayer.eachLayer(function(layer) {
-
-        layer.setStyle(
-            styleKawasan(layer.feature)
-        );
-
-    });
-
-}
-
-
-// =======================
-// TOGGLE SATELIT
-// =======================
+// =====================================================
+// STATUS BASEMAP
+// =====================================================
 
 var isSatellite = false;
 
 
+// =====================================================
+// MODE TRANSPARAN
+// =====================================================
+
+function setTransparentMode() {
+
+    if (
+        typeof pbphLayer !== "undefined" &&
+        pbphLayer
+    ) {
+
+        pbphLayer.eachLayer(function(layer) {
+
+            layer.setStyle({
+                weight: 1,
+                fillOpacity: 0.12,
+                opacity: 0.6
+            });
+
+        });
+
+    }
+
+
+    if (
+        typeof kawasanLayer !== "undefined" &&
+        kawasanLayer
+    ) {
+
+        kawasanLayer.eachLayer(function(layer) {
+
+            layer.setStyle({
+                weight: 1,
+                fillOpacity: 0.12,
+                opacity: 0.6
+            });
+
+        });
+
+    }
+
+}
+
+
+// =====================================================
+// MODE NORMAL
+// =====================================================
+
+function setNormalMode() {
+
+    if (
+        typeof pbphLayer !== "undefined" &&
+        pbphLayer &&
+        typeof stylePBPH === "function"
+    ) {
+
+        pbphLayer.eachLayer(function(layer) {
+
+            layer.setStyle(
+                stylePBPH(layer.feature)
+            );
+
+        });
+
+    }
+
+
+    if (
+        typeof kawasanLayer !== "undefined" &&
+        kawasanLayer &&
+        typeof styleKawasan === "function"
+    ) {
+
+        kawasanLayer.eachLayer(function(layer) {
+
+            layer.setStyle(
+                styleKawasan(layer.feature)
+            );
+
+        });
+
+    }
+
+}
+
+
+// =====================================================
+// TOGGLE CITRA SATELIT
+// HANYA SATU TOMBOL
+// =====================================================
+
 var satelliteControl = L.control({
-    position: 'topright'
+    position: "topright"
 });
 
 
-satelliteControl.onAdd = function(map) {
+satelliteControl.onAdd = function() {
 
-    var btn = L.DomUtil.create('button');
+    var container = L.DomUtil.create(
+        "div",
+        "leaflet-bar leaflet-control"
+    );
+
+
+    var btn = L.DomUtil.create(
+        "a",
+        "",
+        container
+    );
 
 
     btn.innerHTML = "🛰️";
 
+    btn.href = "#";
+
     btn.title = "Toggle Citra Satelit";
 
-
-    btn.style.background = "white";
 
     btn.style.width = "38px";
 
     btn.style.height = "38px";
 
-    btn.style.border = "2px solid #ccc";
+    btn.style.lineHeight = "38px";
 
-    btn.style.borderRadius = "8px";
-
-    btn.style.cursor = "pointer";
+    btn.style.textAlign = "center";
 
     btn.style.fontSize = "18px";
 
-    btn.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
+    btn.style.cursor = "pointer";
 
 
-    btn.onclick = function(e) {
+    L.DomEvent.disableClickPropagation(container);
 
-        L.DomEvent.stopPropagation(e);
-
-
-        if (!isSatellite) {
-
-            map.removeLayer(osm);
-
-            satellite.addTo(map);
+    L.DomEvent.disableScrollPropagation(container);
 
 
-            btn.style.background = "#1565c0";
+    L.DomEvent.on(
+        btn,
+        "click",
+        function(e) {
 
-            btn.style.color = "white";
-
-
-            setTransparentMode();
-
-        } else {
-
-            map.removeLayer(satellite);
-
-            osm.addTo(map);
+            L.DomEvent.preventDefault(e);
 
 
-            btn.style.background = "white";
+            // =========================
+            // AKTIFKAN SATELIT
+            // =========================
 
-            btn.style.color = "black";
+            if (!isSatellite) {
+
+                if (map.hasLayer(osm)) {
+
+                    map.removeLayer(osm);
+
+                }
 
 
-            setNormalMode();
+                if (!map.hasLayer(satellite)) {
+
+                    satellite.addTo(map);
+
+                }
+
+
+                btn.style.background = "#1565c0";
+
+                btn.style.color = "white";
+
+
+                setTransparentMode();
+
+
+                isSatellite = true;
+
+            }
+
+
+            // =========================
+            // KEMBALI KE BASEMAP NORMAL
+            // =========================
+
+            else {
+
+                if (map.hasLayer(satellite)) {
+
+                    map.removeLayer(satellite);
+
+                }
+
+
+                if (!map.hasLayer(osm)) {
+
+                    osm.addTo(map);
+
+                }
+
+
+                btn.style.background = "white";
+
+                btn.style.color = "black";
+
+
+                setNormalMode();
+
+
+                isSatellite = false;
+
+            }
 
         }
+    );
 
 
-        isSatellite = !isSatellite;
-
-    };
-
-
-    return btn;
+    return container;
 
 };
 
 
+// TAMBAHKAN CONTROL SEKALI SAJA
+
 satelliteControl.addTo(map);
 
 
-// =======================
+// =====================================================
 // FITUR POSISI SAYA
-// =======================
+// =====================================================
 
 var markerLokasi = null;
 
 var circleLokasi = null;
 
+
+// =====================================================
+// LOKASI BERHASIL DITEMUKAN
+// =====================================================
 
 function onLocationFound(e) {
 
@@ -204,15 +304,23 @@ function onLocationFound(e) {
 
         map.removeLayer(markerLokasi);
 
+    }
+
+
+    if (circleLokasi) {
+
         map.removeLayer(circleLokasi);
 
     }
 
 
-    markerLokasi = L.marker(e.latlng)
+    markerLokasi = L.marker(
+        e.latlng
+    )
         .addTo(map)
         .bindPopup(
-            "📍 Anda berada di sini<br>Akurasi: " +
+            "📍 Anda berada di sini<br>" +
+            "Akurasi: " +
             Math.round(radius) +
             " meter"
         )
@@ -221,8 +329,8 @@ function onLocationFound(e) {
 
     circleLokasi = L.circle(
         e.latlng,
-        radius,
         {
+            radius: radius,
             color: "#136AEC",
             fillColor: "#136AEC",
             fillOpacity: 0.15
@@ -230,10 +338,17 @@ function onLocationFound(e) {
     ).addTo(map);
 
 
-    map.flyTo(e.latlng, 15);
+    map.flyTo(
+        e.latlng,
+        15
+    );
 
 }
 
+
+// =====================================================
+// GAGAL MENDETEKSI LOKASI
+// =====================================================
 
 function onLocationError(e) {
 
@@ -245,57 +360,90 @@ function onLocationError(e) {
 }
 
 
+// =====================================================
+// EVENT LOKASI
+// =====================================================
+
 map.on(
-    'locationfound',
+    "locationfound",
     onLocationFound
 );
 
 
 map.on(
-    'locationerror',
+    "locationerror",
     onLocationError
 );
 
 
-// =======================
+// =====================================================
 // TOMBOL POSISI SAYA
-// =======================
+// =====================================================
 
 var locateControl = L.control({
-    position: 'topright'
+    position: "topright"
 });
 
 
-locateControl.onAdd = function(map) {
+locateControl.onAdd = function() {
 
-    var btn = L.DomUtil.create('button');
+    var container = L.DomUtil.create(
+        "div",
+        "leaflet-bar leaflet-control"
+    );
+
+
+    var btn = L.DomUtil.create(
+        "a",
+        "",
+        container
+    );
 
 
     btn.innerHTML = "📍";
 
+    btn.href = "#";
 
-    btn.style.background = "white";
+    btn.title = "Posisi Saya";
 
-    btn.style.width = "34px";
 
-    btn.style.height = "34px";
+    btn.style.width = "38px";
 
-    btn.style.border = "2px solid #ccc";
+    btn.style.height = "38px";
+
+    btn.style.lineHeight = "38px";
+
+    btn.style.textAlign = "center";
+
+    btn.style.fontSize = "18px";
 
     btn.style.cursor = "pointer";
 
 
-    btn.onclick = function() {
+    L.DomEvent.disableClickPropagation(container);
 
-        map.locate({
-            setView: true,
-            maxZoom: 16
-        });
-
-    };
+    L.DomEvent.disableScrollPropagation(container);
 
 
-    return btn;
+    L.DomEvent.on(
+        btn,
+        "click",
+        function(e) {
+
+            L.DomEvent.preventDefault(e);
+
+
+            map.locate({
+                setView: true,
+                maxZoom: 16,
+                enableHighAccuracy: true
+            });
+
+        }
+    );
+
+
+    return container;
 
 };
 
@@ -303,8 +451,8 @@ locateControl.onAdd = function(map) {
 locateControl.addTo(map);
 
 
-// =======================
+// =====================================================
 // LAYER TERPILIH
-// =======================
+// =====================================================
 
 var selectedLayer = null;
