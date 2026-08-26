@@ -640,4 +640,66 @@ label{
     }
 
 }
+/* =====================================================
+   FIX LEAFLET CONTROL MOBILE SETELAH FILTER
+   ===================================================== */
+
+@media (max-width: 768px) {
+
+    /* Pastikan container peta berada di bawah sidebar */
+    #map {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        width: 100%;
+        height: 100dvh;
+
+        z-index: 1;
+    }
+
+
+    /* Pastikan kontrol Leaflet selalu di atas peta */
+    .leaflet-control-container {
+        position: absolute !important;
+
+        top: 0;
+        left: 0;
+
+        width: 100%;
+        height: 100%;
+
+        z-index: 2000 !important;
+
+        pointer-events: none;
+    }
+
+
+    /* Tombol Leaflet tetap bisa diklik */
+    .leaflet-control-container a,
+    .leaflet-control-container button {
+        pointer-events: auto;
+    }
+
+
+    .leaflet-top,
+    .leaflet-bottom {
+        z-index: 2001 !important;
+    }
+
+
+    /* Sidebar harus berada di atas kontrol saat terbuka */
+    #sidebar {
+        z-index: 3000 !important;
+    }
+
+
+    /* Toggle sidebar paling atas */
+    #toggleSidebar {
+        z-index: 4000 !important;
+    }
+
+}
 </style>
