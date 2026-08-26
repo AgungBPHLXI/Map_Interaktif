@@ -609,4 +609,35 @@ label{
     }
 
 }
+/* =====================================================
+   FIX KONTROL LEAFLET MOBILE
+   ===================================================== */
+
+@media (max-width: 768px) {
+
+    .leaflet-control-container {
+        z-index: 1500;
+    }
+
+
+    .leaflet-top,
+    .leaflet-bottom {
+        z-index: 1500;
+    }
+
+
+    /* Saat sidebar terbuka, kontrol berada di bawah sidebar */
+    #sidebar.active ~ .leaflet-control-container {
+        z-index: 1500;
+    }
+
+
+    /* Setelah sidebar ditutup, kontrol tetap terlihat */
+    .leaflet-top.leaflet-right {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+}
 </style>
