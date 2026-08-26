@@ -1763,28 +1763,6 @@ document.getElementById("uploadShp")
     reader.readAsArrayBuffer(file);
 
 });
-// =====================================================
-// FIX MOBILE SETELAH MEMILIH FILTER
-// =====================================================
-
-function refreshMapMobile() {
-
-    if (window.innerWidth <= 768) {
-
-        setTimeout(function () {
-
-            if (typeof map !== "undefined" && map) {
-
-                map.invalidateSize(true);
-
-            }
-
-        }, 350);
-
-    }
-
-}
-
 
 // =====================================================
 // CLOSE SIDEBAR SETELAH MEMILIH FILTER MOBILE
@@ -1818,7 +1796,7 @@ $(document).on(
     }
 );
 // =====================================================
-// FIX KONTROL LEAFLET SETELAH FILTER MOBILE
+// FIX FILTER MOBILE & KONTROL LEAFLET
 // =====================================================
 
 $(document).on(
@@ -1830,11 +1808,17 @@ $(document).on(
 
             setTimeout(function () {
 
+                // Tutup sidebar mobile
+                const sidebar = document.getElementById("sidebar");
+
+                if (sidebar) {
+                    sidebar.classList.remove("active");
+                }
+
+
+                // Refresh ukuran peta Leaflet
                 if (typeof map !== "undefined" && map) {
-
-                    // Paksa Leaflet menghitung ulang ukuran peta
                     map.invalidateSize(true);
-
                 }
 
 
@@ -1847,15 +1831,17 @@ $(document).on(
                     controls.style.display = "none";
 
                     setTimeout(function () {
-
                         controls.style.display = "";
-
                     }, 50);
 
                 }
 
             }, 300);
 
+        }
+
+    }
+);
         }
 
     }
