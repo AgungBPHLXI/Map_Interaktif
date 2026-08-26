@@ -329,5 +329,284 @@ label{
         padding:10px;
     }
 }
+/* =====================================================
+   TAHAP 9 - RESPONSIVE / MOBILE
+   ===================================================== */
 
+
+/* =========================
+   MOBILE & TABLET
+========================= */
+
+@media (max-width: 768px) {
+
+    /* =========================
+       PETA
+    ========================= */
+
+    #map {
+        width: 100%;
+        height: 100vh;
+    }
+
+
+    /* =========================
+       SIDEBAR
+    ========================= */
+
+    #sidebar {
+        width: min(88vw, 380px);
+        max-width: 380px;
+
+        height: 100vh;
+
+        position: fixed;
+
+        top: 0;
+        left: -100%;
+
+        overflow-y: auto;
+
+        border-radius: 0;
+
+        background: white;
+
+        z-index: 3000;
+
+        transition: left 0.3s ease;
+    }
+
+
+    #sidebar.active {
+        left: 0;
+    }
+
+
+    /* =========================
+       TOMBOL MENU
+    ========================= */
+
+    #toggleSidebar {
+        position: fixed;
+
+        top: 15px;
+        left: 15px;
+
+        width: 42px;
+        height: 42px;
+
+        font-size: 20px;
+
+        z-index: 3100;
+    }
+
+
+    /* Saat sidebar terbuka,
+       tombol tetap terlihat */
+    #sidebar.active ~ #toggleSidebar {
+        left: calc(min(88vw, 380px) - 55px);
+    }
+
+
+    /* =========================
+       SIDEBAR HEADER
+    ========================= */
+
+    .sidebar-header {
+        padding-top: 15px;
+    }
+
+
+    .logo-area {
+        align-items: center;
+    }
+
+
+    .logo-area img {
+        max-width: 55px;
+        height: auto;
+    }
+
+
+    .main-title {
+        font-size: 17px;
+    }
+
+
+    .sub-title {
+        font-size: 12px;
+    }
+
+
+    /* =========================
+       MENU
+    ========================= */
+
+    .menu-parent {
+        font-size: 16px;
+        padding: 12px;
+    }
+
+
+    .menu-child div {
+        font-size: 15px;
+        padding: 10px;
+    }
+
+
+    /* =========================
+       FILTER
+    ========================= */
+
+    #sidebar label {
+        display: block;
+        margin-top: 12px;
+    }
+
+
+    /* Select2 harus penuh */
+    .select2-container {
+        width: 100% !important;
+    }
+
+
+    .select2-container--default
+    .select2-selection--multiple {
+        min-height: 40px;
+    }
+
+
+    /* Dropdown Select2 di atas sidebar */
+    .select2-container--open {
+        z-index: 5000;
+    }
+
+
+    /* =========================
+       UPLOAD SHP
+    ========================= */
+
+    #uploadShp {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+
+    /* =========================
+       CHART OVERLAY
+    ========================= */
+
+    #chartOverlay {
+        position: fixed;
+
+        width: 100vw;
+        height: 100vh;
+
+        max-width: none;
+        max-height: none;
+
+        top: 0 !important;
+        left: 0 !important;
+
+        transform: none !important;
+
+        margin: 0;
+
+        border-radius: 0;
+
+        padding: 55px 15px 15px 15px;
+
+        box-sizing: border-box;
+
+        z-index: 6000;
+
+        overflow: auto;
+    }
+
+
+    #chartOverlay canvas {
+        width: 100% !important;
+
+        height: auto !important;
+
+        max-height: calc(100vh - 100px);
+    }
+
+
+    #btnCloseChart {
+        position: fixed;
+
+        top: 15px;
+        right: 15px;
+
+        z-index: 6100;
+    }
+
+
+    /* =========================
+       LEAFLET CONTROL
+    ========================= */
+
+    .leaflet-top.leaflet-right {
+        top: 65px;
+    }
+
+
+    .leaflet-control {
+        max-width: 45px;
+    }
+
+
+    /* Popup tidak terlalu lebar */
+    .leaflet-popup-content {
+        max-width: 250px;
+        font-size: 13px;
+    }
+
+}
+
+
+/* =====================================================
+   LAYAR KECIL
+   ===================================================== */
+
+@media (max-width: 480px) {
+
+    #sidebar {
+        width: 92vw;
+        max-width: none;
+    }
+
+
+    #sidebar.active ~ #toggleSidebar {
+        left: calc(92vw - 55px);
+    }
+
+
+    .main-title {
+        font-size: 16px;
+    }
+
+
+    .sub-title {
+        font-size: 11px;
+    }
+
+
+    .menu-parent {
+        font-size: 15px;
+    }
+
+
+    .menu-child div {
+        font-size: 14px;
+    }
+
+
+    #chartOverlay {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+}
 </style>
