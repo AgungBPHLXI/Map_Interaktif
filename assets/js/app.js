@@ -1740,4 +1740,57 @@ document.getElementById("uploadShp")
     reader.readAsArrayBuffer(file);
 
 });
+// =====================================================
+// FIX MOBILE SETELAH MEMILIH FILTER
+// =====================================================
 
+function refreshMapMobile() {
+
+    if (window.innerWidth <= 768) {
+
+        setTimeout(function () {
+
+            if (typeof map !== "undefined" && map) {
+
+                map.invalidateSize(true);
+
+            }
+
+        }, 350);
+
+    }
+
+}
+
+
+// =====================================================
+// CLOSE SIDEBAR SETELAH MEMILIH FILTER MOBILE
+// =====================================================
+
+$(document).on(
+    "select2:select select2:unselect select2:clear",
+    "#filterKabupaten, #filterF2025, #filterNama, #filterIndustri",
+    function () {
+
+        if (window.innerWidth <= 768) {
+
+            setTimeout(function () {
+
+                var sidebar =
+                    document.getElementById("sidebar");
+
+                if (sidebar) {
+
+                    sidebar.classList.remove("active");
+
+                }
+
+
+                refreshMapMobile();
+
+            }, 200);
+
+        }
+
+    }
+);
