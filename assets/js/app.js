@@ -1,4 +1,4 @@
-<script>
+
 // =======================
 // LOAD DATA LUAS KABUPATEN
 // =======================
@@ -1775,4 +1775,4 @@ document.getElementById("uploadShp")
     reader.readAsArrayBuffer(file);
 
 });
-</script>
+
