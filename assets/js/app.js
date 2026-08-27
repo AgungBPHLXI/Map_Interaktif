@@ -1187,6 +1187,12 @@ kawasanLayer.addData(dataSL);
     // reload filter
     loadKategoriOptions();
 
+    // Tandai seluruh layer kawasan sudah selesai dimuat
+kawasanLoaded = true;
+
+// Cek apakah semua data sudah siap untuk rekap
+cekDanHitungRekapHotspot();
+
 })
 
 .catch(err=>{
