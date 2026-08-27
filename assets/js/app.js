@@ -149,7 +149,238 @@ function tampilkanDiagramSemua(){
 // =======================
 
 var selectedLayer = null;
+// =====================================================
+// HOTSPOT SIPONGI - KALIMANTAN SELATAN
+// =====================================================
 
+// Group layer hotspot
+var hotspotSipongiLayer = L.layerGroup().addTo(map);
+
+// URL API SiPongi
+const SIPONGI_HOTSPOT_URL =
+    "https://opsroom.sipongidata.my.id/api/opsroom/indoHotspot" +
+    "?wilayah=IN" +
+    "&filterperiode=false" +
+    "&from=" +
+    "&to=" +
+    "&late=24" +
+    "&satelit[]=NASA-MODIS" +
+    "&satelit[]=NASA-SNPP" +
+    "&satelit[]=NASA-NOAA20" +
+    "&confidence[]=low" +
+    "&confidence[]=medium" +
+    "&confidence[]=high" +
+    "&provinsi=12" +
+    "&kabkota=";
+
+
+// =======================
+// LOAD HOTSPOT SIPONGI
+// =======================
+
+function loadHotspotSipongi() {
+
+    console.log("Memuat Hotspot SiPongi Kalimantan Selatan...");
+
+    // Bersihkan hotspot lama
+    hotspotSipongiLayer.clearLayers();
+
+    fetch(SIPONGI_HOTSPOT_URL)
+
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error(
+                    "HTTP Error: " + response.status
+                );
+            }
+
+            return response.json();
+        })
+
+        .then(data => {
+
+            console.log("Data Hotspot SiPongi:", data);
+
+            // Pastikan struktur FeatureCollection
+            if (
+                !data ||
+                !data.features ||
+                !Array.isArray(data.features)
+            ) {
+
+                console.warn(
+                    "Format data hotspot tidak sesuai."
+                );
+
+                return;
+            }
+
+
+            // Tambahkan GeoJSON ke layer
+            L.geoJSON(data, {
+
+                pointToLayer: function(feature, latlng) {
+
+                    const props =
+                        feature.properties || {};
+
+                    const confidence =
+                        String(
+                            props.confidence_level || ""
+                        ).toLowerCase();
+
+
+                    // WARNA BERDASARKAN CONFIDENCE
+
+                    let warna = "#f1c40f";
+
+                    // LOW
+                    if (confidence === "low") {
+
+                        warna = "#7cb342";
+
+                    }
+
+                    // MEDIUM
+                    else if (confidence === "medium") {
+
+                        warna = "#fbc02d";
+
+                    }
+
+                    // HIGH
+                    else if (confidence === "high") {
+
+                        warna = "#e53935";
+
+                    }
+
+
+                    return L.circleMarker(
+                        latlng,
+                        {
+                            radius: 7,
+
+                            color: warna,
+
+                            weight: 2,
+
+                            fillColor: warna,
+
+                            fillOpacity: 0.85
+                        }
+                    );
+
+                },
+
+
+                // =======================
+                // POPUP INFORMASI
+                // =======================
+
+                onEachFeature: function(
+                    feature,
+                    layer
+                ) {
+
+                    const p =
+                        feature.properties || {};
+
+
+                    let html = `
+
+                        <div style="
+                            min-width:220px;
+                            font-size:13px;
+                            line-height:1.6;
+                        ">
+
+                            <div style="
+                                font-weight:bold;
+                                font-size:15px;
+                                margin-bottom:8px;
+                                color:#1b5e20;
+                            ">
+                                🔥 HOTSPOT SIPONGI
+                            </div>
+
+                            <b>Provinsi:</b>
+                            ${p.nama_provinsi || "-"}<br>
+
+                            <b>Kabupaten:</b>
+                            ${p.kabkota || "-"}<br>
+
+                            <b>Kecamatan:</b>
+                            ${p.kecamatan || "-"}<br>
+
+                            <b>Desa:</b>
+                            ${p.desa || "-"}<br>
+
+                            <hr>
+
+                            <b>Sumber:</b>
+                            ${p.sumber || "-"}<br>
+
+                            <b>Confidence:</b>
+                            ${p.confidence_level || "-"}<br>
+
+                            <b>Nilai Confidence:</b>
+                            ${p.confidence || "-"}<br>
+
+                            <b>Tanggal:</b>
+                            ${p.date_hotspot || "-"}<br>
+
+                            <b>Waktu:</b>
+                            ${p.hs_date || "-"}<br>
+
+                            <hr>
+
+                            <b>Latitude:</b>
+                            ${p.lat || "-"}<br>
+
+                            <b>Longitude:</b>
+                            ${p.long || "-"}
+
+                        </div>
+
+                    `;
+
+
+                    layer.bindPopup(html);
+
+
+                    // Tooltip saat hover
+                    layer.bindTooltip(
+                        `${p.kabkota || "Hotspot"} - ${p.confidence_level || ""}`,
+                        {
+                            direction: "top",
+                            offset: [0, -8]
+                        }
+                    );
+
+                }
+
+            }).addTo(hotspotSipongiLayer);
+
+
+            console.log(
+                "Jumlah hotspot:",
+                data.features.length
+            );
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Gagal memuat Hotspot SiPongi:",
+                error
+            );
+
+        });
+
+}
 
 // =======================
 // LAYER UPLOAD SHP
