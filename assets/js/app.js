@@ -1102,7 +1102,7 @@ function loadPenanaman(){
         chartInstance.destroy();
     }
 
-    const spreadsheetID = CONFIG.spreadsheetPenanaman;
+    const spreadsheetId = CONFIG.spreadsheetPenanaman;
     const sheetName = "Penanaman";
 
     fetch(`${API_CONFIG.baseURL}/${spreadsheetId}/${sheetName}`)
