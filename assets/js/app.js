@@ -1284,111 +1284,383 @@ function loadKawasan(){
 // =======================
 // LOAD PRODUKSI KAYU BULAT
 // =======================
- function loadProduksi(){
+function loadProduksi() {
 
+    // Tampilkan overlay chart
     document.getElementById("chartOverlay").style.display = "block";
 
+    // Sembunyikan chart sebelumnya
     document.getElementById("chartSemua").style.display = "none";
     document.getElementById("chartKawasan").style.display = "block";
 
-    let oldTotal = document.getElementById("totalBox");
-    if(oldTotal) oldTotal.remove();
-
-    if(chartInstance){
-        chartInstance.destroy();
+    // Hapus total box lama
+    const oldTotal = document.getElementById("totalBox");
+    if (oldTotal) {
+        oldTotal.remove();
     }
 
+    // Hapus chart lama
+    if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+    }
+
+    // =======================
+    // KONFIGURASI SPREADSHEET
+    // =======================
     const spreadsheetId = CONFIG.spreadsheetProduksi;
     const sheetName = "Produksi Kayu Bulat";
 
-    const url = `${API_CONFIG.baseURL}/${spreadsheetId}/${encodeURIComponent(sheetName)}`;
+    // Encode nama sheet agar aman
+    const url =
+        `${API_CONFIG.baseURL}/${spreadsheetId}/${encodeURIComponent(sheetName)}`;
+
     console.log("URL PRODUKSI:", url);
+
+    // =======================
+    // AMBIL DATA
+    // =======================
     fetch(url)
-    .then(res => res.json())
-    .then(data => {
+        .then(res => {
 
-        if(!Array.isArray(data) || data.length === 0){
-            alert("Data Produksi tidak terbaca.");
-            return;
-        }
-
-       const firstData = data.find(row => row["Periode"] && row["Periode"] !== "");
-       const periode = firstData ? firstData["Periode"] : "";
-document.getElementById("chartOverlay").insertAdjacentHTML(
-    "afterbegin",
-    `<div id="totalBox" 
-        style="background:linear-gradient(90deg,#2e7d32,#1b5e20);
-               color:white;
-               padding:10px;
-               border-radius:8px;
-               margin-bottom:10px;
-               font-weight:bold;
-               font-size:15px;
-               text-align:center">
-        📦 PRODUKSI KAYU BULAT PBPH PERIODE ${periode}
-    </div>`
-);
-
-      const labels = data.map(r => r["Nama PBPH"]);
-        
-const rencana = data.map(r =>
-    parseAngka(r["Rencana"])
-);
-
-const realisasi = data.map(r =>
-    parseAngka(r["Realisasi"])
-);
-
-        let totalRencana = rencana.reduce((a,b)=>a+b,0);
-        let totalRealisasi = realisasi.reduce((a,b)=>a+b,0);
-
-        labels.push("TOTAL");
-        rencana.push(totalRencana);
-        realisasi.push(totalRealisasi);
-
-        chartInstance = new Chart(
-            document.getElementById("chartKawasan"),
-            {
-                type:'bar',
-                data:{
-                    labels: labels,
-                    datasets:[
-                        {
-                            label:'Rencana Volume (m³)',
-                            data:rencana
-                        },
-                        {
-                            label:'Realisasi Volume (m³)',
-                            data:realisasi
-                        }
-                    ]
-                },
-                options:{
-                    responsive:true,
-                    maintainAspectRatio:false,
-                    plugins:{
-                        legend:{ position:'top' }
-                    },
-                    scales:{
-                        x:{
-                            ticks:{
-                                maxRotation:45,
-                                minRotation:45,
-                                autoSkip:false
-                            }
-                        },
-                        y:{
-                            beginAtZero:true
-                        }
-                    }
-                }
+            if (!res.ok) {
+                throw new Error(
+                    `Gagal mengambil data. Status: ${res.status}`
+                );
             }
-        );
 
-    })
-    .catch(err=>{
-        console.log("Gagal ambil data Produksi:", err);
-    });
+            return res.json();
+        })
+
+        .then(data => {
+
+            console.log("DATA PRODUKSI:", data);
+
+            // Validasi data
+            if (!Array.isArray(data) || data.length === 0) {
+
+                alert("Data Produksi tidak terbaca.");
+
+                document.getElementById("chartOverlay").style.display = "none";
+
+                return;
+            }
+
+            // =======================
+            // AMBIL PERIODE
+            // =======================
+            const firstData = data.find(
+                row => row["Periode"] && row["Periode"] !== ""
+            );
+
+            const periode = firstData
+                ? firstData["Periode"]
+                : "";
+
+            // =======================
+            // DATA GRAFIK
+            // =======================
+            const labels = data.map(
+                r => r["Nama PBPH"] || "-"
+            );
+
+            const rencana = data.map(
+                r => parseAngka(r["Rencana"])
+            );
+
+            const realisasi = data.map(
+                r => parseAngka(r["Realisasi"])
+            );
+
+            // =======================
+            // HITUNG TOTAL
+            // =======================
+            const totalRencana = rencana.reduce(
+                (a, b) => a + b,
+                0
+            );
+
+            const totalRealisasi = realisasi.reduce(
+                (a, b) => a + b,
+                0
+            );
+
+            // =======================
+            // HEADER PRODUKSI
+            // =======================
+            document
+                .getElementById("chartOverlay")
+                .insertAdjacentHTML(
+                    "afterbegin",
+                    `
+                    <div id="totalBox"
+                        style="
+                            background:linear-gradient(
+                                90deg,
+                                #2e7d32,
+                                #1b5e20
+                            );
+                            color:white;
+                            padding:12px 15px;
+                            border-radius:8px;
+                            margin-bottom:10px;
+                        "
+                    >
+
+                        <div
+                            style="
+                                font-weight:bold;
+                                font-size:15px;
+                                text-align:center;
+                                margin-bottom:8px;
+                            "
+                        >
+                            📦 PRODUKSI KAYU BULAT PBPH
+                            PERIODE ${periode}
+                        </div>
+
+                        <div
+                            style="
+                                display:flex;
+                                justify-content:center;
+                                gap:30px;
+                                flex-wrap:wrap;
+                                font-size:13px;
+                                text-align:center;
+                            "
+                        >
+
+                            <div>
+                                <span style="opacity:.8">
+                                    TOTAL RENCANA
+                                </span>
+                                <br>
+
+                                <strong>
+                                    ${totalRencana.toLocaleString("id-ID")} m³
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span style="opacity:.8">
+                                    TOTAL REALISASI
+                                </span>
+                                <br>
+
+                                <strong>
+                                    ${totalRealisasi.toLocaleString("id-ID")} m³
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    `
+                );
+
+            // =======================
+            // TAMBAHKAN TOTAL KE GRAFIK
+            // =======================
+            labels.push("TOTAL");
+
+            rencana.push(totalRencana);
+
+            realisasi.push(totalRealisasi);
+
+            // =======================
+            // BUAT CHART
+            // =======================
+            chartInstance = new Chart(
+                document.getElementById("chartKawasan"),
+                {
+
+                    type: "bar",
+
+                    data: {
+
+                        labels: labels,
+
+                        datasets: [
+
+                            // =======================
+                            // RENCANA
+                            // =======================
+                            {
+                                label: "Rencana Volume (m³)",
+
+                                data: rencana,
+
+                                backgroundColor: labels.map(
+                                    (_, index) =>
+                                        index === labels.length - 1
+                                            ? "rgba(33, 150, 243, 0.90)"
+                                            : "rgba(100, 149, 237, 0.55)"
+                                ),
+
+                                borderColor: labels.map(
+                                    (_, index) =>
+                                        index === labels.length - 1
+                                            ? "rgba(25, 118, 210, 1)"
+                                            : "rgba(70, 130, 180, 1)"
+                                ),
+
+                                borderWidth: 1
+                            },
+
+                            // =======================
+                            // REALISASI
+                            // =======================
+                            {
+                                label: "Realisasi Volume (m³)",
+
+                                data: realisasi,
+
+                                backgroundColor: labels.map(
+                                    (_, index) =>
+                                        index === labels.length - 1
+                                            ? "rgba(244, 67, 54, 0.90)"
+                                            : "rgba(229, 115, 115, 0.55)"
+                                ),
+
+                                borderColor: labels.map(
+                                    (_, index) =>
+                                        index === labels.length - 1
+                                            ? "rgba(198, 40, 40, 1)"
+                                            : "rgba(198, 40, 40, 0.8)"
+                                ),
+
+                                borderWidth: 1
+                            }
+
+                        ]
+                    },
+
+                    // =======================
+                    // PENGATURAN CHART
+                    // =======================
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            // =======================
+                            // LEGEND
+                            // =======================
+                            legend: {
+
+                                position: "top",
+
+                                labels: {
+
+                                    font: {
+                                        size: 12
+                                    }
+
+                                }
+
+                            },
+
+                            // =======================
+                            // TOOLTIP
+                            // =======================
+                            tooltip: {
+
+                                callbacks: {
+
+                                    label: function (context) {
+
+                                        const value =
+                                            context.raw || 0;
+
+                                        return (
+                                            context.dataset.label +
+                                            ": " +
+                                            Number(value)
+                                                .toLocaleString("id-ID") +
+                                            " m³"
+                                        );
+
+                                    }
+
+                                }
+
+                            }
+
+                        },
+
+                        scales: {
+
+                            // =======================
+                            // SUMBU X
+                            // =======================
+                            x: {
+
+                                ticks: {
+
+                                    maxRotation: 45,
+
+                                    minRotation: 45,
+
+                                    autoSkip: false,
+
+                                    font: {
+                                        size: 11
+                                    }
+
+                                }
+
+                            },
+
+                            // =======================
+                            // SUMBU Y
+                            // =======================
+                            y: {
+
+                                beginAtZero: true,
+
+                                ticks: {
+
+                                    callback: function (value) {
+
+                                        return Number(value)
+                                            .toLocaleString("id-ID");
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
+
+        })
+
+        // =======================
+        // ERROR HANDLER
+        // =======================
+        .catch(err => {
+
+            console.error(
+                "Gagal ambil data Produksi:",
+                err
+            );
+
+            alert(
+                "Gagal mengambil data Produksi Kayu Bulat."
+            );
+
+            document.getElementById("chartOverlay").style.display = "none";
+
+        });
+
 }
 // =======================
 // TOGGLE MENU SIDEBAR
