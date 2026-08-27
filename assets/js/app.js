@@ -1302,7 +1302,7 @@ function loadKawasan(){
     const sheetName = "Produksi Kayu Bulat";
 
     const url = `${API_CONFIG.baseURL}/${spreadsheetId}/${encodeURIComponent(sheetName)}`;
-
+    console.log("URL PRODUKSI:", url);
     fetch(url)
     .then(res => res.json())
     .then(data => {
