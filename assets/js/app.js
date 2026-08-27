@@ -1301,7 +1301,9 @@ function loadKawasan(){
     const spreadsheetId = CONFIG.spreadsheetProduksi;
     const sheetName = "Produksi Kayu Bulat";
 
-    fetch(`${API_CONFIG.baseURL}/${spreadsheetId}/${sheetName}`)
+    const url = `${API_CONFIG.baseURL}/${spreadsheetId}/${encodeURIComponent(sheetName)}`;
+
+    fetch(url)
     .then(res => res.json())
     .then(data => {
 
