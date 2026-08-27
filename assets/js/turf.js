@@ -1,4 +1,59 @@
 // =====================================================
+// STATUS DATA UNTUK REKAPITULASI HOTSPOT
+// =====================================================
+
+var hotspotSipongiLoaded = false;
+
+var pbphLoaded = false;
+
+var kawasanLoaded = false;
+
+
+// =====================================================
+// CEK SEMUA DATA SUDAH SIAP
+// =====================================================
+
+function cekDanHitungRekapHotspot() {
+
+    // Hotspot belum selesai dimuat
+    if (!hotspotSipongiLoaded) {
+
+        console.log("Menunggu data hotspot...");
+
+        return;
+    }
+
+
+    // PBPH belum selesai dimuat
+    if (!pbphLoaded) {
+
+        console.log("Menunggu layer PBPH...");
+
+        return;
+    }
+
+
+    // Kawasan hutan belum selesai dimuat
+    if (!kawasanLoaded) {
+
+        console.log("Menunggu layer Kawasan Hutan...");
+
+        return;
+    }
+
+
+    // Semua data sudah siap
+    console.log(
+        "Semua layer siap. Menghitung rekap hotspot..."
+    );
+
+
+    hitungRekapHotspot();
+
+}
+
+
+// =====================================================
 // TURF.JS
 // REKAPITULASI HOTSPOT SPASIAL
 // BPHL WILAYAH XI BANJARBARU
