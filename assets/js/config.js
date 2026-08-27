@@ -38,27 +38,3 @@ const API_CONFIG = {
     baseURL: "https://opensheet.elk.sh",
 
 };
-
-
-// =====================================================
-// KONFIGURASI PETA
-// =====================================================
-
-const MAP_CONFIG = {
-
-    center: [-3.3, 114.6],
-
-    zoom: 7,
-
-};
-
-
-// =====================================================
-// KONFIGURASI DATA LOKAL
-// =====================================================
-
-const DATA_CONFIG = {
-
-    luasKabupaten: "data_luas_kabupaten.json",
-
-};
