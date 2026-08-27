@@ -155,38 +155,6 @@ var selectedLayer = null;
 // HOTSPOT SIPONGI - KALIMANTAN SELATAN
 // =====================================================
 
-// Group layer hotspot
-var hotspotSipongiLayer = L.layerGroup();
-
-// Status data hotspot
-var hotspotSipongiLoaded = false;
-
-
-// =====================================================
-// URL API SIPONGI
-// =====================================================
-
-const SIPONGI_HOTSPOT_URL =
-    "https://opsroom.sipongidata.my.id/api/opsroom/indoHotspot" +
-    "?wilayah=IN" +
-    "&filterperiode=false" +
-    "&from=" +
-    "&to=" +
-    "&late=24" +
-    "&satelit[]=NASA-MODIS" +
-    "&satelit[]=NASA-SNPP" +
-    "&satelit[]=NASA-NOAA20" +
-    "&confidence[]=low" +
-    "&confidence[]=medium" +
-    "&confidence[]=high" +
-    "&provinsi=12" +
-    "&kabkota=";
-
-
-// =====================================================
-// HOTSPOT SIPONGI - KALIMANTAN SELATAN
-// =====================================================
-
 // Layer hotspot TIDAK langsung ditambahkan ke map
 var hotspotSipongiLayer = L.layerGroup();
 
