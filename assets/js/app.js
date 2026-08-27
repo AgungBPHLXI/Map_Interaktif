@@ -155,8 +155,34 @@ var selectedLayer = null;
 // HOTSPOT SIPONGI - KALIMANTAN SELATAN
 // =====================================================
 
-// Layer hotspot TIDAK langsung ditambahkan ke map
+
+// =====================================================
+// LAYER HOTSPOT
+// =====================================================
+
+// Layer utama
 var hotspotSipongiLayer = L.layerGroup();
+
+// Layer berdasarkan confidence
+var hotspotHighLayer = L.layerGroup();
+
+var hotspotMediumLayer = L.layerGroup();
+
+var hotspotLowLayer = L.layerGroup();
+
+
+// Masukkan layer confidence ke layer utama
+hotspotSipongiLayer.addLayer(
+    hotspotHighLayer
+);
+
+hotspotSipongiLayer.addLayer(
+    hotspotMediumLayer
+);
+
+hotspotSipongiLayer.addLayer(
+    hotspotLowLayer
+);
 
 
 // Status data hotspot
@@ -190,18 +216,29 @@ const SIPONGI_HOTSPOT_URL =
 
 function loadHotspotSipongi() {
 
-    console.log("Hotspot Karhutla Kalsel diklik");
+    console.log(
+        "Hotspot Karhutla Kalsel diklik"
+    );
 
 
     // ==========================================
-    // JIKA LAYER SUDAH TAMPIL → SEMBUNYIKAN
+    // JIKA HOTSPOT SUDAH TAMPIL
+    // SEMBUNYIKAN
     // ==========================================
 
-    if (map.hasLayer(hotspotSipongiLayer)) {
+    if (
+        map.hasLayer(
+            hotspotSipongiLayer
+        )
+    ) {
 
-        map.removeLayer(hotspotSipongiLayer);
+        map.removeLayer(
+            hotspotSipongiLayer
+        );
 
-        console.log("Hotspot disembunyikan");
+        console.log(
+            "Hotspot disembunyikan"
+        );
 
         return;
     }
@@ -209,54 +246,74 @@ function loadHotspotSipongi() {
 
     // ==========================================
     // JIKA DATA SUDAH PERNAH DIMUAT
-    // TAMPILKAN TANPA DOWNLOAD ULANG
+    // TAMPILKAN KEMBALI
     // ==========================================
 
-    if (hotspotSipongiLoaded) {
+    if (
+        hotspotSipongiLoaded
+    ) {
 
         hotspotSipongiLayer.addTo(map);
 
-        console.log("Hotspot ditampilkan kembali");
+
+        // Terapkan filter terakhir
+        updateHotspotFilter();
+
+
+        console.log(
+            "Hotspot ditampilkan kembali"
+        );
 
         return;
     }
 
 
     // ==========================================
-    // TAMPILKAN LAYER KOSONG DULU
+    // TAMPILKAN LAYER UTAMA
     // ==========================================
 
     hotspotSipongiLayer.addTo(map);
 
 
     console.log(
-        "Memuat data Hotspot SiPongi Kalimantan Selatan..."
+        "Memuat Hotspot SiPongi Kalimantan Selatan..."
     );
 
 
-    // Bersihkan layer
-    hotspotSipongiLayer.clearLayers();
+    // Bersihkan data lama
+    hotspotHighLayer.clearLayers();
+
+    hotspotMediumLayer.clearLayers();
+
+    hotspotLowLayer.clearLayers();
 
 
     // ==========================================
     // AMBIL DATA API
     // ==========================================
 
-    fetch(SIPONGI_HOTSPOT_URL)
+    fetch(
+        SIPONGI_HOTSPOT_URL
+    )
 
         .then(response => {
 
-            if (!response.ok) {
+            if (
+                !response.ok
+            ) {
 
                 throw new Error(
-                    "HTTP Error: " + response.status
+                    "HTTP Error: " +
+                    response.status
                 );
 
             }
 
+
             return response.json();
 
         })
+
 
         .then(data => {
 
@@ -266,10 +323,15 @@ function loadHotspotSipongi() {
             );
 
 
-            // Validasi data
+            // ==========================================
+            // VALIDASI DATA
+            // ==========================================
+
             if (
                 !data ||
-                !Array.isArray(data.features)
+                !Array.isArray(
+                    data.features
+                )
             ) {
 
                 throw new Error(
@@ -280,82 +342,119 @@ function loadHotspotSipongi() {
 
 
             // ==========================================
-            // TAMBAHKAN HOTSPOT KE PETA
+            // PROSES SETIAP HOTSPOT
             // ==========================================
 
-            L.geoJSON(data, {
+            data.features.forEach(
+                function(feature) {
 
-                pointToLayer: function(feature, latlng) {
 
-                    const props =
+                    const p =
                         feature.properties || {};
+
+
+                    // Pastikan geometry point
+                    if (
+                        !feature.geometry ||
+                        feature.geometry.type !== "Point"
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const coordinates =
+                        feature.geometry.coordinates;
+
+
+                    // GeoJSON:
+                    // [longitude, latitude]
+
+                    const longitude =
+                        coordinates[0];
+
+                    const latitude =
+                        coordinates[1];
 
 
                     const confidence =
                         String(
-                            props.confidence_level || ""
-                        ).toLowerCase();
+                            p.confidence_level || ""
+                        )
+                        .toLowerCase();
 
 
-                    let warna = "#fbc02d";
+                    let warna =
+                        "#fbc02d";
 
+
+                    // ======================================
+                    // WARNA HOTSPOT
+                    // ======================================
 
                     // LOW = HIJAU
-                    if (confidence === "low") {
+                    if (
+                        confidence === "low"
+                    ) {
 
-                        warna = "#43a047";
+                        warna =
+                            "#43a047";
 
                     }
 
 
                     // MEDIUM = KUNING
-                    else if (confidence === "medium") {
+                    else if (
+                        confidence === "medium"
+                    ) {
 
-                        warna = "#fbc02d";
+                        warna =
+                            "#fbc02d";
 
                     }
 
 
                     // HIGH = MERAH
-                    else if (confidence === "high") {
+                    else if (
+                        confidence === "high"
+                    ) {
 
-                        warna = "#e53935";
+                        warna =
+                            "#e53935";
 
                     }
 
 
-                    return L.circleMarker(
-                        latlng,
-                        {
+                    // ======================================
+                    // BUAT MARKER
+                    // ======================================
 
-                            radius: 7,
+                    const marker =
+                        L.circleMarker(
+                            [
+                                latitude,
+                                longitude
+                            ],
+                            {
 
-                            color: warna,
+                                radius: 7,
 
-                            weight: 2,
+                                color: warna,
 
-                            fillColor: warna,
+                                weight: 2,
 
-                            fillOpacity: 0.9
+                                fillColor: warna,
 
-                        }
-                    );
+                                fillOpacity: 0.9
 
-                },
+                            }
+                        );
 
 
-                // ==========================================
-                // POPUP HOTSPOT
-                // ==========================================
-
-                onEachFeature: function(
-                    feature,
-                    layer
-                ) {
-
-                    const p =
-                        feature.properties || {};
-
+                    // ======================================
+                    // POPUP
+                    // ======================================
 
                     const html = `
 
@@ -371,8 +470,11 @@ function loadHotspotSipongi() {
                                 margin-bottom:8px;
                                 color:#d32f2f;
                             ">
+
                                 🔥 HOTSPOT SIPONGI
+
                             </div>
+
 
                             <b>Provinsi:</b>
                             ${p.nama_provinsi || "-"}
@@ -391,6 +493,7 @@ function loadHotspotSipongi() {
                             <br>
 
                             <hr>
+
 
                             <b>Sumber:</b>
                             ${p.sumber || "-"}
@@ -414,25 +517,36 @@ function loadHotspotSipongi() {
 
                             <hr>
 
+
                             <b>Latitude:</b>
-                            ${p.lat || "-"}
+                            ${latitude}
                             <br>
 
                             <b>Longitude:</b>
-                            ${p.long || "-"}
+                            ${longitude}
 
                         </div>
 
                     `;
 
 
-                    layer.bindPopup(html);
+                    marker.bindPopup(
+                        html
+                    );
 
 
-                    // Tooltip
-                    layer.bindTooltip(
+                    // ======================================
+                    // TOOLTIP
+                    // ======================================
 
-                        `${p.kabkota || "Hotspot"} - ${p.confidence_level || ""}`,
+                    marker.bindTooltip(
+
+                        `
+                        🔥 ${p.kabkota || "Hotspot"}
+                        <br>
+                        Confidence:
+                        ${p.confidence_level || "-"}
+                        `,
 
                         {
 
@@ -446,21 +560,75 @@ function loadHotspotSipongi() {
 
                     );
 
+
+                    // ======================================
+                    // MASUKKAN KE LAYER SESUAI CONFIDENCE
+                    // ======================================
+
+                    if (
+                        confidence === "high"
+                    ) {
+
+                        hotspotHighLayer.addLayer(
+                            marker
+                        );
+
+                    }
+
+
+                    else if (
+                        confidence === "medium"
+                    ) {
+
+                        hotspotMediumLayer.addLayer(
+                            marker
+                        );
+
+                    }
+
+
+                    else {
+
+                        hotspotLowLayer.addLayer(
+                            marker
+                        );
+
+                    }
+
                 }
+            );
 
-            }).addTo(hotspotSipongiLayer);
 
+            // ==========================================
+            // DATA BERHASIL DIMUAT
+            // ==========================================
 
-            // Tandai bahwa data sudah dimuat
             hotspotSipongiLoaded = true;
 
 
+            // Terapkan filter checkbox
+            updateHotspotFilter();
+
+
             console.log(
-                "Jumlah hotspot:",
+                "================================"
+            );
+
+            console.log(
+                "HOTSPOT SIPONGI BERHASIL DIMUAT"
+            );
+
+            console.log(
+                "Total:",
                 data.features.length
             );
 
+            console.log(
+                "================================"
+            );
+
         })
+
 
         .catch(error => {
 
@@ -470,7 +638,6 @@ function loadHotspotSipongi() {
             );
 
 
-            // Jika gagal, hapus layer dari map
             map.removeLayer(
                 hotspotSipongiLayer
             );
@@ -481,6 +648,142 @@ function loadHotspotSipongi() {
             );
 
         });
+
+}
+
+
+// =====================================================
+// FILTER HOTSPOT HIGH / MEDIUM / LOW
+// =====================================================
+
+function updateHotspotFilter() {
+
+
+    // Jika data belum dimuat
+    if (
+        !hotspotSipongiLoaded
+    ) {
+
+        return;
+
+    }
+
+
+    // Ambil status checkbox
+
+    const showHigh =
+        document.getElementById(
+            "filterHotspotHigh"
+        ).checked;
+
+
+    const showMedium =
+        document.getElementById(
+            "filterHotspotMedium"
+        ).checked;
+
+
+    const showLow =
+        document.getElementById(
+            "filterHotspotLow"
+        ).checked;
+
+
+    // ==========================================
+    // FILTER HIGH
+    // ==========================================
+
+    if (showHigh) {
+
+        if (
+            !hotspotSipongiLayer.hasLayer(
+                hotspotHighLayer
+            )
+        ) {
+
+            hotspotSipongiLayer.addLayer(
+                hotspotHighLayer
+            );
+
+        }
+
+    }
+
+    else {
+
+        hotspotSipongiLayer.removeLayer(
+            hotspotHighLayer
+        );
+
+    }
+
+
+    // ==========================================
+    // FILTER MEDIUM
+    // ==========================================
+
+    if (showMedium) {
+
+        if (
+            !hotspotSipongiLayer.hasLayer(
+                hotspotMediumLayer
+            )
+        ) {
+
+            hotspotSipongiLayer.addLayer(
+                hotspotMediumLayer
+            );
+
+        }
+
+    }
+
+    else {
+
+        hotspotSipongiLayer.removeLayer(
+            hotspotMediumLayer
+        );
+
+    }
+
+
+    // ==========================================
+    // FILTER LOW
+    // ==========================================
+
+    if (showLow) {
+
+        if (
+            !hotspotSipongiLayer.hasLayer(
+                hotspotLowLayer
+            )
+        ) {
+
+            hotspotSipongiLayer.addLayer(
+                hotspotLowLayer
+            );
+
+        }
+
+    }
+
+    else {
+
+        hotspotSipongiLayer.removeLayer(
+            hotspotLowLayer
+        );
+
+    }
+
+
+    console.log(
+        "Filter Hotspot:",
+        {
+            high: showHigh,
+            medium: showMedium,
+            low: showLow
+        }
+    );
 
 }
 // =======================
