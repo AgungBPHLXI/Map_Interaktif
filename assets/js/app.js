@@ -1299,7 +1299,7 @@ function loadKawasan(){
     }
 
     const spreadsheetId = CONFIG.spreadsheetProduksi;
-    const sheetName = "Produksi%20Kayu%20Bulat";
+    const sheetName = "Produksi Kayu Bulat";
 
     fetch(`${API_CONFIG.baseURL}/${spreadsheetId}/${sheetName}`)
     .then(res => res.json())
