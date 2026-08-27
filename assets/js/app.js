@@ -328,26 +328,76 @@ function loadHotspotSipongi() {
 
     console.log("Data Hotspot SiPongi:", data);
 
+
+    // ==========================================
+    // VALIDASI DATA
+    // ==========================================
+
+    if (
+        !data ||
+        !Array.isArray(data.features)
+    ) {
+
+        throw new Error(
+            "Format data hotspot tidak sesuai"
+        );
+
+    }
+
+
+    // ==========================================
+    // CARI TANGGAL HOTSPOT TERBARU
+    // ==========================================
+
+    const daftarTanggal = data.features
+        .map(function(feature) {
+
+            return feature.properties?.date_hotspot;
+
+        })
+        .filter(function(tanggal) {
+
+            return tanggal;
+
+        });
+
+
+    const tanggalTerbaru = daftarTanggal
+        .sort()
+        .pop();
+
+
+    console.log(
+        "Tanggal hotspot terbaru:",
+        tanggalTerbaru
+    );
+
+
+    // ==========================================
+    // HANYA AMBIL HOTSPOT TANGGAL TERBARU
+    // ==========================================
+
+    data.features = data.features.filter(
+        function(feature) {
+
+            return (
+                feature.properties?.date_hotspot ===
+                tanggalTerbaru
+            );
+
+        }
+    );
+
+
+    console.log(
+        "Jumlah hotspot tanggal terbaru:",
+        data.features.length
+    );
+
+
     // Simpan data hotspot secara global
     hotspotSipongiData = data;
 
-
-            // ==========================================
-            // VALIDASI DATA
-            // ==========================================
-
-            if (
-                !data ||
-                !Array.isArray(
-                    data.features
-                )
-            ) {
-
-                throw new Error(
-                    "Format data hotspot tidak sesuai"
-                );
-
-            }
 
 
             // ==========================================
