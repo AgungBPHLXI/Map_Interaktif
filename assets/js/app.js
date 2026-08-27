@@ -459,15 +459,15 @@ function loadHotspotSipongi() {
                             ],
                             {
 
-                                radius: 7,
+                                radius: 5,
 
                                 color: warna,
 
-                                weight: 2,
+                                weight: 1,
 
                                 fillColor: warna,
 
-                                fillOpacity: 0.9
+                                fillOpacity: 0.85
 
                             }
                         );
