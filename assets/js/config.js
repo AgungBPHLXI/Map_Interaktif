@@ -20,7 +20,7 @@ const CONFIG = {
 
     // DATA PRODUKSI KAYU BULAT
     spreadsheetProduksi:
-        "11jcpMuO0i8Nh7cId1loAKYOHn6J9jRSNT3lzmT3t4VU",
+        "11jcpMuO0i8Nh7cId1loAKOHn6J9jRSNT3lzmT3t4VU",
 
     // DATA PRODUKSI INDUSTRI
     spreadsheetIndustri:
@@ -36,5 +36,29 @@ const CONFIG = {
 const API_CONFIG = {
 
     baseURL: "https://opensheet.elk.sh",
+
+};
+
+
+// =====================================================
+// KONFIGURASI PETA
+// =====================================================
+
+const MAP_CONFIG = {
+
+    center: [-3.3, 114.6],
+
+    zoom: 7,
+
+};
+
+
+// =====================================================
+// KONFIGURASI DATA LOKAL
+// =====================================================
+
+const DATA_CONFIG = {
+
+    luasKabupaten: "data_luas_kabupaten.json",
 
 };
