@@ -612,7 +612,7 @@ function loadHotspotSipongi() {
             // DATA BERHASIL DIMUAT
             // ==========================================
 
-           hotspotSipongiLoaded = true;
+          hotspotSipongiLoaded = true;
 
 
 // Terapkan filter checkbox
@@ -620,6 +620,7 @@ updateHotspotFilter();
 
 
 // Hitung rekapitulasi hotspot secara spasial
+// sekaligus dipisahkan menjadi High, Medium, dan Low
 hitungRekapHotspot();
 
 
