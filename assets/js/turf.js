@@ -399,44 +399,20 @@ kawasanLayer.eachLayer(
             var kategoriRekap = "";
 
 
-            // ---------------------------------------------
+             // ---------------------------------------------
             // PRIORITAS 1
             // HOTSPOT DI DALAM PBPH
             // ---------------------------------------------
-
-            if (
-                ditemukanPBPH
-            ) {
-
-
-                // PBPH + Kawasan Hutan
-
-                if (
-                    kategoriKawasan
-                ) {
-
-                    kategoriRekap =
-                        namaPBPH +
-                        " (" +
-                        kategoriKawasan +
-                        ")";
-
-                }
-
-
-                // PBPH tanpa kawasan
-
-                else {
-
-                    kategoriRekap =
-                        namaPBPH +
-                        " (PBPH)";
-
-                }
+            
+            if (ditemukanPBPH && kategoriKawasan) {
+            
+                kategoriRekap =
+                    namaPBPH +
+                    " (" +
+                    kategoriKawasan +
+                    ")";
 
             }
-
-
             // ---------------------------------------------
             // PRIORITAS 2
             // TIDAK ADA PBPH
