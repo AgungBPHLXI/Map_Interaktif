@@ -181,7 +181,116 @@
                     id="filterIndustri"
                     multiple
                 ></select>
+                <!-- =========================
+     FILTER HOTSPOT SIPONGI
+========================== -->
 
+<div id="hotspotFilterPanel"
+     style="
+        margin-top:15px;
+        padding:12px;
+        background:#f5f5f5;
+        border-radius:8px;
+        border:1px solid #ddd;
+     ">
+
+    <div style="
+        font-weight:bold;
+        margin-bottom:10px;
+    ">
+        🔥 Filter Hotspot
+    </div>
+
+
+    <!-- HIGH -->
+
+    <label style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+        margin-bottom:8px;
+        cursor:pointer;
+    ">
+
+        <input
+            type="checkbox"
+            id="filterHotspotHigh"
+            checked
+            onchange="updateHotspotFilter()"
+        >
+
+        <span style="
+            width:12px;
+            height:12px;
+            background:#e53935;
+            border-radius:50%;
+            display:inline-block;
+        "></span>
+
+        High
+
+    </label>
+
+
+    <!-- MEDIUM -->
+
+    <label style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+        margin-bottom:8px;
+        cursor:pointer;
+    ">
+
+        <input
+            type="checkbox"
+            id="filterHotspotMedium"
+            checked
+            onchange="updateHotspotFilter()"
+        >
+
+        <span style="
+            width:12px;
+            height:12px;
+            background:#fbc02d;
+            border-radius:50%;
+            display:inline-block;
+        "></span>
+
+        Medium
+
+    </label>
+
+
+    <!-- LOW -->
+
+    <label style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+        cursor:pointer;
+    ">
+
+        <input
+            type="checkbox"
+            id="filterHotspotLow"
+            checked
+            onchange="updateHotspotFilter()"
+        >
+
+        <span style="
+            width:12px;
+            height:12px;
+            background:#43a047;
+            border-radius:50%;
+            display:inline-block;
+        "></span>
+
+        Low
+
+    </label>
+
+</div>
 
                 <!-- =========================
                      UPLOAD SHAPEFILE
