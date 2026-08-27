@@ -4,7 +4,7 @@
 
 var dataLuasKab = {};
 
-fetch("data_luas_kabupaten.json")
+fetch(DATA_CONFIG.luasKabupaten)
 .then(res => res.json())
 .then(data => {
 
