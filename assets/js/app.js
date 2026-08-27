@@ -1205,7 +1205,7 @@ function loadKawasan(){
         chartInstance.destroy();
     }
 
-    const spreadsheetID = "1mXXOn8m0jDvTPOnRmSY4rE61u5mUuX21HLyxmtI8lmE";
+    const spreadsheetId = CONFIG.spreadsheetKawasan;
     const sheetName = "Kawasan";
 
     fetch(`${API_CONFIG.baseURL}/${spreadsheetId}/${sheetName}`)
@@ -1298,7 +1298,7 @@ function loadKawasan(){
         chartInstance.destroy();
     }
 
-    const spreadsheetID = "11jcpMuO0i8Nh7cId1loAKYOHn6J9jRSNT3lzmT3t4VU";
+    const spreadsheetId = CONFIG.spreadsheetProduksi;
     const sheetName = "Produksi%20Kayu%20Bulat";
 
     fetch(`${API_CONFIG.baseURL}/${spreadsheetId}/${sheetName}`)
@@ -1452,7 +1452,7 @@ function loadProduksiIndustri(){
 }
 function loadSheetData(sheetName){
 
-    const spreadsheetID = "1u9Wx1pUc2M-KzE9997_osg-8NHG5wH4etq4H9am7Rmc";
+    const spreadsheetId = CONFIG.spreadsheetIndustri;
     const url = `${API_CONFIG.baseURL}/${spreadsheetId}/${sheetName}`;
 
     fetch(url)
