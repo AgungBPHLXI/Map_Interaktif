@@ -20,11 +20,18 @@ const CONFIG = {
 
     // DATA PRODUKSI KAYU BULAT
     spreadsheetProduksi:
-    "11jcpMuO0i8Nh7cId1loAKYOHn6J9jRSNT3lzmT3t4VU",
-    
+        "11jcpMuO0i8Nh7cId1loAKYOHn6J9jRSNT3lzmT3t4VU",
+
     // DATA PRODUKSI INDUSTRI
     spreadsheetIndustri:
         "1u9Wx1pUc2M-KzE9997_osg-8NHG5wH4etq4H9am7Rmc",
+
+    // =================================================
+    // HOTSPOT SIPONGI - KALIMANTAN SELATAN
+    // 24 JAM TERAKHIR
+    // =================================================
+    sipongiHotspotURL:
+        "https://opsroom.sipongidata.my.id/api/opsroom/indoHotspot?wilayah=IN&filterperiode=false&from=&to=&late=24&satelit[]=NASA-MODIS&satelit[]=NASA-SNPP&satelit[]=NASA-NOAA20&confidence[]=low&confidence[]=medium&confidence[]=high&provinsi=12&kabkota="
 
 };
 
