@@ -6,7 +6,7 @@
 
 
 // =====================================================
-// CEK DATA SUDAH SIAP
+// HITUNG REKAP HOTSPOT
 // =====================================================
 
 function hitungRekapHotspot() {
@@ -21,12 +21,29 @@ function hitungRekapHotspot() {
     // =================================================
 
     if (
+        typeof hotspotSipongiData === "undefined" ||
         !hotspotSipongiData ||
         !Array.isArray(hotspotSipongiData.features)
     ) {
 
         console.warn(
             "Data hotspot belum tersedia."
+        );
+
+        return;
+    }
+
+
+    // =================================================
+    // VALIDASI TURF
+    // =================================================
+
+    if (
+        typeof turf === "undefined"
+    ) {
+
+        console.warn(
+            "Turf.js belum tersedia."
         );
 
         return;
@@ -82,7 +99,10 @@ function hitungRekapHotspot() {
         function(hotspot) {
 
 
-            // Pastikan geometry Point
+            // =============================================
+            // PASTIKAN GEOMETRY POINT
+            // =============================================
+
             if (
                 !hotspot.geometry ||
                 hotspot.geometry.type !== "Point"
@@ -93,7 +113,35 @@ function hitungRekapHotspot() {
             }
 
 
-            // Buat Turf Point
+            // =============================================
+            // AMBIL CONFIDENCE
+            // =============================================
+
+            var confidence =
+                String(
+                    hotspot.properties?.confidence_level || ""
+                )
+                .toLowerCase()
+                .trim();
+
+
+            // Pastikan hanya High / Medium / Low
+
+            if (
+                confidence !== "high" &&
+                confidence !== "medium" &&
+                confidence !== "low"
+            ) {
+
+                confidence = "low";
+
+            }
+
+
+            // =============================================
+            // BUAT TITIK TURF
+            // =============================================
+
             var titikHotspot =
                 turf.point(
                     hotspot.geometry.coordinates
@@ -101,7 +149,7 @@ function hitungRekapHotspot() {
 
 
             // =============================================
-            // STATUS
+            // STATUS AWAL
             // =============================================
 
             var ditemukanPBPH = false;
@@ -118,7 +166,10 @@ function hitungRekapHotspot() {
             pbphLayer.eachLayer(
                 function(layerPBPH) {
 
-                    // Jika sudah ditemukan
+
+                    // Jika sudah ditemukan PBPH
+                    // tidak perlu cek lagi
+
                     if (
                         ditemukanPBPH
                     ) {
@@ -144,12 +195,13 @@ function hitungRekapHotspot() {
 
                     try {
 
-                        // Cek titik berada di PBPH
                         if (
+
                             turf.booleanPointInPolygon(
                                 titikHotspot,
                                 featurePBPH
                             )
+
                         ) {
 
                             ditemukanPBPH = true;
@@ -185,6 +237,8 @@ function hitungRekapHotspot() {
 
 
                     // Jika kawasan sudah ditemukan
+                    // tidak perlu cek lagi
+
                     if (
                         kategoriKawasan !== null
                     ) {
@@ -210,12 +264,13 @@ function hitungRekapHotspot() {
 
                     try {
 
-                        // Cek titik berada di kawasan
                         if (
+
                             turf.booleanPointInPolygon(
                                 titikHotspot,
                                 featureKawasan
                             )
+
                         ) {
 
                             kategoriKawasan =
@@ -240,7 +295,7 @@ function hitungRekapHotspot() {
 
 
             // =============================================
-            // BUAT NAMA KATEGORI REKAP
+            // BUAT KATEGORI REKAP
             // =============================================
 
             var kategoriRekap = "";
@@ -248,14 +303,16 @@ function hitungRekapHotspot() {
 
             // ---------------------------------------------
             // PRIORITAS 1
-            // ADA PBPH
+            // HOTSPOT DI DALAM PBPH
             // ---------------------------------------------
 
             if (
                 ditemukanPBPH
             ) {
 
-                // Jika PBPH juga berada di kawasan
+
+                // PBPH + Kawasan Hutan
+
                 if (
                     kategoriKawasan
                 ) {
@@ -269,7 +326,8 @@ function hitungRekapHotspot() {
                 }
 
 
-                // PBPH tetapi tidak ditemukan kawasan
+                // PBPH tanpa kawasan
+
                 else {
 
                     kategoriRekap =
@@ -301,7 +359,7 @@ function hitungRekapHotspot() {
 
             // ---------------------------------------------
             // PRIORITAS 3
-            // DI LUAR PBPH DAN KAWASAN
+            // DI LUAR KAWASAN HUTAN
             // ---------------------------------------------
 
             else {
@@ -313,34 +371,72 @@ function hitungRekapHotspot() {
 
 
             // =============================================
-            // SIMPAN KE REKAP
+            // BUAT OBJECT JIKA BELUM ADA
             // =============================================
 
             if (
                 !rekap[kategoriRekap]
             ) {
 
-                rekap[kategoriRekap] = 0;
+                rekap[kategoriRekap] = {
+
+                    high: 0,
+
+                    medium: 0,
+
+                    low: 0,
+
+                    total: 0
+
+                };
 
             }
 
 
-            rekap[kategoriRekap]++;
+            // =============================================
+            // TAMBAH BERDASARKAN CONFIDENCE
+            // =============================================
+
+            rekap[kategoriRekap][confidence]++;
+
+
+            // Total
+
+            rekap[kategoriRekap].total++;
 
         }
     );
 
 
     // =================================================
-    // URUTKAN DARI TERBESAR
+    // UBAH OBJECT MENJADI ARRAY
     // =================================================
 
     var hasilRekap =
         Object.entries(rekap)
+        .map(
+            function(item) {
+
+                return {
+
+                    lokasi: item[0],
+
+                    high: item[1].high,
+
+                    medium: item[1].medium,
+
+                    low: item[1].low,
+
+                    total: item[1].total
+
+                };
+
+            }
+        )
         .sort(
             function(a, b) {
 
-                return b[1] - a[1];
+                return b.total - a.total;
 
             }
         );
@@ -356,24 +452,12 @@ function hitungRekapHotspot() {
 
 
     console.table(
-        hasilRekap.map(
-            function(item) {
-
-                return {
-
-                    Kategori: item[0],
-
-                    Jumlah_Hotspot: item[1]
-
-                };
-
-            }
-        )
+        hasilRekap
     );
 
 
     // =================================================
-    // TAMPILKAN DI SIDEBAR
+    // TAMPILKAN KE SIDEBAR
     // =================================================
 
     tampilkanRekapHotspot(
@@ -418,6 +502,34 @@ function tampilkanRekapHotspot(
 
 
     // =================================================
+    // HITUNG TOTAL CONFIDENCE
+    // =================================================
+
+    var totalHigh = 0;
+
+    var totalMedium = 0;
+
+    var totalLow = 0;
+
+    var totalHotspot = 0;
+
+
+    hasilRekap.forEach(
+        function(item) {
+
+            totalHigh += item.high;
+
+            totalMedium += item.medium;
+
+            totalLow += item.low;
+
+            totalHotspot += item.total;
+
+        }
+    );
+
+
+    // =================================================
     // BUAT PANEL
     // =================================================
 
@@ -447,7 +559,7 @@ function tampilkanRekapHotspot(
 
         font-size:13px;
 
-        max-height:350px;
+        max-height:520px;
 
         overflow-y:auto;
 
@@ -463,7 +575,7 @@ function tampilkanRekapHotspot(
         <div style="
             font-weight:bold;
             font-size:15px;
-            margin-bottom:10px;
+            margin-bottom:12px;
             color:#d32f2f;
         ">
 
@@ -475,32 +587,156 @@ function tampilkanRekapHotspot(
 
 
     // =================================================
-    // TOTAL
+    // RINGKASAN HIGH MEDIUM LOW
     // =================================================
 
-    var total = 0;
+    html += `
+
+        <div style="
+            display:grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+            gap:6px;
+            margin-bottom:8px;
+        ">
 
 
-    hasilRekap.forEach(
-        function(item) {
+            <!-- HIGH -->
 
-            total += item[1];
+            <div style="
+                background:#ffebee;
+                border-radius:7px;
+                padding:8px 4px;
+                text-align:center;
+                border:1px solid #ef9a9a;
+            ">
 
-        }
-    );
+                <div style="
+                    font-size:11px;
+                    font-weight:bold;
+                    color:#c62828;
+                ">
 
+                    HIGH
+
+                </div>
+
+                <div style="
+                    font-size:20px;
+                    font-weight:bold;
+                    color:#d32f2f;
+                ">
+
+                    ${totalHigh}
+
+                </div>
+
+            </div>
+
+
+            <!-- MEDIUM -->
+
+            <div style="
+                background:#fff8e1;
+                border-radius:7px;
+                padding:8px 4px;
+                text-align:center;
+                border:1px solid #ffe082;
+            ">
+
+                <div style="
+                    font-size:11px;
+                    font-weight:bold;
+                    color:#f57f17;
+                ">
+
+                    MEDIUM
+
+                </div>
+
+                <div style="
+                    font-size:20px;
+                    font-weight:bold;
+                    color:#f9a825;
+                ">
+
+                    ${totalMedium}
+
+                </div>
+
+            </div>
+
+
+            <!-- LOW -->
+
+            <div style="
+                background:#e8f5e9;
+                border-radius:7px;
+                padding:8px 4px;
+                text-align:center;
+                border:1px solid #a5d6a7;
+            ">
+
+                <div style="
+                    font-size:11px;
+                    font-weight:bold;
+                    color:#2e7d32;
+                ">
+
+                    LOW
+
+                </div>
+
+                <div style="
+                    font-size:20px;
+                    font-weight:bold;
+                    color:#388e3c;
+                ">
+
+                    ${totalLow}
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    `;
+
+
+    // =================================================
+    // TOTAL HOTSPOT
+    // =================================================
 
     html += `
 
         <div style="
             background:#fff3e0;
             padding:8px;
-            border-radius:6px;
-            margin-bottom:10px;
+            border-radius:7px;
+            margin-bottom:12px;
+            text-align:center;
+            border:1px solid #ffcc80;
         ">
 
-            <b>Total Hotspot:</b>
-            ${total}
+            <span style="
+                font-weight:bold;
+            ">
+
+                TOTAL HOTSPOT
+
+            </span>
+
+            <div style="
+                font-size:22px;
+                font-weight:bold;
+                color:#ef6c00;
+            ">
+
+                ${totalHotspot}
+
+            </div>
 
         </div>
 
@@ -513,43 +749,84 @@ function tampilkanRekapHotspot(
 
     html += `
 
-        <table style="
-            width:100%;
-            border-collapse:collapse;
-            font-size:12px;
+        <div style="
+            overflow-x:auto;
         ">
 
-            <thead>
-
-                <tr>
-
-                    <th style="
-                        text-align:left;
-                        padding:6px;
-                        border-bottom:1px solid #ddd;
-                    ">
-
-                        Lokasi
-
-                    </th>
+            <table style="
+                width:100%;
+                border-collapse:collapse;
+                font-size:11px;
+            ">
 
 
-                    <th style="
-                        text-align:center;
-                        padding:6px;
-                        border-bottom:1px solid #ddd;
-                    ">
+                <thead>
 
-                        Jumlah
+                    <tr>
 
-                    </th>
+                        <th style="
+                            text-align:left;
+                            padding:7px 4px;
+                            border-bottom:2px solid #ddd;
+                        ">
 
-                </tr>
+                            Lokasi
 
-            </thead>
+                        </th>
 
 
-            <tbody>
+                        <th style="
+                            text-align:center;
+                            padding:7px 4px;
+                            border-bottom:2px solid #ddd;
+                            color:#d32f2f;
+                        ">
+
+                            H
+
+                        </th>
+
+
+                        <th style="
+                            text-align:center;
+                            padding:7px 4px;
+                            border-bottom:2px solid #ddd;
+                            color:#f9a825;
+                        ">
+
+                            M
+
+                        </th>
+
+
+                        <th style="
+                            text-align:center;
+                            padding:7px 4px;
+                            border-bottom:2px solid #ddd;
+                            color:#388e3c;
+                        ">
+
+                            L
+
+                        </th>
+
+
+                        <th style="
+                            text-align:center;
+                            padding:7px 4px;
+                            border-bottom:2px solid #ddd;
+                        ">
+
+                            Total
+
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
 
     `;
 
@@ -561,16 +838,55 @@ function tampilkanRekapHotspot(
     hasilRekap.forEach(
         function(item) {
 
+
             html += `
 
                 <tr>
 
+
                     <td style="
-                        padding:7px 4px;
+                        padding:8px 4px;
+                        border-bottom:1px solid #eee;
+                        line-height:1.3;
+                    ">
+
+                        ${item.lokasi}
+
+                    </td>
+
+
+                    <td style="
+                        text-align:center;
+                        font-weight:bold;
+                        color:#d32f2f;
                         border-bottom:1px solid #eee;
                     ">
 
-                        ${item[0]}
+                        ${item.high}
+
+                    </td>
+
+
+                    <td style="
+                        text-align:center;
+                        font-weight:bold;
+                        color:#f9a825;
+                        border-bottom:1px solid #eee;
+                    ">
+
+                        ${item.medium}
+
+                    </td>
+
+
+                    <td style="
+                        text-align:center;
+                        font-weight:bold;
+                        color:#388e3c;
+                        border-bottom:1px solid #eee;
+                    ">
+
+                        ${item.low}
 
                     </td>
 
@@ -581,9 +897,10 @@ function tampilkanRekapHotspot(
                         border-bottom:1px solid #eee;
                     ">
 
-                        ${item[1]}
+                        ${item.total}
 
                     </td>
+
 
                 </tr>
 
@@ -595,12 +912,18 @@ function tampilkanRekapHotspot(
 
     html += `
 
-            </tbody>
+                </tbody>
 
-        </table>
+            </table>
+
+        </div>
 
     `;
 
+
+    // =================================================
+    // MASUKKAN HTML KE PANEL
+    // =================================================
 
     panel.innerHTML =
         html;
