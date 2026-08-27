@@ -614,14 +614,12 @@ function loadHotspotSipongi() {
 
           hotspotSipongiLoaded = true;
 
-
 // Terapkan filter checkbox
 updateHotspotFilter();
 
-
-// Hitung rekapitulasi hotspot secara spasial
-// sekaligus dipisahkan menjadi High, Medium, dan Low
-hitungRekapHotspot();
+// Cek apakah PBPH dan Kawasan Hutan
+// sudah selesai dimuat
+cekDanHitungRekapHotspot();
 
 
             console.log(
@@ -1029,14 +1027,22 @@ var pbphLayer = L.geoJSON(null,{
     }
 });
 fetch("pbph.geojson")
-.then(res=>res.json())
-.then(data=>{
+.then(res => res.json())
+.then(data => {
 
     pbphLayer.addData(data);
 
     pbphLayer.bringToFront();
 
     loadNamaOptions();
+
+
+    // PBPH sudah selesai dimuat
+    pbphLoaded = true;
+
+
+    // Cek apakah semua data sudah siap
+    cekDanHitungRekapHotspot();
 
 });
 
