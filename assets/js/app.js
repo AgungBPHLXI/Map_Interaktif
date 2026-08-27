@@ -184,61 +184,95 @@ const SIPONGI_HOTSPOT_URL =
 
 
 // =====================================================
-// LOAD / TOGGLE HOTSPOT SIPONGI
+// HOTSPOT SIPONGI - KALIMANTAN SELATAN
+// =====================================================
+
+// Layer hotspot TIDAK langsung ditambahkan ke map
+var hotspotSipongiLayer = L.layerGroup();
+
+
+// Status data hotspot
+var hotspotSipongiLoaded = false;
+
+
+// =====================================================
+// URL API SIPONGI
+// =====================================================
+
+const SIPONGI_HOTSPOT_URL =
+    "https://opsroom.sipongidata.my.id/api/opsroom/indoHotspot" +
+    "?wilayah=IN" +
+    "&filterperiode=false" +
+    "&from=" +
+    "&to=" +
+    "&late=24" +
+    "&satelit[]=NASA-MODIS" +
+    "&satelit[]=NASA-SNPP" +
+    "&satelit[]=NASA-NOAA20" +
+    "&confidence[]=low" +
+    "&confidence[]=medium" +
+    "&confidence[]=high" +
+    "&provinsi=12" +
+    "&kabkota=";
+
+
+// =====================================================
+// LOAD HOTSPOT SIPONGI
 // =====================================================
 
 function loadHotspotSipongi() {
 
-    console.log(
-        "Hotspot SiPongi Kalimantan Selatan..."
-    );
+    console.log("Hotspot Karhutla Kalsel diklik");
 
 
-    // Jika hotspot sudah tampil,
-    // klik berikutnya akan menyembunyikan layer
-    if (
-        hotspotSipongiLoaded &&
-        map.hasLayer(hotspotSipongiLayer)
-    ) {
+    // ==========================================
+    // JIKA LAYER SUDAH TAMPIL → SEMBUNYIKAN
+    // ==========================================
 
-        map.removeLayer(
-            hotspotSipongiLayer
-        );
+    if (map.hasLayer(hotspotSipongiLayer)) {
 
-        console.log(
-            "Hotspot SiPongi disembunyikan."
-        );
+        map.removeLayer(hotspotSipongiLayer);
+
+        console.log("Hotspot disembunyikan");
 
         return;
     }
 
 
-    // Jika data sebelumnya sudah dimuat,
-    // tampilkan kembali tanpa mengambil data ulang
+    // ==========================================
+    // JIKA DATA SUDAH PERNAH DIMUAT
+    // TAMPILKAN TANPA DOWNLOAD ULANG
+    // ==========================================
+
     if (hotspotSipongiLoaded) {
 
         hotspotSipongiLayer.addTo(map);
 
-        console.log(
-            "Hotspot SiPongi ditampilkan kembali."
-        );
+        console.log("Hotspot ditampilkan kembali");
 
         return;
     }
 
 
-    // Tampilkan layer ke peta
+    // ==========================================
+    // TAMPILKAN LAYER KOSONG DULU
+    // ==========================================
+
     hotspotSipongiLayer.addTo(map);
 
 
     console.log(
-        "Memuat data Hotspot SiPongi..."
+        "Memuat data Hotspot SiPongi Kalimantan Selatan..."
     );
 
 
-    // Bersihkan hotspot lama
+    // Bersihkan layer
     hotspotSipongiLayer.clearLayers();
 
+
+    // ==========================================
+    // AMBIL DATA API
+    // ==========================================
 
     fetch(SIPONGI_HOTSPOT_URL)
 
@@ -247,8 +281,7 @@ function loadHotspotSipongi() {
             if (!response.ok) {
 
                 throw new Error(
-                    "HTTP Error: " +
-                    response.status
+                    "HTTP Error: " + response.status
                 );
 
             }
@@ -265,31 +298,26 @@ function loadHotspotSipongi() {
             );
 
 
-            // Pastikan struktur FeatureCollection
+            // Validasi data
             if (
                 !data ||
                 !Array.isArray(data.features)
             ) {
 
                 throw new Error(
-                    "Format data hotspot tidak sesuai."
+                    "Format data hotspot tidak sesuai"
                 );
 
             }
 
 
-            // =================================================
-            // TAMBAHKAN DATA GEOJSON KE LAYER
-            // =================================================
+            // ==========================================
+            // TAMBAHKAN HOTSPOT KE PETA
+            // ==========================================
 
             L.geoJSON(data, {
 
-                // =============================================
-                // MARKER HOTSPOT
-                // =============================================
-
-                pointToLayer:
-                function(feature, latlng) {
+                pointToLayer: function(feature, latlng) {
 
                     const props =
                         feature.properties || {};
@@ -298,43 +326,32 @@ function loadHotspotSipongi() {
                     const confidence =
                         String(
                             props.confidence_level || ""
-                        )
-                        .toLowerCase();
+                        ).toLowerCase();
 
 
-                    let warna =
-                        "#7cb342";
+                    let warna = "#fbc02d";
 
 
-                    // LOW
-                    if (
-                        confidence === "low"
-                    ) {
+                    // LOW = HIJAU
+                    if (confidence === "low") {
 
-                        warna =
-                            "#43a047";
+                        warna = "#43a047";
 
                     }
 
 
-                    // MEDIUM
-                    else if (
-                        confidence === "medium"
-                    ) {
+                    // MEDIUM = KUNING
+                    else if (confidence === "medium") {
 
-                        warna =
-                            "#fbc02d";
+                        warna = "#fbc02d";
 
                     }
 
 
-                    // HIGH
-                    else if (
-                        confidence === "high"
-                    ) {
+                    // HIGH = MERAH
+                    else if (confidence === "high") {
 
-                        warna =
-                            "#e53935";
+                        warna = "#e53935";
 
                     }
 
@@ -359,35 +376,17 @@ function loadHotspotSipongi() {
                 },
 
 
-                // =============================================
-                // POPUP DAN TOOLTIP
-                // =============================================
+                // ==========================================
+                // POPUP HOTSPOT
+                // ==========================================
 
-                onEachFeature:
-                function(feature, layer) {
+                onEachFeature: function(
+                    feature,
+                    layer
+                ) {
 
                     const p =
                         feature.properties || {};
-
-
-                    // Ambil koordinat dari GeoJSON
-                    const coordinates =
-                        feature.geometry &&
-                        feature.geometry.coordinates
-                            ? feature.geometry.coordinates
-                            : null;
-
-
-                    const longitude =
-                        coordinates
-                            ? coordinates[0]
-                            : "-";
-
-
-                    const latitude =
-                        coordinates
-                            ? coordinates[1]
-                            : "-";
 
 
                     const html = `
@@ -407,7 +406,6 @@ function loadHotspotSipongi() {
                                 🔥 HOTSPOT SIPONGI
                             </div>
 
-
                             <b>Provinsi:</b>
                             ${p.nama_provinsi || "-"}
                             <br>
@@ -425,7 +423,6 @@ function loadHotspotSipongi() {
                             <br>
 
                             <hr>
-
 
                             <b>Sumber:</b>
                             ${p.sumber || "-"}
@@ -449,41 +446,25 @@ function loadHotspotSipongi() {
 
                             <hr>
 
-
                             <b>Latitude:</b>
-                            ${
-                                typeof latitude === "number"
-                                    ? latitude.toFixed(5)
-                                    : latitude
-                            }
+                            ${p.lat || "-"}
                             <br>
 
                             <b>Longitude:</b>
-                            ${
-                                typeof longitude === "number"
-                                    ? longitude.toFixed(5)
-                                    : longitude
-                            }
+                            ${p.long || "-"}
 
                         </div>
 
                     `;
 
 
-                    // Popup
                     layer.bindPopup(html);
 
 
                     // Tooltip
                     layer.bindTooltip(
 
-                        `
-                        🔥
-                        ${p.kabkota || "Hotspot"}
-                        <br>
-                        Confidence:
-                        ${p.confidence_level || "-"}
-                        `,
+                        `${p.kabkota || "Hotspot"} - ${p.confidence_level || ""}`,
 
                         {
 
@@ -499,42 +480,21 @@ function loadHotspotSipongi() {
 
                 }
 
-            }).addTo(
-                hotspotSipongiLayer
-            );
+            }).addTo(hotspotSipongiLayer);
 
 
-            // Tandai data berhasil dimuat
+            // Tandai bahwa data sudah dimuat
             hotspotSipongiLoaded = true;
 
-
-            console.log(
-                "================================"
-            );
-
-            console.log(
-                "HOTSPOT SIPONGI BERHASIL DIMUAT"
-            );
 
             console.log(
                 "Jumlah hotspot:",
                 data.features.length
             );
 
-            console.log(
-                "================================"
-            );
-
         })
 
         .catch(error => {
-
-            // Jika gagal,
-            // hapus layer dari peta
-            map.removeLayer(
-                hotspotSipongiLayer
-            );
-
 
             console.error(
                 "Gagal memuat Hotspot SiPongi:",
@@ -542,9 +502,14 @@ function loadHotspotSipongi() {
             );
 
 
+            // Jika gagal, hapus layer dari map
+            map.removeLayer(
+                hotspotSipongiLayer
+            );
+
+
             alert(
-                "Gagal memuat data Hotspot SiPongi. " +
-                "Silakan periksa Console browser."
+                "Gagal memuat data Hotspot SiPongi."
             );
 
         });
