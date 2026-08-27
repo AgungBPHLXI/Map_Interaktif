@@ -1,4 +1,10 @@
 // =======================
+// DATA HOTSPOT GLOBAL
+// =======================
+
+var hotspotSipongiData = null;
+
+// =======================
 // LOAD DATA LUAS KABUPATEN
 // =======================
 
@@ -188,6 +194,9 @@ hotspotSipongiLayer.addLayer(
 // Status data hotspot
 var hotspotSipongiLoaded = false;
 
+// Simpan data hotspot dari SiPongi
+var hotspotSipongiData = null;
+
 
 // =====================================================
 // URL API SIPONGI
@@ -317,10 +326,10 @@ function loadHotspotSipongi() {
 
         .then(data => {
 
-            console.log(
-                "Data Hotspot SiPongi:",
-                data
-            );
+    console.log("Data Hotspot SiPongi:", data);
+
+    // Simpan data hotspot secara global
+    hotspotSipongiData = data;
 
 
             // ==========================================
@@ -603,11 +612,15 @@ function loadHotspotSipongi() {
             // DATA BERHASIL DIMUAT
             // ==========================================
 
-            hotspotSipongiLoaded = true;
+           hotspotSipongiLoaded = true;
 
 
-            // Terapkan filter checkbox
-            updateHotspotFilter();
+// Terapkan filter checkbox
+updateHotspotFilter();
+
+
+// Hitung rekapitulasi hotspot secara spasial
+hitungRekapHotspot();
 
 
             console.log(
