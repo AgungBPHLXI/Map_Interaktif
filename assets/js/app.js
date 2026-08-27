@@ -149,14 +149,23 @@ function tampilkanDiagramSemua(){
 // =======================
 
 var selectedLayer = null;
+
+
 // =====================================================
 // HOTSPOT SIPONGI - KALIMANTAN SELATAN
 // =====================================================
 
 // Group layer hotspot
-var hotspotSipongiLayer = L.layerGroup().addTo(map);
+var hotspotSipongiLayer = L.layerGroup();
 
-// URL API SiPongi
+// Status data hotspot
+var hotspotSipongiLoaded = false;
+
+
+// =====================================================
+// URL API SIPONGI
+// =====================================================
+
 const SIPONGI_HOTSPOT_URL =
     "https://opsroom.sipongidata.my.id/api/opsroom/indoHotspot" +
     "?wilayah=IN" +
@@ -174,85 +183,158 @@ const SIPONGI_HOTSPOT_URL =
     "&kabkota=";
 
 
-// =======================
-// LOAD HOTSPOT SIPONGI
-// =======================
+// =====================================================
+// LOAD / TOGGLE HOTSPOT SIPONGI
+// =====================================================
 
 function loadHotspotSipongi() {
 
-    console.log("Memuat Hotspot SiPongi Kalimantan Selatan...");
+    console.log(
+        "Hotspot SiPongi Kalimantan Selatan..."
+    );
+
+
+    // Jika hotspot sudah tampil,
+    // klik berikutnya akan menyembunyikan layer
+    if (
+        hotspotSipongiLoaded &&
+        map.hasLayer(hotspotSipongiLayer)
+    ) {
+
+        map.removeLayer(
+            hotspotSipongiLayer
+        );
+
+        console.log(
+            "Hotspot SiPongi disembunyikan."
+        );
+
+        return;
+    }
+
+
+    // Jika data sebelumnya sudah dimuat,
+    // tampilkan kembali tanpa mengambil data ulang
+    if (hotspotSipongiLoaded) {
+
+        hotspotSipongiLayer.addTo(map);
+
+        console.log(
+            "Hotspot SiPongi ditampilkan kembali."
+        );
+
+        return;
+    }
+
+
+    // Tampilkan layer ke peta
+    hotspotSipongiLayer.addTo(map);
+
+
+    console.log(
+        "Memuat data Hotspot SiPongi..."
+    );
+
 
     // Bersihkan hotspot lama
     hotspotSipongiLayer.clearLayers();
+
 
     fetch(SIPONGI_HOTSPOT_URL)
 
         .then(response => {
 
             if (!response.ok) {
+
                 throw new Error(
-                    "HTTP Error: " + response.status
+                    "HTTP Error: " +
+                    response.status
                 );
+
             }
 
             return response.json();
+
         })
 
         .then(data => {
 
-            console.log("Data Hotspot SiPongi:", data);
+            console.log(
+                "Data Hotspot SiPongi:",
+                data
+            );
+
 
             // Pastikan struktur FeatureCollection
             if (
                 !data ||
-                !data.features ||
                 !Array.isArray(data.features)
             ) {
 
-                console.warn(
+                throw new Error(
                     "Format data hotspot tidak sesuai."
                 );
 
-                return;
             }
 
 
-            // Tambahkan GeoJSON ke layer
+            // =================================================
+            // TAMBAHKAN DATA GEOJSON KE LAYER
+            // =================================================
+
             L.geoJSON(data, {
 
-                pointToLayer: function(feature, latlng) {
+                // =============================================
+                // MARKER HOTSPOT
+                // =============================================
+
+                pointToLayer:
+                function(feature, latlng) {
 
                     const props =
                         feature.properties || {};
 
+
                     const confidence =
                         String(
                             props.confidence_level || ""
-                        ).toLowerCase();
+                        )
+                        .toLowerCase();
 
 
-                    // WARNA BERDASARKAN CONFIDENCE
+                    let warna =
+                        "#7cb342";
 
-                    let warna = "#f1c40f";
 
                     // LOW
-                    if (confidence === "low") {
+                    if (
+                        confidence === "low"
+                    ) {
 
-                        warna = "#7cb342";
+                        warna =
+                            "#43a047";
 
                     }
+
 
                     // MEDIUM
-                    else if (confidence === "medium") {
+                    else if (
+                        confidence === "medium"
+                    ) {
 
-                        warna = "#fbc02d";
+                        warna =
+                            "#fbc02d";
 
                     }
 
-                    // HIGH
-                    else if (confidence === "high") {
 
-                        warna = "#e53935";
+                    // HIGH
+                    else if (
+                        confidence === "high"
+                    ) {
+
+                        warna =
+                            "#e53935";
 
                     }
 
@@ -260,6 +342,7 @@ function loadHotspotSipongi() {
                     return L.circleMarker(
                         latlng,
                         {
+
                             radius: 7,
 
                             color: warna,
@@ -268,27 +351,46 @@ function loadHotspotSipongi() {
 
                             fillColor: warna,
 
-                            fillOpacity: 0.85
+                            fillOpacity: 0.9
+
                         }
                     );
 
                 },
 
 
-                // =======================
-                // POPUP INFORMASI
-                // =======================
+                // =============================================
+                // POPUP DAN TOOLTIP
+                // =============================================
 
-                onEachFeature: function(
-                    feature,
-                    layer
-                ) {
+                onEachFeature:
+                function(feature, layer) {
 
                     const p =
                         feature.properties || {};
 
 
-                    let html = `
+                    // Ambil koordinat dari GeoJSON
+                    const coordinates =
+                        feature.geometry &&
+                        feature.geometry.coordinates
+                            ? feature.geometry.coordinates
+                            : null;
+
+
+                    const longitude =
+                        coordinates
+                            ? coordinates[0]
+                            : "-";
+
+
+                    const latitude =
+                        coordinates
+                            ? coordinates[1]
+                            : "-";
+
+
+                    const html = `
 
                         <div style="
                             min-width:220px;
@@ -300,88 +402,154 @@ function loadHotspotSipongi() {
                                 font-weight:bold;
                                 font-size:15px;
                                 margin-bottom:8px;
-                                color:#1b5e20;
+                                color:#d32f2f;
                             ">
                                 🔥 HOTSPOT SIPONGI
                             </div>
 
+
                             <b>Provinsi:</b>
-                            ${p.nama_provinsi || "-"}<br>
+                            ${p.nama_provinsi || "-"}
+                            <br>
 
                             <b>Kabupaten:</b>
-                            ${p.kabkota || "-"}<br>
+                            ${p.kabkota || "-"}
+                            <br>
 
                             <b>Kecamatan:</b>
-                            ${p.kecamatan || "-"}<br>
+                            ${p.kecamatan || "-"}
+                            <br>
 
                             <b>Desa:</b>
-                            ${p.desa || "-"}<br>
+                            ${p.desa || "-"}
+                            <br>
 
                             <hr>
+
 
                             <b>Sumber:</b>
-                            ${p.sumber || "-"}<br>
+                            ${p.sumber || "-"}
+                            <br>
 
                             <b>Confidence:</b>
-                            ${p.confidence_level || "-"}<br>
+                            ${p.confidence_level || "-"}
+                            <br>
 
                             <b>Nilai Confidence:</b>
-                            ${p.confidence || "-"}<br>
+                            ${p.confidence || "-"}
+                            <br>
 
                             <b>Tanggal:</b>
-                            ${p.date_hotspot || "-"}<br>
+                            ${p.date_hotspot || "-"}
+                            <br>
 
                             <b>Waktu:</b>
-                            ${p.hs_date || "-"}<br>
+                            ${p.hs_date || "-"}
+                            <br>
 
                             <hr>
 
+
                             <b>Latitude:</b>
-                            ${p.lat || "-"}<br>
+                            ${
+                                typeof latitude === "number"
+                                    ? latitude.toFixed(5)
+                                    : latitude
+                            }
+                            <br>
 
                             <b>Longitude:</b>
-                            ${p.long || "-"}
+                            ${
+                                typeof longitude === "number"
+                                    ? longitude.toFixed(5)
+                                    : longitude
+                            }
 
                         </div>
 
                     `;
 
 
+                    // Popup
                     layer.bindPopup(html);
 
 
-                    // Tooltip saat hover
+                    // Tooltip
                     layer.bindTooltip(
-                        `${p.kabkota || "Hotspot"} - ${p.confidence_level || ""}`,
+
+                        `
+                        🔥
+                        ${p.kabkota || "Hotspot"}
+                        <br>
+                        Confidence:
+                        ${p.confidence_level || "-"}
+                        `,
+
                         {
+
                             direction: "top",
-                            offset: [0, -8]
+
+                            offset: [0, -8],
+
+                            sticky: true
+
                         }
+
                     );
 
                 }
 
-            }).addTo(hotspotSipongiLayer);
+            }).addTo(
+                hotspotSipongiLayer
+            );
 
+
+            // Tandai data berhasil dimuat
+            hotspotSipongiLoaded = true;
+
+
+            console.log(
+                "================================"
+            );
+
+            console.log(
+                "HOTSPOT SIPONGI BERHASIL DIMUAT"
+            );
 
             console.log(
                 "Jumlah hotspot:",
                 data.features.length
             );
 
+            console.log(
+                "================================"
+            );
+
         })
 
         .catch(error => {
+
+            // Jika gagal,
+            // hapus layer dari peta
+            map.removeLayer(
+                hotspotSipongiLayer
+            );
+
 
             console.error(
                 "Gagal memuat Hotspot SiPongi:",
                 error
             );
 
+
+            alert(
+                "Gagal memuat data Hotspot SiPongi. " +
+                "Silakan periksa Console browser."
+            );
+
         });
 
 }
-
 // =======================
 // LAYER UPLOAD SHP
 // =======================
