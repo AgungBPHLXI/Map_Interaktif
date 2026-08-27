@@ -1105,7 +1105,7 @@ function loadPenanaman(){
     const spreadsheetID = "1kYvLj9RiXRxZ5rpSvZw8AnNAspngHkY9CMFZKMX_Rno";
     const sheetName = "Penanaman";
 
-    fetch(`https://opensheet.elk.sh/${spreadsheetID}/${sheetName}`)
+    fetch(`${API_CONFIG.baseURL}/${spreadsheetId}/${sheetName}`)
     .then(res => res.json())
     .then(data => {
 
@@ -1208,7 +1208,7 @@ function loadKawasan(){
     const spreadsheetID = "1mXXOn8m0jDvTPOnRmSY4rE61u5mUuX21HLyxmtI8lmE";
     const sheetName = "Kawasan";
 
-    fetch(`https://opensheet.elk.sh/${spreadsheetID}/${sheetName}`)
+    fetch(`${API_CONFIG.baseURL}/${spreadsheetId}/${sheetName}`)
     .then(res => res.json())
     .then(data => {
 
@@ -1301,7 +1301,7 @@ function loadKawasan(){
     const spreadsheetID = "11jcpMuO0i8Nh7cId1loAKYOHn6J9jRSNT3lzmT3t4VU";
     const sheetName = "Produksi%20Kayu%20Bulat";
 
-    fetch(`https://opensheet.elk.sh/${spreadsheetID}/${sheetName}`)
+    fetch(`${API_CONFIG.baseURL}/${spreadsheetId}/${sheetName}`)
     .then(res => res.json())
     .then(data => {
 
@@ -1453,7 +1453,7 @@ function loadProduksiIndustri(){
 function loadSheetData(sheetName){
 
     const spreadsheetID = "1u9Wx1pUc2M-KzE9997_osg-8NHG5wH4etq4H9am7Rmc";
-    const url = `https://opensheet.elk.sh/${spreadsheetID}/${sheetName}`;
+    const url = `${API_CONFIG.baseURL}/${spreadsheetId}/${sheetName}`;
 
     fetch(url)
     .then(res => res.json())
