@@ -229,70 +229,113 @@ function hitungRekapHotspot() {
 
 
             // =============================================
-            // CEK HOTSPOT DI DALAM KAWASAN HUTAN
-            // =============================================
+// CEK HOTSPOT DI DALAM KAWASAN HUTAN
+// =============================================
 
-            kawasanLayer.eachLayer(
-                function(layerKawasan) {
+kawasanLayer.eachLayer(
+    function(layerKawasan) {
 
+        // Jika kawasan hutan sudah ditemukan
+        // tidak perlu cek lagi
+        if (
+            kategoriKawasan !== null
+        ) {
 
-                    // Jika kawasan sudah ditemukan
-                    // tidak perlu cek lagi
+            return;
 
-                    if (
-                        kategoriKawasan !== null
-                    ) {
-
-                        return;
-
-                    }
+        }
 
 
-                    var featureKawasan =
-                        layerKawasan.feature;
+        var featureKawasan =
+            layerKawasan.feature;
 
 
-                    if (
-                        !featureKawasan ||
-                        !featureKawasan.geometry
-                    ) {
+        if (
+            !featureKawasan ||
+            !featureKawasan.geometry
+        ) {
 
-                        return;
+            return;
 
-                    }
+        }
 
 
-                    try {
+        // =========================================
+        // AMBIL KATEGORI KAWASAN
+        // =========================================
 
-                        if (
+        var f2025 =
+            String(
+                featureKawasan.properties?.F2025 || ""
+            )
+            .trim()
+            .toUpperCase();
 
-                            turf.booleanPointInPolygon(
-                                titikHotspot,
-                                featureKawasan
-                            )
 
-                        ) {
+        // =========================================
+        // ABAIKAN LAYER NON-KAWASAN HUTAN
+        // =========================================
+        //
+        // SISTEM LAHAN dan PAPH bukan kategori
+        // kawasan hutan untuk rekap hotspot
+        //
+        // =========================================
 
-                            kategoriKawasan =
-                                featureKawasan.properties?.F2025 ||
-                                "KAWASAN";
+        if (
+            f2025 === "SISTEM LAHAN" ||
+            f2025 === "PAPH"
+        ) {
 
-                        }
+            return;
 
-                    }
+        }
 
-                    catch(error) {
 
-                        console.warn(
-                            "Error cek Kawasan:",
-                            error
-                        );
+        // Jika tidak memiliki kategori kawasan,
+        // jangan dihitung sebagai kawasan hutan
 
-                    }
+        if (
+            f2025 === ""
+        ) {
 
-                }
+            return;
+
+        }
+
+
+        // =========================================
+        // CEK TITIK HOTSPOT
+        // DI DALAM POLIGON KAWASAN HUTAN
+        // =========================================
+
+        try {
+
+            if (
+
+                turf.booleanPointInPolygon(
+                    titikHotspot,
+                    featureKawasan
+                )
+
+            ) {
+
+                kategoriKawasan = f2025;
+
+            }
+
+        }
+
+        catch(error) {
+
+            console.warn(
+                "Error cek Kawasan:",
+                error
             );
 
+        }
+
+    }
+);
 
             // =============================================
             // BUAT KATEGORI REKAP
