@@ -198,17 +198,29 @@ var hotspotSipongiLoaded = false;
 var hotspotSipongiData = null;
 
 
-// =====================================================
+// ==================================================
+// TANGGAL HARI INI
+// ==================================================
+
+const hariIni = new Date().toLocaleDateString(
+    "en-CA",
+    {
+        timeZone: "Asia/Makassar"
+    }
+);
+
+
+// ==================================================
 // URL API SIPONGI
-// =====================================================
+// ==================================================
 
 const SIPONGI_HOTSPOT_URL =
     "https://opsroom.sipongidata.my.id/api/opsroom/indoHotspot" +
     "?wilayah=IN" +
-    "&filterperiode=false" +
-    "&from=" +
-    "&to=" +
-    "&late=24" +
+    "&filterperiode=true" +
+    "&from=" + hariIni +
+    "&to=" + hariIni +
+    "&late=custom" +
     "&satelit[]=NASA-MODIS" +
     "&satelit[]=NASA-SNPP" +
     "&satelit[]=NASA-NOAA20" +
@@ -343,56 +355,6 @@ function loadHotspotSipongi() {
         );
 
     }
-
-
-    // ==========================================
-    // CARI TANGGAL HOTSPOT TERBARU
-    // ==========================================
-
-    const daftarTanggal = data.features
-        .map(function(feature) {
-
-            return feature.properties?.date_hotspot;
-
-        })
-        .filter(function(tanggal) {
-
-            return tanggal;
-
-        });
-
-
-    const tanggalTerbaru = daftarTanggal
-        .sort()
-        .pop();
-
-
-    console.log(
-        "Tanggal hotspot terbaru:",
-        tanggalTerbaru
-    );
-
-
-    // ==========================================
-    // HANYA AMBIL HOTSPOT TANGGAL TERBARU
-    // ==========================================
-
-    data.features = data.features.filter(
-        function(feature) {
-
-            return (
-                feature.properties?.date_hotspot ===
-                tanggalTerbaru
-            );
-
-        }
-    );
-
-
-    console.log(
-        "Jumlah hotspot tanggal terbaru:",
-        data.features.length
-    );
 
 
     // Simpan data hotspot secara global
