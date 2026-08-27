@@ -1,219 +1,28 @@
 // =====================================================
 // TURF.JS
-// ANALISIS SPASIAL HOTSPOT
+// REKAPITULASI HOTSPOT SPASIAL
 // BPHL WILAYAH XI BANJARBARU
 // =====================================================
 
 
 // =====================================================
-// FUNGSI NORMALISASI NAMA
-// =====================================================
-
-function normalizeValue(value) {
-
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
-
-        return "-";
-
-    }
-
-    return String(value)
-        .trim()
-        .replace(/\s+/g, " ");
-
-}
-
-
-// =====================================================
-// CEK HOTSPOT DI DALAM POLYGON
-// =====================================================
-
-function hotspotDiDalamLayer(
-    hotspotFeature,
-    leafletLayer
-) {
-
-    try {
-
-        return turf.booleanPointInPolygon(
-            hotspotFeature,
-            leafletLayer.feature
-        );
-
-    }
-
-    catch (error) {
-
-        return false;
-
-    }
-
-}
-
-
-// =====================================================
-// CARI PBPH TEMPAT HOTSPOT BERADA
-// =====================================================
-
-function cariPBPH(hotspotFeature) {
-
-    let hasil = null;
-
-
-    if (
-        typeof pbphLayer === "undefined" ||
-        !pbphLayer
-    ) {
-
-        return null;
-
-    }
-
-
-    pbphLayer.eachLayer(function(layer) {
-
-        // Jika sudah ditemukan,
-        // tidak perlu diproses lagi
-        if (hasil) {
-
-            return;
-
-        }
-
-
-        if (
-            !layer.feature ||
-            !layer.feature.geometry
-        ) {
-
-            return;
-
-        }
-
-
-        try {
-
-            if (
-                turf.booleanPointInPolygon(
-                    hotspotFeature,
-                    layer.feature
-                )
-            ) {
-
-                hasil = layer;
-
-            }
-
-        }
-
-        catch (error) {
-
-            console.warn(
-                "Gagal membaca polygon PBPH:",
-                error
-            );
-
-        }
-
-    });
-
-
-    return hasil;
-
-}
-
-
-// =====================================================
-// CARI KAWASAN HUTAN TEMPAT HOTSPOT BERADA
-// =====================================================
-
-function cariKawasan(hotspotFeature) {
-
-    let hasil = null;
-
-
-    if (
-        typeof kawasanLayer === "undefined" ||
-        !kawasanLayer
-    ) {
-
-        return null;
-
-    }
-
-
-    kawasanLayer.eachLayer(function(layer) {
-
-        // Jika sudah ditemukan
-        if (hasil) {
-
-            return;
-
-        }
-
-
-        if (
-            !layer.feature ||
-            !layer.feature.geometry
-        ) {
-
-            return;
-
-        }
-
-
-        try {
-
-            if (
-                turf.booleanPointInPolygon(
-                    hotspotFeature,
-                    layer.feature
-                )
-            ) {
-
-                hasil = layer;
-
-            }
-
-        }
-
-        catch (error) {
-
-            console.warn(
-                "Gagal membaca polygon kawasan:",
-                error
-            );
-
-        }
-
-    });
-
-
-    return hasil;
-
-}
-
-
-// =====================================================
-// ANALISIS REKAP HOTSPOT
+// CEK DATA SUDAH SIAP
 // =====================================================
 
 function hitungRekapHotspot() {
 
-    console.log(
-        "Memulai analisis spasial hotspot..."
-    );
+    console.log("====================================");
+    console.log("MEMULAI REKAPITULASI HOTSPOT");
+    console.log("====================================");
 
 
-    // Pastikan data hotspot tersedia
+    // =================================================
+    // VALIDASI DATA HOTSPOT
+    // =================================================
+
     if (
-        typeof hotspotSipongiData === "undefined" ||
         !hotspotSipongiData ||
-        !hotspotSipongiData.features
+        !Array.isArray(hotspotSipongiData.features)
     ) {
 
         console.warn(
@@ -221,11 +30,13 @@ function hitungRekapHotspot() {
         );
 
         return;
-
     }
 
 
-    // Pastikan layer PBPH tersedia
+    // =================================================
+    // VALIDASI LAYER PBPH
+    // =================================================
+
     if (
         typeof pbphLayer === "undefined" ||
         !pbphLayer
@@ -236,11 +47,13 @@ function hitungRekapHotspot() {
         );
 
         return;
-
     }
 
 
-    // Pastikan layer kawasan tersedia
+    // =================================================
+    // VALIDASI LAYER KAWASAN
+    // =================================================
+
     if (
         typeof kawasanLayer === "undefined" ||
         !kawasanLayer
@@ -251,28 +64,14 @@ function hitungRekapHotspot() {
         );
 
         return;
-
     }
 
 
-    // Objek hasil rekap
-    let rekap = {};
+    // =================================================
+    // OBJECT HASIL REKAP
+    // =================================================
 
-
-    // Total hotspot
-    let totalHotspot = 0;
-
-
-    // Hotspot dalam PBPH
-    let totalDalamPBPH = 0;
-
-
-    // Hotspot kawasan hutan tanpa PBPH
-    let totalKawasanTanpaPBPH = 0;
-
-
-    // Hotspot di luar kawasan
-    let totalLuarKawasan = 0;
+    var rekap = {};
 
 
     // =================================================
@@ -282,446 +81,549 @@ function hitungRekapHotspot() {
     hotspotSipongiData.features.forEach(
         function(hotspot) {
 
-            totalHotspot++;
 
+            // Pastikan geometry Point
+            if (
+                !hotspot.geometry ||
+                hotspot.geometry.type !== "Point"
+            ) {
 
-            // =============================================
-            // CARI PBPH
-            // =============================================
-
-            let pbph = cariPBPH(hotspot);
-
-
-            // =============================================
-            // CARI KAWASAN HUTAN
-            // =============================================
-
-            let kawasan = cariKawasan(hotspot);
-
-
-            // =============================================
-            // AMBIL NAMA PBPH
-            // =============================================
-
-            let namaPBPH = null;
-
-
-            if (pbph) {
-
-                namaPBPH = normalizeValue(
-                    pbph.feature.properties?.NAMOBJ
-                );
+                return;
 
             }
 
 
-            // =============================================
-            // AMBIL FUNGSI KAWASAN
-            // =============================================
-
-            let fungsiKawasan = null;
-
-
-            if (kawasan) {
-
-                fungsiKawasan = normalizeValue(
-                    kawasan.feature.properties?.F2025
+            // Buat Turf Point
+            var titikHotspot =
+                turf.point(
+                    hotspot.geometry.coordinates
                 );
 
-            }
+
+            // =============================================
+            // STATUS
+            // =============================================
+
+            var ditemukanPBPH = false;
+
+            var namaPBPH = null;
+
+            var kategoriKawasan = null;
 
 
             // =============================================
-            // HOTSPOT DI DALAM PBPH
+            // CEK HOTSPOT DI DALAM PBPH
             // =============================================
 
-            if (namaPBPH) {
+            pbphLayer.eachLayer(
+                function(layerPBPH) {
 
-                totalDalamPBPH++;
+                    // Jika sudah ditemukan
+                    if (
+                        ditemukanPBPH
+                    ) {
+
+                        return;
+
+                    }
 
 
-                // Jika fungsi kawasan tidak ditemukan
+                    var featurePBPH =
+                        layerPBPH.feature;
+
+
+                    if (
+                        !featurePBPH ||
+                        !featurePBPH.geometry
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    try {
+
+                        // Cek titik berada di PBPH
+                        if (
+                            turf.booleanPointInPolygon(
+                                titikHotspot,
+                                featurePBPH
+                            )
+                        ) {
+
+                            ditemukanPBPH = true;
+
+
+                            namaPBPH =
+                                featurePBPH.properties?.NAMOBJ ||
+                                "PBPH TANPA NAMA";
+
+                        }
+
+                    }
+
+                    catch(error) {
+
+                        console.warn(
+                            "Error cek PBPH:",
+                            error
+                        );
+
+                    }
+
+                }
+            );
+
+
+            // =============================================
+            // CEK HOTSPOT DI DALAM KAWASAN HUTAN
+            // =============================================
+
+            kawasanLayer.eachLayer(
+                function(layerKawasan) {
+
+
+                    // Jika kawasan sudah ditemukan
+                    if (
+                        kategoriKawasan !== null
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    var featureKawasan =
+                        layerKawasan.feature;
+
+
+                    if (
+                        !featureKawasan ||
+                        !featureKawasan.geometry
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    try {
+
+                        // Cek titik berada di kawasan
+                        if (
+                            turf.booleanPointInPolygon(
+                                titikHotspot,
+                                featureKawasan
+                            )
+                        ) {
+
+                            kategoriKawasan =
+                                featureKawasan.properties?.F2025 ||
+                                "KAWASAN";
+
+                        }
+
+                    }
+
+                    catch(error) {
+
+                        console.warn(
+                            "Error cek Kawasan:",
+                            error
+                        );
+
+                    }
+
+                }
+            );
+
+
+            // =============================================
+            // BUAT NAMA KATEGORI REKAP
+            // =============================================
+
+            var kategoriRekap = "";
+
+
+            // ---------------------------------------------
+            // PRIORITAS 1
+            // ADA PBPH
+            // ---------------------------------------------
+
+            if (
+                ditemukanPBPH
+            ) {
+
+                // Jika PBPH juga berada di kawasan
                 if (
-                    !fungsiKawasan ||
-                    fungsiKawasan === "-"
+                    kategoriKawasan
                 ) {
 
-                    fungsiKawasan =
-                        "Fungsi Kawasan Tidak Teridentifikasi";
+                    kategoriRekap =
+                        namaPBPH +
+                        " (" +
+                        kategoriKawasan +
+                        ")";
 
                 }
 
 
-                let key =
-                    "PBPH|" +
-                    namaPBPH +
-                    "|" +
-                    fungsiKawasan;
+                // PBPH tetapi tidak ditemukan kawasan
+                else {
 
-
-                if (!rekap[key]) {
-
-                    rekap[key] = {
-
-                        kategori: "PBPH",
-
-                        nama: namaPBPH,
-
-                        fungsi: fungsiKawasan,
-
-                        jumlah: 0
-
-                    };
+                    kategoriRekap =
+                        namaPBPH +
+                        " (PBPH)";
 
                 }
-
-
-                rekap[key].jumlah++;
 
             }
 
 
-            // =============================================
-            // DALAM KAWASAN,
-            // TAPI TIDAK ADA PBPH
-            // =============================================
+            // ---------------------------------------------
+            // PRIORITAS 2
+            // TIDAK ADA PBPH
+            // TAPI ADA KAWASAN HUTAN
+            // ---------------------------------------------
 
-            else if (fungsiKawasan) {
+            else if (
+                kategoriKawasan
+            ) {
 
-                totalKawasanTanpaPBPH++;
-
-
-                let key =
-                    "KAWASAN|" +
-                    fungsiKawasan;
-
-
-                if (!rekap[key]) {
-
-                    rekap[key] = {
-
-                        kategori: "KAWASAN HUTAN",
-
-                        nama: "-",
-
-                        fungsi: fungsiKawasan,
-
-                        jumlah: 0
-
-                    };
-
-                }
-
-
-                rekap[key].jumlah++;
+                kategoriRekap =
+                    "KAWASAN HUTAN (" +
+                    kategoriKawasan +
+                    ")";
 
             }
 
 
-            // =============================================
-            // DI LUAR KAWASAN
-            // =============================================
+            // ---------------------------------------------
+            // PRIORITAS 3
+            // DI LUAR PBPH DAN KAWASAN
+            // ---------------------------------------------
 
             else {
 
-                totalLuarKawasan++;
-
-
-                let key =
-                    "LUAR_KAWASAN";
-
-
-                if (!rekap[key]) {
-
-                    rekap[key] = {
-
-                        kategori: "LUAR KAWASAN",
-
-                        nama: "-",
-
-                        fungsi: "Di luar kawasan hutan",
-
-                        jumlah: 0
-
-                    };
-
-                }
-
-
-                rekap[key].jumlah++;
+                kategoriRekap =
+                    "DI LUAR KAWASAN HUTAN";
 
             }
 
-        }
-    );
+
+            // =============================================
+            // SIMPAN KE REKAP
+            // =============================================
+
+            if (
+                !rekap[kategoriRekap]
+            ) {
+
+                rekap[kategoriRekap] = 0;
+
+            }
 
 
-    // =================================================
-    // UBAH OBJECT MENJADI ARRAY
-    // =================================================
-
-    let hasilRekap =
-        Object.values(rekap);
-
-
-    // Urutkan berdasarkan jumlah hotspot terbesar
-    hasilRekap.sort(
-        function(a, b) {
-
-            return b.jumlah - a.jumlah;
+            rekap[kategoriRekap]++;
 
         }
     );
 
 
     // =================================================
-    // SIMPAN HASIL GLOBAL
+    // URUTKAN DARI TERBESAR
     // =================================================
 
-    window.hasilRekapHotspot = {
+    var hasilRekap =
+        Object.entries(rekap)
+        .sort(
+            function(a, b) {
 
-        total: totalHotspot,
+                return b[1] - a[1];
 
-        dalamPBPH: totalDalamPBPH,
+            }
+        );
 
-        kawasanTanpaPBPH:
-            totalKawasanTanpaPBPH,
 
-        luarKawasan:
-            totalLuarKawasan,
-
-        detail: hasilRekap
-
-    };
-
+    // =================================================
+    // TAMPILKAN KE CONSOLE
+    // =================================================
 
     console.log(
-        "HASIL REKAP HOTSPOT:",
-        window.hasilRekapHotspot
+        "HASIL REKAPITULASI HOTSPOT:"
     );
 
 
-    // Tampilkan ke HTML
-    tampilkanRekapHotspot();
+    console.table(
+        hasilRekap.map(
+            function(item) {
+
+                return {
+
+                    Kategori: item[0],
+
+                    Jumlah_Hotspot: item[1]
+
+                };
+
+            }
+        )
+    );
 
 
-    return window.hasilRekapHotspot;
+    // =================================================
+    // TAMPILKAN DI SIDEBAR
+    // =================================================
+
+    tampilkanRekapHotspot(
+        hasilRekap
+    );
+
+
+    console.log("====================================");
+    console.log("REKAPITULASI SELESAI");
+    console.log("====================================");
 
 }
 
 
+
 // =====================================================
-// TAMPILKAN REKAP DI SIDEBAR
+// TAMPILKAN REKAP KE SIDEBAR
 // =====================================================
 
-function tampilkanRekapHotspot() {
+function tampilkanRekapHotspot(
+    hasilRekap
+) {
 
-    let container =
+
+    // =================================================
+    // HAPUS PANEL LAMA
+    // =================================================
+
+    var panelLama =
         document.getElementById(
-            "rekapHotspot"
+            "hotspotRekap"
         );
-
-
-    if (!container) {
-
-        console.warn(
-            "Container #rekapHotspot belum ditemukan."
-        );
-
-        return;
-
-    }
 
 
     if (
-        !window.hasilRekapHotspot
+        panelLama
     ) {
 
-        return;
+        panelLama.remove();
 
     }
 
 
-    let data =
-        window.hasilRekapHotspot;
+    // =================================================
+    // BUAT PANEL
+    // =================================================
+
+    var panel =
+        document.createElement(
+            "div"
+        );
 
 
-    let html = `
+    panel.id =
+        "hotspotRekap";
 
-        <div style="
-            font-size:14px;
-            margin-bottom:10px;
-        ">
 
-            <b>Total Hotspot:</b>
-            ${data.total}
+    panel.style.cssText = `
 
-            <br>
+        margin-top:15px;
 
-            <b>Dalam PBPH:</b>
-            ${data.dalamPBPH}
+        background:white;
 
-            <br>
+        border-radius:10px;
 
-            <b>Kawasan tanpa PBPH:</b>
-            ${data.kawasanTanpaPBPH}
+        padding:12px;
 
-            <br>
+        box-shadow:
+            0 2px 8px
+            rgba(0,0,0,0.15);
 
-            <b>Luar Kawasan:</b>
-            ${data.luarKawasan}
+        font-size:13px;
 
-        </div>
+        max-height:350px;
 
-        <hr>
+        overflow-y:auto;
 
     `;
 
 
     // =================================================
-    // DETAIL REKAP
+    // JUDUL
     // =================================================
 
-    data.detail.forEach(
+    var html = `
+
+        <div style="
+            font-weight:bold;
+            font-size:15px;
+            margin-bottom:10px;
+            color:#d32f2f;
+        ">
+
+            🔥 REKAP HOTSPOT
+
+        </div>
+
+    `;
+
+
+    // =================================================
+    // TOTAL
+    // =================================================
+
+    var total = 0;
+
+
+    hasilRekap.forEach(
         function(item) {
 
-            // ===============================
-            // PBPH
-            // ===============================
-
-            if (
-                item.kategori === "PBPH"
-            ) {
-
-                html += `
-
-                    <div style="
-                        background:white;
-                        padding:8px;
-                        margin-bottom:7px;
-                        border-radius:6px;
-                        border-left:4px solid #e67e22;
-                    ">
-
-                        <b>${item.nama}</b>
-
-                        <br>
-
-                        <span style="
-                            font-size:12px;
-                            color:#666;
-                        ">
-
-                            Fungsi:
-                            ${item.fungsi}
-
-                        </span>
-
-                        <br>
-
-                        <b style="
-                            color:#c0392b;
-                        ">
-
-                            🔥 ${item.jumlah} hotspot
-
-                        </b>
-
-                    </div>
-
-                `;
-
-            }
-
-
-            // ===============================
-            // KAWASAN TANPA PBPH
-            // ===============================
-
-            else if (
-                item.kategori ===
-                "KAWASAN HUTAN"
-            ) {
-
-                html += `
-
-                    <div style="
-                        background:#f5f5f5;
-                        padding:8px;
-                        margin-bottom:7px;
-                        border-radius:6px;
-                        border-left:4px solid #2e7d32;
-                    ">
-
-                        <b>Kawasan Hutan</b>
-
-                        <br>
-
-                        <span style="
-                            font-size:12px;
-                            color:#666;
-                        ">
-
-                            Fungsi:
-                            ${item.fungsi}
-
-                        </span>
-
-                        <br>
-
-                        <b style="
-                            color:#c0392b;
-                        ">
-
-                            🔥 ${item.jumlah} hotspot
-
-                        </b>
-
-                    </div>
-
-                `;
-
-            }
-
-
-            // ===============================
-            // LUAR KAWASAN
-            // ===============================
-
-            else {
-
-                html += `
-
-                    <div style="
-                        background:#fff3e0;
-                        padding:8px;
-                        margin-bottom:7px;
-                        border-radius:6px;
-                        border-left:4px solid #757575;
-                    ">
-
-                        <b>Di Luar Kawasan Hutan</b>
-
-                        <br>
-
-                        <b style="
-                            color:#c0392b;
-                        ">
-
-                            🔥 ${item.jumlah} hotspot
-
-                        </b>
-
-                    </div>
-
-                `;
-
-            }
+            total += item[1];
 
         }
     );
 
 
-    container.innerHTML = html;
+    html += `
+
+        <div style="
+            background:#fff3e0;
+            padding:8px;
+            border-radius:6px;
+            margin-bottom:10px;
+        ">
+
+            <b>Total Hotspot:</b>
+            ${total}
+
+        </div>
+
+    `;
+
+
+    // =================================================
+    // TABEL
+    // =================================================
+
+    html += `
+
+        <table style="
+            width:100%;
+            border-collapse:collapse;
+            font-size:12px;
+        ">
+
+            <thead>
+
+                <tr>
+
+                    <th style="
+                        text-align:left;
+                        padding:6px;
+                        border-bottom:1px solid #ddd;
+                    ">
+
+                        Lokasi
+
+                    </th>
+
+
+                    <th style="
+                        text-align:center;
+                        padding:6px;
+                        border-bottom:1px solid #ddd;
+                    ">
+
+                        Jumlah
+
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+    `;
+
+
+    // =================================================
+    // ISI TABEL
+    // =================================================
+
+    hasilRekap.forEach(
+        function(item) {
+
+            html += `
+
+                <tr>
+
+                    <td style="
+                        padding:7px 4px;
+                        border-bottom:1px solid #eee;
+                    ">
+
+                        ${item[0]}
+
+                    </td>
+
+
+                    <td style="
+                        text-align:center;
+                        font-weight:bold;
+                        border-bottom:1px solid #eee;
+                    ">
+
+                        ${item[1]}
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+    );
+
+
+    html += `
+
+            </tbody>
+
+        </table>
+
+    `;
+
+
+    panel.innerHTML =
+        html;
+
+
+    // =================================================
+    // MASUKKAN KE SIDEBAR
+    // =================================================
+
+    var sidebar =
+        document.getElementById(
+            "sidebar"
+        );
+
+
+    if (
+        sidebar
+    ) {
+
+        sidebar.appendChild(
+            panel
+        );
+
+    }
 
 }
