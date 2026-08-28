@@ -1005,7 +1005,7 @@ function tampilkanRekapHotspot(
     `;
 
 
-    // =================================================
+     // =================================================
     // MASUKKAN HTML KE PANEL
     // =================================================
 
@@ -1014,9 +1014,38 @@ function tampilkanRekapHotspot(
 
 
     // =================================================
-// MASUKKAN PANEL KE HALAMAN / PETA
-// =================================================
+    // MASUKKAN PANEL KE HALAMAN / PETA
+    // =================================================
 
-document.body.appendChild(
-    panel
-);
+    document.body.appendChild(
+        panel
+    );
+
+
+    // =================================================
+    // TOMBOL TUTUP PANEL
+    // =================================================
+
+    var tombolTutup =
+        document.getElementById(
+            "tutupRekapHotspot"
+        );
+
+
+    if (
+        tombolTutup
+    ) {
+
+        tombolTutup.addEventListener(
+            "click",
+            function() {
+
+                panel.remove();
+
+            }
+        );
+
+    }
+
+
+}
