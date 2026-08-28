@@ -472,90 +472,107 @@ function loadHotspotSipongi() {
                             }
                         );
 
+// ======================================
+// POPUP
+// ======================================
 
-                    // ======================================
-                    // POPUP
-                    // ======================================
+// Ambil tanggal hotspot
+const tanggalHotspot =
+    p.date_hotspot || "-";
 
-                    const html = `
+// Ambil waktu dari date_hotspot
+let waktuHotspot = "-";
 
-                        <div style="
-                            min-width:220px;
-                            font-size:13px;
-                            line-height:1.6;
-                        ">
+const hasilWaktu =
+    String(tanggalHotspot).match(
+        /(\d{2}:\d{2}:\d{2})$/
+    );
 
-                            <div style="
-                                font-weight:bold;
-                                font-size:15px;
-                                margin-bottom:8px;
-                                color:#d32f2f;
-                            ">
+if (hasilWaktu) {
 
-                                🔥 HOTSPOT SIPONGI
+    waktuHotspot =
+        hasilWaktu[1];
 
-                            </div>
-
-
-                            <b>Provinsi:</b>
-                            ${p.nama_provinsi || "-"}
-                            <br>
-
-                            <b>Kabupaten:</b>
-                            ${p.kabkota || "-"}
-                            <br>
-
-                            <b>Kecamatan:</b>
-                            ${p.kecamatan || "-"}
-                            <br>
-
-                            <b>Desa:</b>
-                            ${p.desa || "-"}
-                            <br>
-
-                            <hr>
+}
 
 
-                            <b>Sumber:</b>
-                            ${p.sumber || "-"}
-                            <br>
+const html = `
 
-                            <b>Confidence:</b>
-                            ${p.confidence_level || "-"}
-                            <br>
+    <div style="
+        min-width:220px;
+        font-size:13px;
+        line-height:1.6;
+    ">
 
-                            <b>Nilai Confidence:</b>
-                            ${p.confidence || "-"}
-                            <br>
+        <div style="
+            font-weight:bold;
+            font-size:15px;
+            margin-bottom:8px;
+            color:#d32f2f;
+        ">
 
-                            <b>Tanggal:</b>
-                            ${p.date_hotspot || "-"}
-                            <br>
+            🔥 HOTSPOT SIPONGI
 
-                            <b>Waktu:</b>
-                            ${p.hs_date || "-"}
-                            <br>
-
-                            <hr>
+        </div>
 
 
-                            <b>Latitude:</b>
-                            ${latitude}
-                            <br>
+        <b>Provinsi:</b>
+        ${p.nama_provinsi || "-"}
+        <br>
 
-                            <b>Longitude:</b>
-                            ${longitude}
+        <b>Kabupaten:</b>
+        ${p.kabkota || "-"}
+        <br>
 
-                        </div>
+        <b>Kecamatan:</b>
+        ${p.kecamatan || "-"}
+        <br>
 
-                    `;
+        <b>Desa:</b>
+        ${p.desa || "-"}
+        <br>
+
+        <hr>
 
 
-                    marker.bindPopup(
-                        html
-                    );
+        <b>Sumber:</b>
+        ${p.sumber || "-"}
+        <br>
+
+        <b>Confidence:</b>
+        ${p.confidence_level || "-"}
+        <br>
+
+        <b>Nilai Confidence:</b>
+        ${p.confidence || "-"}
+        <br>
+
+        <b>Tanggal:</b>
+        ${tanggalHotspot}
+        <br>
+
+        <b>Waktu:</b>
+        ${waktuHotspot}
+        <br>
+
+        <hr>
 
 
+        <b>Latitude:</b>
+        ${latitude}
+        <br>
+
+        <b>Longitude:</b>
+        ${longitude}
+
+    </div>
+
+`;
+
+
+marker.bindPopup(
+    html
+);
                     // ======================================
                     // TOOLTIP
                     // ======================================
