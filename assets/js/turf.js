@@ -172,17 +172,19 @@ function hitungRekapHotspot() {
             // AMBIL CONFIDENCE
             // =============================================
 
-            var confidence =
-                String(
-                    hotspot.properties?.confidence_level || ""
-                )
-                .toLowerCase()
-                .trim();
+           var confidence =
+            String(
+                hotspot.properties?.confidence_level || ""
+            )
+            .toLowerCase()
+            .trim();
+
 
                 // ======================================
                 // VALIDASI CONFIDENCE
                 // ======================================
-                            if (
+                
+                if (
                     confidence !== "high" &&
                     confidence !== "medium" &&
                     confidence !== "low"
@@ -190,8 +192,8 @@ function hitungRekapHotspot() {
                 
                     console.warn(
                         "Confidence tidak dikenali:",
-                        p.confidence_level,
-                        p
+                        hotspot.properties?.confidence_level,
+                        hotspot.properties
                     );
                 
                     return;
@@ -1111,35 +1113,15 @@ function tampilkanRekapHotspot(
     // MASUKKAN HTML KE PANEL
     // =================================================
 
-    panel.innerHTML =
-        html;
-
-        // =================================================
-    // EVENT TOMBOL EXPORT EXCEL
     // =================================================
+// MASUKKAN HTML KE PANEL
+// =================================================
 
-    var tombolExportExcel =
-    panel.querySelector(
-        "#btnExportHotspotExcel"
-    );
+panel.innerHTML =
+    html;
 
 
-    if (
-        tombolExportExcel
-    ) {
-
-        tombolExportExcel.addEventListener(
-            "click",
-            function() {
-
-                exportHotspotExcel();
-
-            }
-        );
-
-    }
-
-    // =================================================
+// =================================================
 // MASUKKAN PANEL KE HALAMAN / PETA
 // =================================================
 
@@ -1201,8 +1183,6 @@ if (
 
 
 }
-
-
 // =====================================================
 // EXPORT DATA HOTSPOT KE EXCEL
 // =====================================================
