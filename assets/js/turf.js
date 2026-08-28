@@ -619,25 +619,35 @@ function tampilkanRekapHotspot(
 
     panel.style.cssText = `
 
-        margin-top:15px;
+    position:fixed;
 
-        background:white;
+    top:90px;
 
-        border-radius:10px;
+    right:20px;
 
-        padding:12px;
+    z-index:2000;
 
-        box-shadow:
-            0 2px 8px
-            rgba(0,0,0,0.15);
+    width:420px;
 
-        font-size:13px;
+    max-width:calc(100vw - 120px);
 
-        max-height:520px;
+    max-height:calc(100vh - 130px);
 
-        overflow-y:auto;
+    overflow-y:auto;
 
-    `;
+    background:white;
+
+    border-radius:12px;
+
+    padding:15px;
+
+    box-shadow:
+        0 4px 18px
+        rgba(0,0,0,0.25);
+
+    font-size:13px;
+
+`;
 
 
     // =================================================
@@ -1004,23 +1014,9 @@ function tampilkanRekapHotspot(
 
 
     // =================================================
-    // MASUKKAN KE SIDEBAR
-    // =================================================
+// MASUKKAN PANEL KE HALAMAN / PETA
+// =================================================
 
-    var sidebar =
-        document.getElementById(
-            "sidebar"
-        );
-
-
-    if (
-        sidebar
-    ) {
-
-        sidebar.appendChild(
-            panel
-        );
-
-    }
-
-}
+document.body.appendChild(
+    panel
+);
