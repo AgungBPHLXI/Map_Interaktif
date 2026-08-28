@@ -448,30 +448,69 @@ function loadHotspotSipongi() {
 
 
                     // ======================================
-                    // BUAT MARKER
-                    // ======================================
+// BUAT MARKER HOTSPOT
+// ======================================
 
-                    const marker =
-                        L.circleMarker(
-                            [
-                                latitude,
-                                longitude
-                            ],
-                            {
+// Ambil zoom peta saat ini
+const zoomSekarang = map.getZoom();
 
-                                radius: 5,
+// Tentukan ukuran marker berdasarkan zoom
+let ukuranMarker = 5;
 
-                                color: warna,
+// Jika zoom sangat jauh
+if (zoomSekarang <= 7) {
 
-                                weight: 1,
+    ukuranMarker = 2;
 
-                                fillColor: warna,
+}
 
-                                fillOpacity: 0.85
+// Jika zoom sedang
+else if (zoomSekarang <= 9) {
 
-                            }
-                        );
+    ukuranMarker = 3;
 
+}
+
+// Jika zoom agak dekat
+else if (zoomSekarang <= 11) {
+
+    ukuranMarker = 4;
+
+}
+
+// Jika zoom dekat
+else {
+
+    ukuranMarker = 5;
+
+}
+
+
+// Buat marker
+const marker =
+    L.circleMarker(
+        [
+            latitude,
+            longitude
+        ],
+        {
+
+            radius: ukuranMarker,
+
+            color: warna,
+
+            weight: 1,
+
+            fillColor: warna,
+
+            fillOpacity: 0.85
+
+        }
+    );
+
+
+// Simpan ukuran marker
+marker.options.ukuranAwal = 5;
 // ======================================
 // POPUP
 // ======================================
@@ -719,7 +758,104 @@ cekDanHitungRekapHotspot();
         });
 
 }
+// =====================================================
+// UKURAN MARKER SESUAI ZOOM PETA
+// =====================================================
 
+function updateUkuranMarkerHotspot() {
+
+    // Ambil zoom peta
+    const zoomSekarang = map.getZoom();
+
+    // Tentukan ukuran marker
+    let ukuranMarker;
+
+    // Zoom sangat jauh
+    if (zoomSekarang <= 7) {
+
+        ukuranMarker = 2;
+
+    }
+
+    // Zoom sedang
+    else if (zoomSekarang <= 9) {
+
+        ukuranMarker = 3;
+
+    }
+
+    // Zoom agak dekat
+    else if (zoomSekarang <= 11) {
+
+        ukuranMarker = 4;
+
+    }
+
+    // Zoom dekat
+    else {
+
+        ukuranMarker = 5;
+
+    }
+
+
+    // ======================================
+    // UBAH MARKER HIGH
+    // ======================================
+
+    hotspotHighLayer.eachLayer(
+        function(marker) {
+
+            marker.setRadius(
+                ukuranMarker
+            );
+
+        }
+    );
+
+
+    // ======================================
+    // UBAH MARKER MEDIUM
+    // ======================================
+
+    hotspotMediumLayer.eachLayer(
+        function(marker) {
+
+            marker.setRadius(
+                ukuranMarker
+            );
+
+        }
+    );
+
+
+    // ======================================
+    // UBAH MARKER LOW
+    // ======================================
+
+    hotspotLowLayer.eachLayer(
+        function(marker) {
+
+            marker.setRadius(
+                ukuranMarker
+            );
+
+        }
+    );
+
+}
+// =====================================================
+// JALANKAN SAAT ZOOM BERUBAH
+// =====================================================
+
+map.on(
+    "zoomend",
+    function() {
+
+        updateUkuranMarkerHotspot();
+
+    }
+);
 
 // =====================================================
 // FILTER HOTSPOT HIGH / MEDIUM / LOW
