@@ -399,58 +399,112 @@ kawasanLayer.eachLayer(
 
     }
 );
+// =============================================
+// BUAT KATEGORI REKAP
+// =============================================
 
-            // =============================================
-            // BUAT KATEGORI REKAP
-            // =============================================
-
-            var kategoriRekap = "";
-
-
-             // ---------------------------------------------
-            // PRIORITAS 1
-            // HOTSPOT DI DALAM PBPH
-            // ---------------------------------------------
-            
-            if (ditemukanPBPH && kategoriKawasan) {
-            
-                kategoriRekap =
-                    namaPBPH +
-                    " (" +
-                    kategoriKawasan +
-                    ")";
-
-            }
-            // ---------------------------------------------
-            // PRIORITAS 2
-            // TIDAK ADA PBPH
-            // TAPI ADA KAWASAN HUTAN
-            // ---------------------------------------------
-
-            else if (
-                kategoriKawasan
-            ) {
-
-                kategoriRekap =
-                    "KAWASAN HUTAN (" +
-                    kategoriKawasan +
-                    ")";
-
-            }
+var kategoriRekap = "";
 
 
-            // ---------------------------------------------
-            // PRIORITAS 3
-            // DI LUAR KAWASAN HUTAN
-            // ---------------------------------------------
+// ---------------------------------------------
+// PRIORITAS 1
+// HOTSPOT DI DALAM PBPH
+// ---------------------------------------------
 
-            else {
+if (
+    ditemukanPBPH &&
+    kategoriKawasan
+) {
 
-                kategoriRekap =
-                    "DI LUAR KAWASAN HUTAN";
+    kategoriRekap =
+        namaPBPH +
+        " (" +
+        kategoriKawasan +
+        ")";
 
-            }
+}
 
+
+// ---------------------------------------------
+// PRIORITAS 2
+// TIDAK ADA PBPH
+// TAPI ADA KAWASAN HUTAN
+// ---------------------------------------------
+
+else if (
+    kategoriKawasan
+) {
+
+    kategoriRekap =
+        "KAWASAN HUTAN (" +
+        kategoriKawasan +
+        ")";
+
+}
+
+
+// ---------------------------------------------
+// PRIORITAS 3
+// DI LUAR KAWASAN HUTAN
+// ---------------------------------------------
+
+else {
+
+    kategoriRekap =
+        "DI LUAR KAWASAN HUTAN";
+
+}
+
+
+// =====================================================
+// SIMPAN HASIL ANALISIS KE PROPERTIES HOTSPOT
+// UNTUK EXPORT EXCEL
+// =====================================================
+
+if (
+    !hotspot.properties
+) {
+
+    hotspot.properties = {};
+
+}
+
+
+// =====================================================
+// SIMPAN KAWASAN
+// =====================================================
+
+hotspot.properties.kawasan =
+    kategoriKawasan || "";
+
+
+// =====================================================
+// SIMPAN PBPH
+// =====================================================
+
+hotspot.properties.pbph =
+    ditemukanPBPH
+        ?
+        namaPBPH
+        :
+        "";
+
+
+// =====================================================
+// SIMPAN STATUS DI LUAR KAWASAN
+// =====================================================
+
+hotspot.properties.di_luar_kawasan =
+    !kategoriKawasan
+        ?
+        "YA"
+        :
+        "";
+
+
+// =============================================
+// BUAT OBJECT JIKA BELUM ADA
+// =============================================
 
             // =============================================
             // BUAT OBJECT JIKA BELUM ADA
@@ -1262,7 +1316,7 @@ function exportHotspotExcel() {
 
 
             // =========================================
-            // AMBIL PROPERTY
+            // AMBIL PROPERTY HOTSPOT
             // =========================================
 
             var p =
@@ -1271,7 +1325,7 @@ function exportHotspotExcel() {
 
             // =========================================
             // AMBIL KOORDINAT
-            // GEOJSON:
+            // FORMAT GEOJSON:
             // [LONGITUDE, LATITUDE]
             // =========================================
 
@@ -1390,6 +1444,22 @@ function exportHotspotExcel() {
 
 
             // =========================================
+            // AMBIL HASIL ANALISIS TURF.JS
+            // =========================================
+
+            var kawasanExcel =
+                p.kawasan || "-";
+
+
+            var pbphExcel =
+                p.pbph || "-";
+
+
+            var diLuarKawasanExcel =
+                p.di_luar_kawasan || "-";
+
+
+            // =========================================
             // MASUKKAN DATA KE EXCEL
             // =========================================
 
@@ -1397,10 +1467,6 @@ function exportHotspotExcel() {
 
                 "No":
                     dataExcel.length + 1,
-
-
-                "Provinsi":
-                    p.nama_provinsi || "-",
 
 
                 "Kabupaten":
@@ -1413,10 +1479,6 @@ function exportHotspotExcel() {
 
                 "Desa":
                     p.desa || "-",
-
-
-                "Sumber":
-                    p.sumber || "-",
 
 
                 "Confidence":
@@ -1433,6 +1495,18 @@ function exportHotspotExcel() {
 
                 "Waktu":
                     waktuExcel || "-",
+
+
+                "Kawasan":
+                    kawasanExcel,
+
+
+                "PBPH":
+                    pbphExcel,
+
+
+                "Di Luar Kawasan":
+                    diLuarKawasanExcel,
 
 
                 "Latitude":
@@ -1481,29 +1555,31 @@ function exportHotspotExcel() {
 
     worksheet["!cols"] = [
 
-        { wch: 8 },
+        { wch: 8 },   // No
 
-        { wch: 22 },
+        { wch: 25 },  // Kabupaten
 
-        { wch: 25 },
+        { wch: 25 },  // Kecamatan
 
-        { wch: 22 },
+        { wch: 25 },  // Desa
 
-        { wch: 22 },
+        { wch: 15 },  // Confidence
 
-        { wch: 18 },
+        { wch: 18 },  // Nilai Confidence
 
-        { wch: 15 },
+        { wch: 15 },  // Tanggal
 
-        { wch: 18 },
+        { wch: 12 },  // Waktu
 
-        { wch: 15 },
+        { wch: 15 },  // Kawasan
 
-        { wch: 12 },
+        { wch: 40 },  // PBPH
 
-        { wch: 14 },
+        { wch: 20 },  // Di Luar Kawasan
 
-        { wch: 14 }
+        { wch: 14 },  // Latitude
+
+        { wch: 14 }   // Longitude
 
     ];
 
