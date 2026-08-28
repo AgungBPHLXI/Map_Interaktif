@@ -476,25 +476,53 @@ function loadHotspotSipongi() {
 // POPUP
 // ======================================
 
-// Ambil tanggal hotspot
-const tanggalHotspot =
+// Ambil data tanggal asli
+const dateHotspotRaw =
     p.date_hotspot || "-";
 
-// Ambil waktu dari date_hotspot
+// Variabel tanggal dan waktu
+let tanggalHotspot = "-";
 let waktuHotspot = "-";
 
-const hasilWaktu =
-    String(tanggalHotspot).match(
-        /(\d{2}:\d{2}:\d{2})$/
-    );
 
-if (hasilWaktu) {
+// ======================================
+// PISAHKAN TANGGAL DAN WAKTU
+// ======================================
 
-    waktuHotspot =
-        hasilWaktu[1];
+if (dateHotspotRaw !== "-") {
+
+    const dataTanggal =
+        String(dateHotspotRaw).trim();
+
+    // Ambil waktu HH:MM:SS
+    const hasilWaktu =
+        dataTanggal.match(
+            /(\d{2}:\d{2}:\d{2})/
+        );
+
+    if (hasilWaktu) {
+
+        waktuHotspot =
+            hasilWaktu[1];
+
+    }
+
+
+    // Hapus waktu dari tanggal
+    tanggalHotspot =
+        dataTanggal
+            .replace(
+                /\s*\d{2}:\d{2}:\d{2}.*/,
+                ""
+            )
+            .trim();
 
 }
 
+
+// ======================================
+// HTML POPUP
+// ======================================
 
 const html = `
 
