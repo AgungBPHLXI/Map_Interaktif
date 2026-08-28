@@ -179,18 +179,24 @@ function hitungRekapHotspot() {
                 .toLowerCase()
                 .trim();
 
-
-            // Pastikan hanya High / Medium / Low
-
-            if (
-                confidence !== "high" &&
-                confidence !== "medium" &&
-                confidence !== "low"
-            ) {
-
-                confidence = "low";
-
-            }
+                // ======================================
+                // VALIDASI CONFIDENCE
+                // ======================================
+                            if (
+                    confidence !== "high" &&
+                    confidence !== "medium" &&
+                    confidence !== "low"
+                ) {
+                
+                    console.warn(
+                        "Confidence tidak dikenali:",
+                        p.confidence_level,
+                        p
+                    );
+                
+                    return;
+                
+                }
 
 
             // =============================================
@@ -894,7 +900,34 @@ function tampilkanRekapHotspot(
         </div>
 
     `;
+    // =================================================
+    // TOMBOL EXPORT EXCEL
+    // =================================================
 
+    html += `
+
+        <button
+            id="btnExportHotspotExcel"
+            type="button"
+            style="
+                width:100%;
+                padding:10px;
+                margin-bottom:12px;
+                border:none;
+                border-radius:7px;
+                background:#2e7d32;
+                color:white;
+                font-size:13px;
+                font-weight:bold;
+                cursor:pointer;
+            "
+        >
+
+            📥 DOWNLOAD DATA HOTSPOT EXCEL
+
+        </button>
+
+    `;
 
     // =================================================
     // TABEL
@@ -1081,40 +1114,493 @@ function tampilkanRekapHotspot(
     panel.innerHTML =
         html;
 
-
+        // =================================================
+    // EVENT TOMBOL EXPORT EXCEL
     // =================================================
-    // MASUKKAN PANEL KE HALAMAN / PETA
-    // =================================================
 
-    document.body.appendChild(
-        panel
+    var tombolExportExcel =
+    panel.querySelector(
+        "#btnExportHotspotExcel"
     );
 
 
-    // =================================================
-    // TOMBOL TUTUP PANEL
-    // =================================================
-
-    var tombolTutup =
-        document.getElementById(
-            "tutupRekapHotspot"
-        );
-
-
     if (
-        tombolTutup
+        tombolExportExcel
     ) {
 
-        tombolTutup.addEventListener(
+        tombolExportExcel.addEventListener(
             "click",
             function() {
 
-                panel.remove();
+                exportHotspotExcel();
 
             }
         );
 
     }
 
+    // =================================================
+// MASUKKAN PANEL KE HALAMAN / PETA
+// =================================================
+
+document.body.appendChild(
+    panel
+);
+
+
+// =================================================
+// TOMBOL EXPORT EXCEL
+// =================================================
+
+var tombolExportExcel =
+    panel.querySelector(
+        "#btnExportHotspotExcel"
+    );
+
+
+if (
+    tombolExportExcel
+) {
+
+    tombolExportExcel.addEventListener(
+        "click",
+        function() {
+
+            exportHotspotExcel();
+
+        }
+    );
+
+}
+
+
+// =================================================
+// TOMBOL TUTUP PANEL
+// =================================================
+
+var tombolTutup =
+    panel.querySelector(
+        "#tutupRekapHotspot"
+    );
+
+
+if (
+    tombolTutup
+) {
+
+    tombolTutup.addEventListener(
+        "click",
+        function() {
+
+            panel.remove();
+
+        }
+    );
+
+}
+
+
+}
+
+
+// =====================================================
+// EXPORT DATA HOTSPOT KE EXCEL
+// =====================================================
+
+function exportHotspotExcel() {
+
+
+    // =================================================
+    // VALIDASI DATA HOTSPOT
+    // =================================================
+
+    if (
+        typeof hotspotSipongiData === "undefined" ||
+        !hotspotSipongiData ||
+        !Array.isArray(
+            hotspotSipongiData.features
+        ) ||
+        hotspotSipongiData.features.length === 0
+    ) {
+
+        alert(
+            "Data hotspot belum tersedia."
+        );
+
+        return;
+
+    }
+
+
+    // =================================================
+    // CEK LIBRARY EXCEL
+    // =================================================
+
+    if (
+        typeof XLSX === "undefined"
+    ) {
+
+        alert(
+            "Library Excel belum dimuat. Periksa script SheetJS di index.html."
+        );
+
+        return;
+
+    }
+
+
+    // =================================================
+    // BUAT ARRAY DATA EXCEL
+    // =================================================
+
+    var dataExcel = [];
+
+
+    // =================================================
+    // PROSES SETIAP HOTSPOT
+    // =================================================
+
+    hotspotSipongiData.features.forEach(
+        function(feature) {
+
+
+            // =========================================
+            // VALIDASI GEOMETRY
+            // =========================================
+
+            if (
+                !feature.geometry ||
+                feature.geometry.type !== "Point" ||
+                !Array.isArray(
+                    feature.geometry.coordinates
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            // =========================================
+            // AMBIL PROPERTY
+            // =========================================
+
+            var p =
+                feature.properties || {};
+
+
+            // =========================================
+            // AMBIL KOORDINAT
+            // GEOJSON:
+            // [LONGITUDE, LATITUDE]
+            // =========================================
+
+            var longitude =
+                feature.geometry.coordinates[0];
+
+
+            var latitude =
+                feature.geometry.coordinates[1];
+
+
+            // =========================================
+            // AMBIL TANGGAL HOTSPOT
+            // =========================================
+
+            var tanggalRaw =
+                p.date_hotspot || "";
+
+
+            var tanggalExcel =
+                "";
+
+
+            var waktuExcel =
+                "";
+
+
+            // =========================================
+            // AMBIL TANGGAL DARI date_hotspot
+            // =========================================
+
+            var hasilTanggal =
+                String(
+                    tanggalRaw
+                ).match(
+                    /^(\d{4}-\d{2}-\d{2})/
+                );
+
+
+            if (
+                hasilTanggal
+            ) {
+
+                tanggalExcel =
+                    hasilTanggal[1];
+
+            }
+
+
+            // =========================================
+            // AMBIL WAKTU DARI date_hotspot
+            // =========================================
+
+            var hasilWaktuDariTanggal =
+                String(
+                    tanggalRaw
+                ).match(
+                    /(\d{2}:\d{2}:\d{2})/
+                );
+
+
+            if (
+                hasilWaktuDariTanggal
+            ) {
+
+                waktuExcel =
+                    hasilWaktuDariTanggal[1];
+
+            }
+
+
+            // =========================================
+            // JIKA WAKTU BELUM ADA,
+            // AMBIL DARI hs_date
+            // =========================================
+
+            if (
+                !waktuExcel &&
+                p.hs_date
+            ) {
+
+                var hasilWaktu =
+                    String(
+                        p.hs_date
+                    ).match(
+                        /(\d{2}:\d{2}:\d{2})/
+                    );
+
+
+                if (
+                    hasilWaktu
+                ) {
+
+                    waktuExcel =
+                        hasilWaktu[1];
+
+                }
+
+            }
+
+
+            // =========================================
+            // JIKA TANGGAL TIDAK TERBACA,
+            // GUNAKAN DATA ASLI
+            // =========================================
+
+            if (
+                !tanggalExcel &&
+                tanggalRaw
+            ) {
+
+                tanggalExcel =
+                    tanggalRaw;
+
+            }
+
+
+            // =========================================
+            // MASUKKAN DATA KE EXCEL
+            // =========================================
+
+            dataExcel.push({
+
+                "No":
+                    dataExcel.length + 1,
+
+
+                "Provinsi":
+                    p.nama_provinsi || "-",
+
+
+                "Kabupaten":
+                    p.kabkota || "-",
+
+
+                "Kecamatan":
+                    p.kecamatan || "-",
+
+
+                "Desa":
+                    p.desa || "-",
+
+
+                "Sumber":
+                    p.sumber || "-",
+
+
+                "Confidence":
+                    p.confidence_level || "-",
+
+
+                "Nilai Confidence":
+                    p.confidence || "-",
+
+
+                "Tanggal":
+                    tanggalExcel || "-",
+
+
+                "Waktu":
+                    waktuExcel || "-",
+
+
+                "Latitude":
+                    latitude,
+
+
+                "Longitude":
+                    longitude
+
+            });
+
+        }
+    );
+
+
+    // =================================================
+    // VALIDASI HASIL EXPORT
+    // =================================================
+
+    if (
+        dataExcel.length === 0
+    ) {
+
+        alert(
+            "Tidak ada data hotspot yang dapat diexport."
+        );
+
+        return;
+
+    }
+
+
+    // =================================================
+    // BUAT WORKSHEET EXCEL
+    // =================================================
+
+    var worksheet =
+        XLSX.utils.json_to_sheet(
+            dataExcel
+        );
+
+
+    // =================================================
+    // ATUR LEBAR KOLOM
+    // =================================================
+
+    worksheet["!cols"] = [
+
+        { wch: 8 },
+
+        { wch: 22 },
+
+        { wch: 25 },
+
+        { wch: 22 },
+
+        { wch: 22 },
+
+        { wch: 18 },
+
+        { wch: 15 },
+
+        { wch: 18 },
+
+        { wch: 15 },
+
+        { wch: 12 },
+
+        { wch: 14 },
+
+        { wch: 14 }
+
+    ];
+
+
+    // =================================================
+    // BUAT WORKBOOK
+    // =================================================
+
+    var workbook =
+        XLSX.utils.book_new();
+
+
+    // =================================================
+    // MASUKKAN WORKSHEET
+    // =================================================
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Data Hotspot"
+    );
+
+
+    // =================================================
+    // TANGGAL UNTUK NAMA FILE
+    // =================================================
+
+    var sekarang =
+        new Date();
+
+
+    var tanggalFile =
+        sekarang.getFullYear() +
+        "-" +
+        String(
+            sekarang.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        ) +
+        "-" +
+        String(
+            sekarang.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    // =================================================
+    // NAMA FILE EXCEL
+    // =================================================
+
+    var namaFile =
+        "Data_Hotspot_Kalimantan_Selatan_" +
+        tanggalFile +
+        ".xlsx";
+
+
+    // =================================================
+    // DOWNLOAD EXCEL
+    // =================================================
+
+    XLSX.writeFile(
+        workbook,
+        namaFile
+    );
+
+
+    // =================================================
+    // INFORMASI BERHASIL
+    // =================================================
+
+    console.log(
+        "Export Excel berhasil:",
+        dataExcel.length,
+        "data hotspot"
+    );
 
 }
