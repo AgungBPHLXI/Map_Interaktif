@@ -247,22 +247,41 @@ function loadHotspotSipongi() {
     // SEMBUNYIKAN
     // ==========================================
 
+   if (
+    map.hasLayer(
+        hotspotSipongiLayer
+    )
+) {
+
+    // Sembunyikan hotspot
+    map.removeLayer(
+        hotspotSipongiLayer
+    );
+
+
+    // Sembunyikan panel rekap
+    const panelRekap =
+        document.getElementById(
+            "hotspotRekap"
+        );
+
     if (
-        map.hasLayer(
-            hotspotSipongiLayer
-        )
+        panelRekap
     ) {
 
-        map.removeLayer(
-            hotspotSipongiLayer
-        );
+        panelRekap.style.display =
+            "none";
 
-        console.log(
-            "Hotspot disembunyikan"
-        );
-
-        return;
     }
+
+
+    console.log(
+        "Hotspot dan rekap disembunyikan"
+    );
+
+    return;
+
+}
 
 
     // ==========================================
@@ -270,23 +289,41 @@ function loadHotspotSipongi() {
     // TAMPILKAN KEMBALI
     // ==========================================
 
-    if (
-        hotspotSipongiLoaded
-    ) {
+   if (
+    hotspotSipongiLoaded
+) {
 
-        hotspotSipongiLayer.addTo(map);
-
-
-        // Terapkan filter terakhir
-        updateHotspotFilter();
+    // Tampilkan kembali hotspot
+    hotspotSipongiLayer.addTo(map);
 
 
-        console.log(
-            "Hotspot ditampilkan kembali"
+    // Terapkan filter terakhir
+    updateHotspotFilter();
+
+
+    // Tampilkan kembali panel rekap
+    const panelRekap =
+        document.getElementById(
+            "hotspotRekap"
         );
 
-        return;
+    if (
+        panelRekap
+    ) {
+
+        panelRekap.style.display =
+            "block";
+
     }
+
+
+    console.log(
+        "Hotspot dan rekap ditampilkan kembali"
+    );
+
+    return;
+
+}
 
 
     // ==========================================
