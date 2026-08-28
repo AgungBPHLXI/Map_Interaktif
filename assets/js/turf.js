@@ -557,6 +557,76 @@ function tampilkanRekapHotspot(
 
 
     // =================================================
+    // URUTKAN REKAP HOTSPOT
+    // =================================================
+
+    const urutanLokasi = {
+
+        "DI LUAR KAWASAN HUTAN": 1,
+
+        "KAWASAN HUTAN (HL)": 2,
+
+        "KAWASAN HUTAN (HP)": 3,
+
+        "KAWASAN HUTAN (HPT)": 4,
+
+        "KAWASAN HUTAN (HPK)": 5,
+
+        "KAWASAN HUTAN (HK)": 6
+
+    };
+
+
+    hasilRekap.sort(
+        function(a, b) {
+
+
+            const lokasiA =
+                String(
+                    a.lokasi || ""
+                ).trim();
+
+
+            const lokasiB =
+                String(
+                    b.lokasi || ""
+                ).trim();
+
+
+            const urutanA =
+                urutanLokasi[
+                    lokasiA
+                ] || 7;
+
+
+            const urutanB =
+                urutanLokasi[
+                    lokasiB
+                ] || 7;
+
+
+            if (
+                urutanA !== urutanB
+            ) {
+
+                return (
+                    urutanA - urutanB
+                );
+
+            }
+
+
+            return lokasiA.localeCompare(
+                lokasiB,
+                "id"
+            );
+
+
+        }
+    );
+
+
+    // =================================================
     // HAPUS PANEL LAMA
     // =================================================
 
@@ -573,7 +643,6 @@ function tampilkanRekapHotspot(
         panelLama.remove();
 
     }
-
 
     // =================================================
     // HITUNG TOTAL CONFIDENCE
