@@ -3,6 +3,7 @@ name: Update Hotspot Harian
 on:
 
   # Jalankan otomatis setiap hari
+  # 00:30 UTC = 08:30 WITA
   schedule:
     - cron: "30 0 * * *"
 
@@ -31,6 +32,10 @@ jobs:
 
         uses: actions/checkout@v4
 
+        with:
+
+          fetch-depth: 0
+
 
       # ================================================
       # INSTALL NODE.JS
@@ -46,12 +51,36 @@ jobs:
 
 
       # ================================================
+      # CEK VERSI NODE
+      # ================================================
+
+      - name: Cek Node.js
+
+        run: node --version
+
+
+      # ================================================
       # JALANKAN UPDATE HOTSPOT
       # ================================================
 
       - name: Update data hotspot
 
         run: node scripts/update-hotspot.js
+
+
+      # ================================================
+      # CEK HASIL DATA
+      # ================================================
+
+      - name: Cek hasil update
+
+        run: |
+
+          echo "Isi folder data:"
+          ls -lah data/
+
+          echo "Isi folder hotspot harian:"
+          ls -lah data/hotspot-harian/ || true
 
 
       # ================================================
