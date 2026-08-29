@@ -9,26 +9,35 @@ const path = require("path");
 
 // =====================================================
 // TANGGAL HARI INI
-// MENGGUNAKAN WAKTU UTC
+// MENGGUNAKAN ZONA WAKTU INDONESIA
+// ASIA/JAKARTA
 // =====================================================
 
 const sekarang = new Date();
 
+
+const formatterTanggal =
+    new Intl.DateTimeFormat(
+        "en-CA",
+        {
+            timeZone:
+                "Asia/Jakarta",
+
+            year:
+                "numeric",
+
+            month:
+                "2-digit",
+
+            day:
+                "2-digit"
+        }
+    );
+
+
 const hariIni =
-    sekarang.getUTCFullYear() +
-    "-" +
-    String(
-        sekarang.getUTCMonth() + 1
-    ).padStart(
-        2,
-        "0"
-    ) +
-    "-" +
-    String(
-        sekarang.getUTCDate()
-    ).padStart(
-        2,
-        "0"
+    formatterTanggal.format(
+        sekarang
     );
 
 
@@ -54,7 +63,7 @@ const SIPONGI_HOTSPOT_URL =
 
 
 // =====================================================
-// FOLDER DATA
+// FOLDER DATA HOTSPOT
 // =====================================================
 
 const folderData =
@@ -66,11 +75,16 @@ const folderData =
     );
 
 
+// =====================================================
+// FILE TREN 30 HARI
+//
+// DISIMPAN DI:
+// data/hotspot-harian/
+// =====================================================
+
 const fileTren =
     path.join(
-        __dirname,
-        "..",
-        "data",
+        folderData,
         "hotspot-tren-30-hari.json"
     );
 
@@ -104,8 +118,32 @@ async function updateHotspot() {
     try {
 
         console.log(
-            "Mengambil data hotspot:",
+            "========================================"
+        );
+
+
+        console.log(
+            "UPDATE DATA HOTSPOT SIPONGI"
+        );
+
+
+        console.log(
+            "Tanggal:",
             hariIni
+        );
+
+
+        console.log(
+            "========================================"
+        );
+
+
+        // =============================================
+        // AMBIL DATA API
+        // =============================================
+
+        console.log(
+            "Mengambil data dari SiPongi..."
         );
 
 
@@ -114,6 +152,10 @@ async function updateHotspot() {
                 SIPONGI_HOTSPOT_URL
             );
 
+
+        // =============================================
+        // VALIDASI RESPONSE
+        // =============================================
 
         if (
             !response.ok
@@ -127,13 +169,22 @@ async function updateHotspot() {
         }
 
 
+        // =============================================
+        // UBAH RESPONSE MENJADI JSON
+        // =============================================
+
         const data =
             await response.json();
 
 
-        // =================================================
-        // VALIDASI DATA
-        // =================================================
+        console.log(
+            "Data SiPongi berhasil diterima."
+        );
+
+
+        // =============================================
+        // VALIDASI FORMAT DATA
+        // =============================================
 
         if (
             !data ||
@@ -143,14 +194,14 @@ async function updateHotspot() {
         ) {
 
             throw new Error(
-                "Format data hotspot tidak sesuai"
+                "Format data hotspot tidak sesuai."
             );
 
         }
 
 
         // =================================================
-        // SIMPAN DATA HARIAN LENGKAP
+        // SIMPAN DATA HOTSPOT HARIAN LENGKAP
         // =================================================
 
         const fileHarian =
@@ -172,7 +223,11 @@ async function updateHotspot() {
 
 
         console.log(
-            "Data harian disimpan:",
+            "Data harian disimpan:"
+        );
+
+
+        console.log(
             fileHarian
         );
 
@@ -187,6 +242,10 @@ async function updateHotspot() {
 
         let low = 0;
 
+
+        // =============================================
+        // PROSES SETIAP HOTSPOT
+        // =============================================
 
         data.features.forEach(
             function(feature) {
@@ -204,6 +263,10 @@ async function updateHotspot() {
                     .toLowerCase();
 
 
+                // =========================================
+                // HIGH
+                // =========================================
+
                 if (
                     confidence === "high"
                 ) {
@@ -211,6 +274,11 @@ async function updateHotspot() {
                     high++;
 
                 }
+
+
+                // =========================================
+                // MEDIUM
+                // =========================================
 
                 else if (
                     confidence === "medium"
@@ -220,9 +288,15 @@ async function updateHotspot() {
 
                 }
 
-                else if (
-                    confidence === "low"
-                ) {
+
+                // =========================================
+                // LOW
+                //
+                // TERMASUK CONFIDENCE TIDAK VALID /
+                // KOSONG AGAR KONSISTEN DENGAN APLIKASI
+                // =========================================
+
+                else {
 
                     low++;
 
@@ -256,6 +330,16 @@ async function updateHotspot() {
         };
 
 
+        console.log(
+            "Rekap hari ini:"
+        );
+
+
+        console.log(
+            rekapHariIni
+        );
+
+
         // =================================================
         // BACA DATA TREN LAMA
         // =================================================
@@ -275,22 +359,34 @@ async function updateHotspot() {
                     fs.readFileSync(
                         fileTren,
                         "utf8"
-                    );
+                    )
+                    .trim();
 
 
-                dataTren =
-                    JSON.parse(
-                        isiFile
-                    );
-
+                // =========================================
+                // JIKA FILE TIDAK KOSONG
+                // =========================================
 
                 if (
-                    !Array.isArray(
-                        dataTren
-                    )
+                    isiFile
                 ) {
 
-                    dataTren = [];
+                    const hasilBaca =
+                        JSON.parse(
+                            isiFile
+                        );
+
+
+                    if (
+                        Array.isArray(
+                            hasilBaca
+                        )
+                    ) {
+
+                        dataTren =
+                            hasilBaca;
+
+                    }
 
                 }
 
@@ -305,6 +401,11 @@ async function updateHotspot() {
                 );
 
 
+                console.log(
+                    "Membuat data tren baru."
+                );
+
+
                 dataTren = [];
 
             }
@@ -313,7 +414,9 @@ async function updateHotspot() {
 
 
         // =================================================
-        // HAPUS DATA TANGGAL YANG SAMA
+        // HAPUS DATA DENGAN TANGGAL YANG SAMA
+        //
+        // AGAR DATA HARI INI TIDAK DUPLIKAT
         // =================================================
 
         dataTren =
@@ -346,11 +449,12 @@ async function updateHotspot() {
             function(a, b) {
 
                 return (
-                    new Date(
+                    String(
                         a.tanggal
-                    ) -
-                    new Date(
-                        b.tanggal
+                    ).localeCompare(
+                        String(
+                            b.tanggal
+                        )
                     )
                 );
 
@@ -359,7 +463,7 @@ async function updateHotspot() {
 
 
         // =================================================
-        // AMBIL 30 HARI TERAKHIR
+        // AMBIL MAKSIMAL 30 DATA TERAKHIR
         // =================================================
 
         dataTren =
@@ -369,7 +473,7 @@ async function updateHotspot() {
 
 
         // =================================================
-        // SIMPAN DATA TREN
+        // SIMPAN DATA TREN 30 HARI
         // =================================================
 
         fs.writeFileSync(
@@ -384,7 +488,18 @@ async function updateHotspot() {
 
 
         console.log(
-            "Rekap tren berhasil diperbarui."
+            "========================================"
+        );
+
+
+        console.log(
+            "DATA TREN BERHASIL DIPERBARUI"
+        );
+
+
+        console.log(
+            "File tren:",
+            fileTren
         );
 
 
@@ -412,6 +527,11 @@ async function updateHotspot() {
         );
 
 
+        console.log(
+            "========================================"
+        );
+
+
     }
 
     catch (
@@ -419,8 +539,22 @@ async function updateHotspot() {
     ) {
 
         console.error(
-            "GAGAL UPDATE HOTSPOT:",
+            "========================================"
+        );
+
+
+        console.error(
+            "GAGAL UPDATE HOTSPOT"
+        );
+
+
+        console.error(
             error
+        );
+
+
+        console.error(
+            "========================================"
         );
 
 
@@ -434,7 +568,7 @@ async function updateHotspot() {
 
 
 // =====================================================
-// JALANKAN
+// JALANKAN UPDATE
 // =====================================================
 
 updateHotspot();
