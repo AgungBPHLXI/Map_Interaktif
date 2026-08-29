@@ -3003,8 +3003,4 @@ $(document).on(
 
     }
 );
-// =====================================================
-// LOAD HOTSPOT PERTAMA KALI
-// =====================================================
-
-loadHotspotSipongi();
+// loadHotspotSipongi();
