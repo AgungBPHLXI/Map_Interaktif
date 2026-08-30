@@ -1,7 +1,7 @@
 // =====================================================
 // CETAK PETA PROFESIONAL
 // Fit otomatis ke kertas, skala otomatis, legenda sesuai peta,
-// koordinat geografis, arah utara, dan ringkasan luas filter.
+// koordinat geografis rapi, arah utara, dan informasi luas.
 // =====================================================
 (function () {
     'use strict';
@@ -34,12 +34,20 @@
     let originalStyle = null;
     let printPrepared = false;
     let printPageStyle = null;
-    let lastScale = null;
 
     const PAPER_MM = { A4: [210, 297], A3: [297, 420] };
+
+    // Sama persis dengan warna simbologi SK 399/2024 pada peta.
     const COLORS = {
-        'KSA/KPA': '#AD3FFF', 'KSA': '#AD3FFF', 'KPA': '#AD3FFF', 'HK': '#AD3FFF',
-        'HL': '#02AD00', 'HPT': '#8AF200', 'HP': '#FFFF00', 'HPK': '#FF5EFF', 'APL': '#FFFFFF'
+        'KSA/KPA': '#AD3FFF',
+        'KSA': '#AD3FFF',
+        'KPA': '#AD3FFF',
+        'HK': '#AD3FFF',
+        'HL': '#02AD00',
+        'HPT': '#8AF200',
+        'HP': '#FFFF00',
+        'HPK': '#FF5EFF',
+        'APL': '#FFFFFF'
     };
 
     function values(selector) {
@@ -70,13 +78,18 @@
 
     function paperConfig() {
         let [shortSide, longSide] = PAPER_MM[paperSize.value] || PAPER_MM.A4;
-        let w = orientation.value === 'portrait' ? shortSide : longSide;
-        let h = orientation.value === 'portrait' ? longSide : shortSide;
+        const w = orientation.value === 'portrait' ? shortSide : longSide;
+        const h = orientation.value === 'portrait' ? longSide : shortSide;
         const margin = paperSize.value === 'A3' ? 10 : 8;
         const header = paperSize.value === 'A3' ? 36 : 30;
         const footer = paperSize.value === 'A3' ? 14 : 12;
-        return { paper: paperSize.value, orientation: orientation.value, w, h, margin, header, footer,
-            mapW: w - margin * 2, mapH: h - margin - header - footer };
+        return {
+            paper: paperSize.value,
+            orientation: orientation.value,
+            w, h, margin, header, footer,
+            mapW: w - margin * 2,
+            mapH: h - margin - header - footer
+        };
     }
 
     function applyPaperLayout() {
@@ -132,11 +145,13 @@
         return vals.reduce((a,b) => Math.abs(b - m) < Math.abs(a - m) ? b : a, vals[0]);
     }
 
-    function fmtDistance(m) { return m >= 1000 ? `${m / 1000} km` : `${m} m`; }
+    function fmtDistance(m) {
+        return m >= 1000 ? `${m / 1000} km` : `${m} m`;
+    }
 
     function updateScale(c) {
-        lastScale = getScale(c);
-        printScaleText.textContent = `1 : ${lastScale.toLocaleString('id-ID')}`;
+        const scale = getScale(c);
+        printScaleText.textContent = `1 : ${scale.toLocaleString('id-ID')}`;
         const b = map.getBounds();
         const lat = b.getCenter().lat;
         const widthM = L.latLng(lat, b.getWest()).distanceTo(L.latLng(lat, b.getEast()));
@@ -146,43 +161,90 @@
     }
 
     function coord(v, lat) {
-        const a = Math.abs(v), d = Math.floor(a), mf = (a-d)*60, m = Math.floor(mf), s = Math.round((mf-m)*60);
-        return `${d}°${String(m).padStart(2,'0')}′${String(s).padStart(2,'0')}″ ${lat ? (v>=0?'LU':'LS') : (v>=0?'BT':'BB')}`;
+        const a = Math.abs(v);
+        const d = Math.floor(a);
+        const mf = (a - d) * 60;
+        const m = Math.floor(mf);
+        const s = Math.round((mf - m) * 60);
+        return `${d}°${String(m).padStart(2,'0')}′${String(s).padStart(2,'0')}″ ${lat ? (v >= 0 ? 'LU' : 'LS') : (v >= 0 ? 'BT' : 'BB')}`;
     }
 
+    // Label koordinat sengaja tidak ditempatkan pada 0% dan 100% agar
+    // tidak saling bertemu/bersilangan di sudut peta.
     function createCoordinateGrid() {
         coordinateGrid.innerHTML = '';
         if (!showCoordinates.checked) return;
-        const b = map.getBounds(), div = 4;
-        for (let i=0;i<=div;i++) {
-            const x = i/div*100, lng = b.getWest() + (b.getEast()-b.getWest())*i/div;
-            const v = document.createElement('div'); v.className='grid-v'; v.style.left=`${x}%`; coordinateGrid.appendChild(v);
-            ['coord-top','coord-bottom'].forEach(pos=>{ const e=document.createElement('span'); e.className=`coord-label ${pos}`; e.style.left=`${x}%`; e.textContent=coord(lng,false); coordinateGrid.appendChild(e); });
-            const y = i/div*100, la = b.getNorth() - (b.getNorth()-b.getSouth())*i/div;
-            const h = document.createElement('div'); h.className='grid-h'; h.style.top=`${y}%`; coordinateGrid.appendChild(h);
-            ['coord-left','coord-right'].forEach(pos=>{ const e=document.createElement('span'); e.className=`coord-label ${pos}`; e.style.top=`${y}%`; e.textContent=coord(la,true); coordinateGrid.appendChild(e); });
-        }
+
+        const b = map.getBounds();
+        const positions = [20, 40, 60, 80];
+
+        positions.forEach(percent => {
+            const lng = b.getWest() + (b.getEast() - b.getWest()) * percent / 100;
+            const v = document.createElement('div');
+            v.className = 'grid-v';
+            v.style.left = `${percent}%`;
+            coordinateGrid.appendChild(v);
+
+            ['coord-top', 'coord-bottom'].forEach(pos => {
+                const e = document.createElement('span');
+                e.className = `coord-label ${pos}`;
+                e.style.left = `${percent}%`;
+                e.textContent = coord(lng, false);
+                coordinateGrid.appendChild(e);
+            });
+
+            const lat = b.getNorth() - (b.getNorth() - b.getSouth()) * percent / 100;
+            const h = document.createElement('div');
+            h.className = 'grid-h';
+            h.style.top = `${percent}%`;
+            coordinateGrid.appendChild(h);
+
+            ['coord-left', 'coord-right'].forEach(pos => {
+                const e = document.createElement('span');
+                e.className = `coord-label ${pos}`;
+                e.style.top = `${percent}%`;
+                e.textContent = coord(lat, true);
+                coordinateGrid.appendChild(e);
+            });
+        });
+    }
+
+    function normalizeKawasan(k) {
+        const key = String(k || '').trim().toUpperCase();
+        if (key === 'KSA' || key === 'KPA' || key === 'HK') return 'HK';
+        return key;
     }
 
     function selectedKawasan() {
-        const selected = values('#filterF2025').map(x=>String(x).trim().toUpperCase());
-        return selected.length ? selected : ['HL','HPT','HP','HPK','HK'];
+        const selected = values('#filterF2025').map(normalizeKawasan).filter(Boolean);
+        return selected.length ? [...new Set(selected)] : ['HL', 'HPT', 'HP', 'HPK', 'HK'];
+    }
+
+    function colorFor(k) {
+        const key = normalizeKawasan(k);
+        return COLORS[key] || COLORS[String(k || '').trim().toUpperCase()] || '#FFFFFF';
     }
 
     function buildLegend() {
-        const items = selectedKawasan().filter(k=>COLORS[k]).map(k => `<div class="print-legend-item"><span class="print-legend-swatch" style="background-color:${COLORS[k]}!important"></span><span>${esc(k)}</span></div>`);
-        if (window.pbphLayer && map.hasLayer(window.pbphLayer)) items.push('<div class="print-legend-item"><span class="print-legend-line print-legend-line--pbph"></span><span>PBPH</span></div>');
-        if (window.kabupatenLayer && map.hasLayer(window.kabupatenLayer)) items.push('<div class="print-legend-item"><span class="print-legend-line print-legend-line--kabupaten"></span><span>Batas Kabupaten</span></div>');
+        const items = selectedKawasan()
+            .filter(k => colorFor(k))
+            .map(k => `<div class="print-legend-item"><span class="print-legend-swatch legend-color-${esc(k)}" style="background:${colorFor(k)} !important;background-color:${colorFor(k)} !important"></span><span>${esc(k)}</span></div>`);
+
+        if (window.pbphLayer && map.hasLayer(window.pbphLayer)) {
+            items.push('<div class="print-legend-item"><span class="print-legend-line print-legend-line--pbph"></span><span>PBPH</span></div>');
+        }
+        if (window.kabupatenLayer && map.hasLayer(window.kabupatenLayer)) {
+            items.push('<div class="print-legend-item"><span class="print-legend-line print-legend-line--kabupaten"></span><span>Batas Kabupaten</span></div>');
+        }
         printLegendItems.innerHTML = items.join('');
     }
 
     function areaSummary() {
         const wanted = new Set(selectedKawasan());
         const totals = {};
-        wanted.forEach(k => totals[k]=0);
-        const selectedKab = new Set(values('#filterKabupaten').map(x=>String(x).trim()));
+        wanted.forEach(k => totals[k] = 0);
+        const selectedKab = new Set(values('#filterKabupaten').map(x => String(x).trim()));
 
-        // Prioritas memakai data resmi monitoring luas per kabupaten jika tersedia.
         if (window.dataLuasKab && typeof window.dataLuasKab === 'object') {
             Object.entries(window.dataLuasKab).forEach(([kab, row]) => {
                 if (selectedKab.size && !selectedKab.has(kab)) return;
@@ -190,20 +252,23 @@
             });
         }
 
-        // Fallback menghitung geometri layer aktif bila data tabel tidak tersedia.
-        const empty = Object.values(totals).every(v=>v===0);
+        const empty = Object.values(totals).every(v => v === 0);
         if (empty && window.kawasanLayer && map.hasLayer(window.kawasanLayer) && window.turf) {
             window.kawasanLayer.eachLayer(layer => {
                 const f = layer.feature;
                 if (!f || !f.properties) return;
-                const k = String(f.properties.F2025 || '').trim().toUpperCase();
+                const k = normalizeKawasan(f.properties.F2025 || '');
                 if (!wanted.has(k)) return;
                 try { totals[k] += turf.area(f) / 10000; } catch (_) {}
             });
         }
 
-        const rows = Object.entries(totals).filter(([,v])=>v>0).map(([k,v]) => `<div class="print-summary-row"><span><i style="background:${COLORS[k]||'#fff'}"></i>${esc(k)}</span><b>${v.toLocaleString('id-ID',{maximumFractionDigits:2})} Ha</b></div>`);
-        printFilterSummary.innerHTML = `<div class="print-summary-title">INFORMASI FILTER</div><div class="print-summary-filter">${esc(filterText())}</div>${rows.length ? rows.join('') : '<div class="print-summary-empty">Tidak ada data luas untuk filter aktif.</div>'}`;
+        const filterInfo = filterText();
+        const rows = Object.entries(totals)
+            .filter(([, v]) => v > 0)
+            .map(([k, v]) => `<div class="print-summary-row"><span><i style="background:${colorFor(k)} !important;background-color:${colorFor(k)} !important"></i>${esc(k)}</span><b>${v.toLocaleString('id-ID', { maximumFractionDigits: 2 })} Ha</b></div>`);
+
+        printFilterSummary.innerHTML = `<div class="print-summary-title">INFORMASI</div><div class="print-summary-filter">${esc(filterInfo)}</div>${rows.length ? rows.join('') : '<div class="print-summary-empty">Tidak ada data luas untuk filter aktif.</div>'}`;
     }
 
     function updateLayout() {
@@ -216,8 +281,11 @@
         coordinateGrid.hidden = !showCoordinates.checked;
         printNorthArrow.hidden = !showNorthArrow.checked;
         printFilterSummary.hidden = !showFilterNote.checked;
-        document.querySelector('.print-page-info').style.display = showFilterNote.checked ? '' : 'none';
-        buildLegend(); areaSummary(); updateScale(c); createCoordinateGrid();
+        document.querySelector('.print-page-info').style.display = 'none';
+        buildLegend();
+        areaSummary();
+        updateScale(c);
+        createCoordinateGrid();
     }
 
     function preparePrint() {
@@ -225,33 +293,60 @@
         printPrepared = true;
         originalView = { center: map.getCenter(), zoom: map.getZoom() };
         originalStyle = map.getContainer().getAttribute('style');
+
         const c = applyPaperLayout();
         setPrintViewport(c);
         const b = activeBounds();
-        map.fitBounds(b, { padding: [Math.round(map.getSize().x*.035), Math.round(map.getSize().y*.035)], animate:false, maxZoom:14 });
-        setTimeout(() => { map.invalidateSize({pan:false}); updateLayout(); }, 260);
+        map.fitBounds(b, {
+            padding: [Math.round(map.getSize().x * 0.035), Math.round(map.getSize().y * 0.035)],
+            animate: false,
+            maxZoom: 14
+        });
+
+        setTimeout(() => {
+            map.invalidateSize({ pan: false });
+            updateLayout();
+        }, 260);
     }
 
     function restore() {
         if (!printPrepared) return;
         const el = map.getContainer();
         if (originalStyle === null) el.removeAttribute('style'); else el.setAttribute('style', originalStyle);
-        map.invalidateSize({pan:false});
-        if (originalView) map.setView(originalView.center, originalView.zoom, {animate:false});
-        originalView=null; originalStyle=null; printPrepared=false;
+        map.invalidateSize({ pan: false });
+        if (originalView) map.setView(originalView.center, originalView.zoom, { animate: false });
+        originalView = null;
+        originalStyle = null;
+        printPrepared = false;
     }
 
-    function openModal(){ updateLayout(); modal.hidden=false; titleInput.focus(); }
-    function closeModal(){ modal.hidden=true; }
-    function printMap(){ closeModal(); preparePrint(); setTimeout(()=>window.print(),900); }
+    function openModal() {
+        updateLayout();
+        modal.hidden = false;
+        titleInput.focus();
+    }
 
-    window.openPrintMapModal=openModal; window.closePrintMapModal=closeModal; window.printMapPdf=printMap;
-    document.getElementById('btnOpenPrintMap').addEventListener('click',openModal);
-    document.getElementById('btnClosePrintMap').addEventListener('click',closeModal);
-    document.getElementById('btnCancelPrintMap').addEventListener('click',closeModal);
-    document.getElementById('btnPrintMap').addEventListener('click',printMap);
-    modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
-    [titleInput,subtitleInput,noteInput,paperSize,orientation,showLegend,showScale,showCoordinates,showNorthArrow,showFilterNote].forEach(el=>el.addEventListener('change',updateLayout));
-    window.addEventListener('beforeprint',()=>{if(!printPrepared)preparePrint();});
-    window.addEventListener('afterprint',()=>setTimeout(restore,250));
+    function closeModal() { modal.hidden = true; }
+
+    function printMap() {
+        closeModal();
+        preparePrint();
+        setTimeout(() => window.print(), 900);
+    }
+
+    window.openPrintMapModal = openModal;
+    window.closePrintMapModal = closeModal;
+    window.printMapPdf = printMap;
+
+    document.getElementById('btnOpenPrintMap').addEventListener('click', openModal);
+    document.getElementById('btnClosePrintMap').addEventListener('click', closeModal);
+    document.getElementById('btnCancelPrintMap').addEventListener('click', closeModal);
+    document.getElementById('btnPrintMap').addEventListener('click', printMap);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+    [titleInput, subtitleInput, noteInput, paperSize, orientation, showLegend, showScale, showCoordinates, showNorthArrow, showFilterNote]
+        .forEach(el => el.addEventListener('change', updateLayout));
+
+    window.addEventListener('beforeprint', () => { if (!printPrepared) preparePrint(); });
+    window.addEventListener('afterprint', () => setTimeout(restore, 250));
 })();
