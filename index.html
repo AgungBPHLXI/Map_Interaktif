@@ -12,33 +12,18 @@
     <link rel="stylesheet" href="assets/css/main.css">
 
     <!-- FAVICON -->
-    <link
-        rel="icon"
-        type="image/png"
-        sizes="32x32"
-        href="favicon_bphl_pro_32.png"
-    >
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon_bphl_pro_32.png">
 
     <!-- LEAFLET CSS -->
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet/dist/leaflet.css"
-    >
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 
     <!-- LEAFLET ROUTING CSS -->
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"
-    >
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css">
 
     <!-- SELECT2 CSS -->
-    <link
-        href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
-        rel="stylesheet"
-    >
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 
 </head>
-
 
 <body>
 
@@ -47,456 +32,194 @@
     ========================== -->
     <div id="map"></div>
 
-
-   <!-- =========================
-     CHART OVERLAY
-========================== -->
-<div id="chartOverlay">
-
-    <button id="btnCloseChart">✖</button>
-
     <!-- =========================
-         FILTER RENTANG TANGGAL HOTSPOT
+         MONITORING DASHBOARD OVERLAY
+         (PRESENTATION ONLY - DATA LOGIC TETAP DI app.js)
     ========================== -->
-    <div id="hotspotDateFilter">
+    <div id="chartOverlay" class="monitoring-dashboard" aria-hidden="true">
 
-        <label for="hotspotDateStart">
-            Tanggal Mulai
-        </label>
+        <div class="monitoring-dashboard__header">
+            <div class="monitoring-dashboard__heading">
+                <div id="dashboardEyebrow" class="monitoring-dashboard__eyebrow">MONITORING</div>
+                <h2 id="dashboardTitle">Dashboard Monitoring</h2>
+                <p id="dashboardSubtitle">Ringkasan data monitoring BPHL Wilayah XI</p>
+            </div>
 
-        <input
-            type="date"
-            id="hotspotDateStart"
-        >
+            <button id="btnCloseChart" class="monitoring-dashboard__close" type="button" aria-label="Tutup dashboard">✕</button>
+        </div>
 
-        <label for="hotspotDateEnd">
-            Tanggal Selesai
-        </label>
+        <div id="dashboardKpi" class="monitoring-kpi-grid"></div>
 
-        <input
-            type="date"
-            id="hotspotDateEnd"
-        >
+        <div class="monitoring-dashboard__toolbar">
+            <div id="dashboardStatus" class="monitoring-status">Menyiapkan data…</div>
+            <div class="monitoring-dashboard__actions">
+                <button id="btnDashboardChart" class="dashboard-view-btn is-active" type="button">📊 Grafik</button>
+                <button id="btnDashboardTable" class="dashboard-view-btn" type="button">☷ Tabel</button>
+                <button id="btnDashboardReset" class="dashboard-view-btn" type="button">↻ Muat Ulang</button>
+            </div>
+        </div>
 
-        <button id="btnApplyHotspotRange">
-            🔎 Tampilkan
-        </button>
+        <div id="dashboardChartPanel" class="dashboard-panel dashboard-panel--chart">
+            <div class="dashboard-panel__title-row">
+                <div>
+                    <h3 id="dashboardChartTitle">Visualisasi Data</h3>
+                    <p id="dashboardChartHint">Perbandingan data utama</p>
+                </div>
+                <div id="dashboardLegendHint" class="dashboard-legend-hint"></div>
+            </div>
+            <div class="dashboard-chart-wrap">
+                <canvas id="chartKawasan"></canvas>
+                <canvas id="chartSemua"></canvas>
+            </div>
+        </div>
+
+        <div id="dashboardTablePanel" class="dashboard-panel dashboard-panel--table" hidden>
+            <div class="dashboard-panel__title-row">
+                <div>
+                    <h3 id="dashboardTableTitle">Data Detail</h3>
+                    <p id="dashboardTableHint">Data dari sumber monitoring yang aktif</p>
+                </div>
+            </div>
+            <div id="dashboardContent" class="dashboard-table-wrap"></div>
+        </div>
+
+        <!-- =========================
+             FILTER RENTANG TANGGAL HOTSPOT
+             (TETAP, TIDAK DIUBAH LOGIKANYA)
+        ========================== -->
+        <div id="hotspotDateFilter" class="hotspot-date-filter">
+            <label for="hotspotDateStart">Tanggal Mulai</label>
+            <input type="date" id="hotspotDateStart">
+            <label for="hotspotDateEnd">Tanggal Selesai</label>
+            <input type="date" id="hotspotDateEnd">
+            <button id="btnApplyHotspotRange" type="button">🔎 Tampilkan</button>
+        </div>
 
     </div>
-
-
-    <!-- =========================
-         CHART
-    ========================== -->
-
-    <canvas id="chartKawasan"></canvas>
-
-    <canvas id="chartSemua"></canvas>
-
-</div>
 
     <!-- =========================
          SIDEBAR
     ========================== -->
     <div id="sidebar">
 
-
         <!-- HEADER -->
         <div class="sidebar-header">
-
             <div class="logo-area">
-
-                <img src="logo-kemenhut.png">
-
+                <img src="logo-kemenhut.png" alt="Logo Kementerian Kehutanan">
                 <div class="sidebar-title">
-
-                    <div class="main-title">
-                        BPHL XI Banjarbaru
-                    </div>
-
-                    <div class="sub-title">
-                        Kementerian Kehutanan RI
-                    </div>
-
+                    <div class="main-title">BPHL XI Banjarbaru</div>
+                    <div class="sub-title">Kementerian Kehutanan RI</div>
                 </div>
-
             </div>
-
         </div>
-
 
         <!-- =========================
              MONITORING
         ========================== -->
         <div class="menu-group">
-
-            <div
-                class="menu-parent"
-                onclick="toggleMenu(this)"
-            >
-                📊 Monitoring ▼
-            </div>
-
-
+            <div class="menu-parent" onclick="toggleMenu(this)">📊 Monitoring ▼</div>
             <div class="menu-child">
-
-                <div onclick="loadKawasan(); closeSidebarMobile()">
-                    Luas Kawasan Hutan
-                </div>
-
-                <div onclick="loadPenanaman(); closeSidebarMobile()">
-                    Penanaman PBPH
-                </div>
-
-                <div onclick="loadProduksi(); closeSidebarMobile()">
-                    Produksi PBPH
-                </div>
-
-                <div onclick="loadProduksiIndustri(); closeSidebarMobile()">
-                    Produksi Industri 6000 UP
-                </div>
-                
-               <div onclick="loadHotspotSipongi(); closeSidebarMobile()">
-                🔥 Hotspot Karhutla Kalsel
-                </div>
-            
-                <div onclick="tampilkanTrenHotspot(); closeSidebarMobile()">
-                📊 Tren Hotspot 30 Hari
-                </div>
-
+                <div onclick="loadKawasan(); closeSidebarMobile()">Luas Kawasan Hutan</div>
+                <div onclick="loadPenanaman(); closeSidebarMobile()">Penanaman PBPH</div>
+                <div onclick="loadProduksi(); closeSidebarMobile()">Produksi PBPH</div>
+                <div onclick="loadProduksiIndustri(); closeSidebarMobile()">Produksi Industri 6000 UP</div>
+                <div onclick="loadHotspotSipongi(); closeSidebarMobile()">🔥 Hotspot Karhutla Kalsel</div>
+                <div onclick="tampilkanTrenHotspot(); closeSidebarMobile()">📊 Tren Hotspot 30 Hari</div>
             </div>
-
         </div>
-
 
         <!-- =========================
              FILTER
         ========================== -->
         <div class="menu-group">
-
-            <div
-                class="menu-parent"
-                onclick="toggleMenu(this)"
-            >
-                🔎 Filter ▼
-            </div>
-
-
+            <div class="menu-parent" onclick="toggleMenu(this)">🔎 Filter ▼</div>
             <div class="menu-child">
 
-                <!-- FILTER KABUPATEN -->
                 <label>Kabupaten</label>
+                <select id="filterKabupaten" multiple></select>
 
-                <select
-                    id="filterKabupaten"
-                    multiple
-                ></select>
-
-
-                <!-- FILTER KAWASAN -->
                 <label>Kawasan</label>
+                <select id="filterF2025" multiple></select>
 
-                <select
-                    id="filterF2025"
-                    multiple
-                ></select>
-
-
-                <!-- FILTER PBPH -->
                 <label>PBPH</label>
+                <select id="filterNama" multiple></select>
 
-                <select
-                    id="filterNama"
-                    multiple
-                ></select>
-
-
-                <!-- FILTER INDUSTRI -->
                 <label>Industri 6000 UP</label>
+                <select id="filterIndustri" multiple></select>
 
-                <select
-                    id="filterIndustri"
-                    multiple
-                ></select>
-                <!-- =========================
-     FILTER HOTSPOT SIPONGI
-========================== -->
+                <!-- FILTER HOTSPOT SIPONGI -->
+                <div id="hotspotFilterPanel">
+                    <div class="hotspot-filter-title">🔥 Filter Hotspot</div>
 
-<div id="hotspotFilterPanel"
-     style="
-        margin-top:15px;
-        padding:12px;
-        background:#f5f5f5;
-        border-radius:8px;
-        border:1px solid #ddd;
-     ">
+                    <label class="hotspot-filter-item">
+                        <input type="checkbox" id="filterHotspotHigh" checked onchange="updateHotspotFilter()">
+                        <span class="hotspot-dot hotspot-dot--high"></span>
+                        High
+                    </label>
 
-    <div style="
-        font-weight:bold;
-        margin-bottom:10px;
-    ">
-        🔥 Filter Hotspot
-    </div>
+                    <label class="hotspot-filter-item">
+                        <input type="checkbox" id="filterHotspotMedium" checked onchange="updateHotspotFilter()">
+                        <span class="hotspot-dot hotspot-dot--medium"></span>
+                        Medium
+                    </label>
 
-
-    <!-- HIGH -->
-
-    <label style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-        margin-bottom:8px;
-        cursor:pointer;
-    ">
-
-        <input
-            type="checkbox"
-            id="filterHotspotHigh"
-            checked
-            onchange="updateHotspotFilter()"
-        >
-
-        <span style="
-            width:12px;
-            height:12px;
-            background:#e53935;
-            border-radius:50%;
-            display:inline-block;
-        "></span>
-
-        High
-
-    </label>
-
-
-    <!-- MEDIUM -->
-
-    <label style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-        margin-bottom:8px;
-        cursor:pointer;
-    ">
-
-        <input
-            type="checkbox"
-            id="filterHotspotMedium"
-            checked
-            onchange="updateHotspotFilter()"
-        >
-
-        <span style="
-            width:12px;
-            height:12px;
-            background:#fbc02d;
-            border-radius:50%;
-            display:inline-block;
-        "></span>
-
-        Medium
-
-    </label>
-
-
-    <!-- LOW -->
-
-    <label style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-        cursor:pointer;
-    ">
-
-        <input
-            type="checkbox"
-            id="filterHotspotLow"
-            checked
-            onchange="updateHotspotFilter()"
-        >
-
-        <span style="
-            width:12px;
-            height:12px;
-            background:#43a047;
-            border-radius:50%;
-            display:inline-block;
-        "></span>
-
-        Low
-
-    </label>
-
-</div>
-                <!-- =========================
-     REKAP HOTSPOT
-========================== -->
-
-<div
-    id="rekapHotspot"
-    style="
-        margin-top:15px;
-        background:#f5f5f5;
-        padding:12px;
-        border-radius:8px;
-        font-size:13px;
-        max-height:350px;
-        overflow-y:auto;
-    "
->
-
-    <b>📊 Rekapitulasi Hotspot</b>
-
-    <br><br>
-
-    Data belum dihitung.
-
-</div>
-
-                <!-- =========================
-                     UPLOAD SHAPEFILE
-                ========================== -->
-                <label>Upload SHP (.zip)</label>
-
-                <input
-                    type="file"
-                    id="uploadShp"
-                    accept=".zip"
-                    style="
-                        width:100%;
-                        padding:6px;
-                        border-radius:6px;
-                        border:1px solid #ccc;
-                        background:white;
-                    "
-                >
-
-
-                <!-- INFO FORMAT SHP -->
-                <div
-                    style="
-                        font-size:11px;
-                        color:#555;
-                        margin-top:6px;
-                        line-height:1.5;
-                        background:#f5f5f5;
-                        padding:8px;
-                        border-radius:6px;
-                    "
-                >
-
-                    <b>Format Upload:</b>
-                    <br>
-
-                    File harus dalam bentuk <b>.zip</b>
-                    <br>
-
-                    dan berisi file:
-                    <br>
-
-                    • .shp
-                    <br>
-
-                    • .dbf
-                    <br>
-
-                    • .shx
-                    <br>
-
-                    • .prj
-
+                    <label class="hotspot-filter-item">
+                        <input type="checkbox" id="filterHotspotLow" checked onchange="updateHotspotFilter()">
+                        <span class="hotspot-dot hotspot-dot--low"></span>
+                        Low
+                    </label>
                 </div>
 
+                <!-- REKAP HOTSPOT -->
+                <div id="rekapHotspot" class="hotspot-rekap">
+                    <b>📊 Rekapitulasi Hotspot</b>
+                    <br><br>
+                    Data belum dihitung.
+                </div>
 
-                <!-- =========================
-                     PANEL POWERPOINT
-                ========================== -->
-                <div
-                    id="pptInfo"
-                    style="display:none; margin-top:15px;"
-                >
+                <!-- UPLOAD SHAPEFILE -->
+                <label>Upload SHP (.zip)</label>
+                <input type="file" id="uploadShp" accept=".zip" class="upload-shp-input">
+                <div class="upload-shp-help">
+                    <b>Format Upload:</b><br>
+                    File harus dalam bentuk <b>.zip</b><br>
+                    dan berisi file:<br>
+                    • .shp<br>
+                    • .dbf<br>
+                    • .shx<br>
+                    • .prj
+                </div>
 
-                    <img
-                        src="Slide1.1.png"
-                        class="slide-img"
-                    >
-
-                    <img
-                        src="Slide2.png"
-                        class="slide-img"
-                    >
-
-                    <img
-                        src="Slide3.png"
-                        class="slide-img"
-                    >
-
-                    <img
-                        src="Slide4.png"
-                        class="slide-img"
-                    >
-
+                <div id="pptInfo">
+                    <img src="Slide1.1.png" class="slide-img" alt="Slide 1">
+                    <img src="Slide2.png" class="slide-img" alt="Slide 2">
+                    <img src="Slide3.png" class="slide-img" alt="Slide 3">
+                    <img src="Slide4.png" class="slide-img" alt="Slide 4">
                 </div>
 
             </div>
-
         </div>
 
     </div>
 
+    <!-- TOGGLE SIDEBAR -->
+    <button id="toggleSidebar" type="button" aria-label="Buka menu">☰</button>
 
-    <!-- =========================
-         TOGGLE SIDEBAR
-    ========================== -->
-    <button id="toggleSidebar">☰</button>
-
-
-    <!-- =========================
-         JAVASCRIPT LIBRARIES
-    ========================== -->
-
-    <!-- CHART.JS -->
+    <!-- JAVASCRIPT LIBRARIES -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- LEAFLET -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-    <!-- LEAFLET ROUTING -->
     <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-
-    <!-- JQUERY -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- SELECT2 -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-    <!-- SHAPEFILE -->
     <script src="https://unpkg.com/shpjs@latest/dist/shp.min.js"></script>
 
-<!-- =========================
-     MODUL APLIKASI
-========================== -->
-
-<!-- KONFIGURASI -->
-<script src="assets/js/config.js"></script>
-
-<!-- MODUL PETA -->
-<script src="assets/js/map.js"></script>
-
-<!-- TURF JS -->
-<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-
-<!-- MODUL ANALISIS SPASIAL -->
-<script src="assets/js/turf.js"></script>
-
-<!-- CHART JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- APLIKASI UTAMA -->
-<script src="assets/js/app.js"></script>
-
-<!-- EXPORT EXCEL -->
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <!-- MODUL APLIKASI -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/map.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script src="assets/js/turf.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
 </body>
 </html>
