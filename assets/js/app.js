@@ -3130,20 +3130,97 @@ async function tampilkanTrenHotspot() {
                     ✕
                 </button>
 
-            </div>
+               </div>
 
 
-            <div
-                id="info-tren-hotspot"
+    <!-- FILTER RENTANG TANGGAL -->
+    <div
+        id="filter-tanggal-tren"
+        style="
+            display:flex;
+            gap:15px;
+            align-items:end;
+            flex-wrap:wrap;
+            margin-bottom:20px;
+            padding:15px;
+            background:#f5f5f5;
+            border-radius:10px;
+        "
+    >
+
+        <div>
+
+            <label
                 style="
-                    text-align:center;
-                    padding:30px;
-                    color:#666;
+                    display:block;
+                    margin-bottom:5px;
+                    font-weight:bold;
                 "
             >
-                Memuat data tren hotspot...
-            </div>
+                Tanggal Mulai
+            </label>
 
+            <input
+                type="date"
+                id="tanggalMulaiTren"
+                style="
+                    padding:8px;
+                "
+            >
+
+        </div>
+
+
+        <div>
+
+            <label
+                style="
+                    display:block;
+                    margin-bottom:5px;
+                    font-weight:bold;
+                "
+            >
+                Tanggal Selesai
+            </label>
+
+            <input
+                type="date"
+                id="tanggalSelesaiTren"
+                style="
+                    padding:8px;
+                "
+            >
+
+        </div>
+
+
+        <button
+            id="btnTampilkanTren"
+            style="
+                padding:9px 18px;
+                border:none;
+                background:#8b3d2e;
+                color:white;
+                border-radius:6px;
+                cursor:pointer;
+            "
+        >
+            🔎 Tampilkan
+        </button>
+
+    </div>
+
+
+    <div
+        id="info-tren-hotspot"
+        style="
+            text-align:center;
+            padding:30px;
+            color:#666;
+        "
+    >
+        Memuat data tren hotspot...
+    </div>
 
             <div
                 id="container-grafik-hotspot"
@@ -3190,6 +3267,53 @@ async function tampilkanTrenHotspot() {
         const data =
             await response.json();
         dataTrenHotspot = data;
+                // =============================================
+        // HUBUNGKAN FILTER RENTANG TANGGAL
+        // =============================================
+
+        const inputMulaiTren =
+            document.getElementById(
+                "tanggalMulaiTren"
+            );
+
+        const inputSelesaiTren =
+            document.getElementById(
+                "tanggalSelesaiTren"
+            );
+
+        const btnTampilkanTren =
+            document.getElementById(
+                "btnTampilkanTren"
+            );
+
+
+        // Isi otomatis tanggal awal dan akhir
+
+        if (
+            data.length > 0
+        ) {
+
+            inputMulaiTren.value =
+                data[0].tanggal;
+
+            inputSelesaiTren.value =
+                data[
+                    data.length - 1
+                ].tanggal;
+
+        }
+
+
+        // Tombol tampilkan
+
+        btnTampilkanTren.addEventListener(
+            "click",
+            function() {
+
+                filterRentangTanggalHotspot();
+
+            }
+        );
 
 
         // =============================================
@@ -3742,15 +3866,15 @@ function tutupTrenHotspot() {
 
 function filterRentangTanggalHotspot() {
 
-    const inputMulai =
-        document.getElementById(
-            "tanggalMulaiHotspot"
-        );
+   const inputMulai =
+    document.getElementById(
+        "tanggalMulaiTren"
+    );
 
-    const inputSelesai =
-        document.getElementById(
-            "tanggalSelesaiHotspot"
-        );
+const inputSelesai =
+    document.getElementById(
+        "tanggalSelesaiTren"
+    );
 
     const tanggalMulai =
         inputMulai ?
