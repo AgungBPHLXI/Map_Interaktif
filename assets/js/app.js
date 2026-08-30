@@ -3015,7 +3015,13 @@ $(document).on(
 // GRAFIK TREN HOTSPOT 30 HARI
 // =====================================================
 
-let grafikTrenHotspot = null;
+// Grafik hotspot dalam kawasan
+let grafikTrenKawasan = null;
+
+// Grafik hotspot PBPH dan di luar kawasan
+let grafikTrenSemua = null;
+
+// Data tren hotspot dari JSON
 let dataTrenHotspot = [];
 
 
@@ -3221,19 +3227,62 @@ async function tampilkanTrenHotspot() {
     >
         Memuat data tren hotspot...
     </div>
+<div
+    id="container-grafik-hotspot"
+    style="
+        display:none;
+    "
+>
 
-            <div
-                id="container-grafik-hotspot"
-                style="
-                    display:none;
-                    position:relative;
-                    height:400px;
-                "
-            >
-                <canvas
-                    id="grafik-tren-hotspot"
-                ></canvas>
-            </div>
+    <!-- GRAFIK 1 -->
+    <div
+        style="
+            position:relative;
+            height:350px;
+            margin-bottom:30px;
+        "
+    >
+        <h3
+            style="
+                text-align:center;
+                margin-bottom:15px;
+                color:#555;
+            "
+        >
+            Tren Hotspot Dalam Kawasan
+        </h3>
+
+        <canvas
+            id="grafik-tren-kawasan"
+        ></canvas>
+
+    </div>
+
+
+    <!-- GRAFIK 2 -->
+    <div
+        style="
+            position:relative;
+            height:350px;
+        "
+    >
+        <h3
+            style="
+                text-align:center;
+                margin-bottom:15px;
+                color:#555;
+            "
+        >
+            Tren Hotspot PBPH dan Di Luar Kawasan
+        </h3>
+
+        <canvas
+            id="grafik-tren-semua"
+        ></canvas>
+
+    </div>
+
+</div>
 
         `;
 
@@ -3469,35 +3518,90 @@ async function tampilkanTrenHotspot() {
             "block";
 
 
-        const canvas =
-            document.getElementById(
-                "grafik-tren-hotspot"
+              // =============================================
+        // DATA GRAFIK KAWASAN
+        // =============================================
+
+        const dataKawasan =
+            data.map(
+                function(item) {
+
+                    return Number(
+                        item.kawasan || 0
+                    );
+
+                }
             );
 
 
-        const context =
-            canvas.getContext(
+        // =============================================
+        // DATA GRAFIK PBPH
+        // =============================================
+
+        const dataPBPH =
+            data.map(
+                function(item) {
+
+                    return Number(
+                        item.pbph || 0
+                    );
+
+                }
+            );
+
+
+        // =============================================
+        // DATA GRAFIK DI LUAR KAWASAN
+        // =============================================
+
+        const dataLuarKawasan =
+            data.map(
+                function(item) {
+
+                    return Number(
+                        item.luar_kawasan || 0
+                    );
+
+                }
+            );
+
+
+        // =============================================
+        // AMBIL CANVAS GRAFIK KAWASAN
+        // =============================================
+
+        const canvasKawasan =
+            document.getElementById(
+                "grafik-tren-kawasan"
+            );
+
+
+        const contextKawasan =
+            canvasKawasan.getContext(
                 "2d"
             );
 
 
-        // HAPUS GRAFIK SEBELUMNYA
+        // =============================================
+        // HAPUS GRAFIK KAWASAN LAMA
+        // =============================================
+
         if (
-            grafikTrenHotspot
+            grafikTrenKawasan
         ) {
 
-            grafikTrenHotspot.destroy();
+            grafikTrenKawasan.destroy();
 
         }
 
 
         // =============================================
-        // BUAT GRAFIK
+        // BUAT GRAFIK HOTSPOT DALAM KAWASAN
         // =============================================
 
-        grafikTrenHotspot =
+        grafikTrenKawasan =
             new Chart(
-                context,
+                contextKawasan,
                 {
 
                     type:
@@ -3517,83 +3621,11 @@ async function tampilkanTrenHotspot() {
                                     {
 
                                         label:
-                                            "High",
+                                            "Dalam Kawasan",
 
 
                                         data:
-                                            dataHigh,
-
-
-                                        borderColor:
-                                            "#d9534f",
-
-
-                                        backgroundColor:
-                                            "rgba(217,83,79,0.15)",
-
-
-                                        borderWidth:
-                                            3,
-
-
-                                        tension:
-                                            0.3,
-
-
-                                        pointRadius:
-                                            4,
-
-
-                                        pointHoverRadius:
-                                            6
-
-                                    },
-
-
-                                    {
-
-                                        label:
-                                            "Medium",
-
-
-                                        data:
-                                            dataMedium,
-
-
-                                        borderColor:
-                                            "#f0ad4e",
-
-
-                                        backgroundColor:
-                                            "rgba(240,173,78,0.15)",
-
-
-                                        borderWidth:
-                                            3,
-
-
-                                        tension:
-                                            0.3,
-
-
-                                        pointRadius:
-                                            4,
-
-
-                                        pointHoverRadius:
-                                            6
-
-                                    },
-
-
-                                    {
-
-                                        label:
-                                            "Low",
-
-
-                                        data:
-                                            dataLow,
+                                            dataKawasan,
 
 
                                         borderColor:
@@ -3617,43 +3649,11 @@ async function tampilkanTrenHotspot() {
 
 
                                         pointHoverRadius:
-                                            6
-
-                                    },
+                                            6,
 
 
-                                    {
-
-                                        label:
-                                            "Total Hotspot",
-
-
-                                        data:
-                                            dataTotal,
-
-
-                                        borderColor:
-                                            "#333333",
-
-
-                                        backgroundColor:
-                                            "rgba(0,0,0,0.05)",
-
-
-                                        borderWidth:
-                                            3,
-
-
-                                        tension:
-                                            0.3,
-
-
-                                        pointRadius:
-                                            4,
-
-
-                                        pointHoverRadius:
-                                            6
+                                        fill:
+                                            false
 
                                     }
 
@@ -3706,7 +3706,7 @@ async function tampilkanTrenHotspot() {
 
 
                                             text:
-                                                "Perkembangan Hotspot Kalimantan Selatan"
+                                                "Tren Hotspot Dalam Kawasan"
 
                                         }
 
@@ -3772,6 +3772,250 @@ async function tampilkanTrenHotspot() {
             );
 
 
+        // =============================================
+        // AMBIL CANVAS GRAFIK PBPH DAN LUAR KAWASAN
+        // =============================================
+
+        const canvasSemua =
+            document.getElementById(
+                "grafik-tren-semua"
+            );
+
+
+        const contextSemua =
+            canvasSemua.getContext(
+                "2d"
+            );
+
+
+        // =============================================
+        // HAPUS GRAFIK LAMA
+        // =============================================
+
+        if (
+            grafikTrenSemua
+        ) {
+
+            grafikTrenSemua.destroy();
+
+        }
+
+
+        // =============================================
+        // BUAT GRAFIK PBPH DAN LUAR KAWASAN
+        // =============================================
+
+        grafikTrenSemua =
+            new Chart(
+                contextSemua,
+                {
+
+                    type:
+                        "line",
+
+
+                    data:
+                        {
+
+                            labels:
+                                labels,
+
+
+                            datasets:
+                                [
+
+                                    {
+
+                                        label:
+                                            "PBPH",
+
+
+                                        data:
+                                            dataPBPH,
+
+
+                                        borderColor:
+                                            "#d9534f",
+
+
+                                        backgroundColor:
+                                            "rgba(217,83,79,0.15)",
+
+
+                                        borderWidth:
+                                            3,
+
+
+                                        tension:
+                                            0.3,
+
+
+                                        pointRadius:
+                                            4,
+
+
+                                        pointHoverRadius:
+                                            6,
+
+
+                                        fill:
+                                            false
+
+                                    },
+
+
+                                    {
+
+                                        label:
+                                            "Di Luar Kawasan",
+
+
+                                        data:
+                                            dataLuarKawasan,
+
+
+                                        borderColor:
+                                            "#f0ad4e",
+
+
+                                        backgroundColor:
+                                            "rgba(240,173,78,0.15)",
+
+
+                                        borderWidth:
+                                            3,
+
+
+                                        tension:
+                                            0.3,
+
+
+                                        pointRadius:
+                                            4,
+
+
+                                        pointHoverRadius:
+                                            6,
+
+
+                                        fill:
+                                            false
+
+                                    }
+
+                                ]
+
+                        },
+
+
+                    options:
+                        {
+
+                            responsive:
+                                true,
+
+
+                            maintainAspectRatio:
+                                false,
+
+
+                            interaction:
+                                {
+
+                                    mode:
+                                        "index",
+
+
+                                    intersect:
+                                        false
+
+                                },
+
+
+                            plugins:
+                                {
+
+                                    legend:
+                                        {
+
+                                            position:
+                                                "top"
+
+                                        },
+
+
+                                    title:
+                                        {
+
+                                            display:
+                                                true,
+
+
+                                            text:
+                                                "Tren Hotspot PBPH dan Di Luar Kawasan"
+
+                                        }
+
+                                },
+
+
+                            scales:
+                                {
+
+                                y:
+                                    {
+
+                                        beginAtZero:
+                                            true,
+
+
+                                        ticks:
+                                            {
+
+                                                precision:
+                                                    0
+
+                                            },
+
+
+                                        title:
+                                            {
+
+                                                display:
+                                                    true,
+
+
+                                                text:
+                                                    "Jumlah Hotspot"
+
+                                            }
+
+                                    },
+
+
+                                x:
+                                    {
+
+                                        title:
+                                            {
+
+                                                display:
+                                                    true,
+
+
+                                                text:
+                                                    "Tanggal"
+
+                                            }
+
+                                    }
+
+                            }
+
+                        }
+
+                }
+            );
     }
 
     catch (
@@ -3866,20 +4110,23 @@ function tutupTrenHotspot() {
 
 function filterRentangTanggalHotspot() {
 
-   const inputMulai =
-    document.getElementById(
-        "tanggalMulaiTren"
-    );
+    const inputMulai =
+        document.getElementById(
+            "tanggalMulaiTren"
+        );
 
-const inputSelesai =
-    document.getElementById(
-        "tanggalSelesaiTren"
-    );
+
+    const inputSelesai =
+        document.getElementById(
+            "tanggalSelesaiTren"
+        );
+
 
     const tanggalMulai =
         inputMulai ?
         inputMulai.value :
         "";
+
 
     const tanggalSelesai =
         inputSelesai ?
@@ -3887,7 +4134,9 @@ const inputSelesai =
         "";
 
 
-    // Validasi tanggal
+    // =============================================
+    // VALIDASI TANGGAL
+    // =============================================
 
     if (
         !tanggalMulai ||
@@ -3903,7 +4152,9 @@ const inputSelesai =
     }
 
 
-    // Validasi urutan tanggal
+    // =============================================
+    // VALIDASI URUTAN TANGGAL
+    // =============================================
 
     if (
         tanggalMulai >
@@ -3919,7 +4170,9 @@ const inputSelesai =
     }
 
 
-    // Filter data berdasarkan rentang tanggal
+    // =============================================
+    // FILTER DATA BERDASARKAN RENTANG TANGGAL
+    // =============================================
 
     const dataFilter =
         dataTrenHotspot.filter(
@@ -3934,7 +4187,9 @@ const inputSelesai =
         );
 
 
-    // Jika tidak ada data
+    // =============================================
+    // JIKA TIDAK ADA DATA
+    // =============================================
 
     if (
         dataFilter.length === 0
@@ -3949,7 +4204,9 @@ const inputSelesai =
     }
 
 
-    // Format label tanggal
+    // =============================================
+    // FORMAT LABEL TANGGAL
+    // =============================================
 
     const labels =
         dataFilter.map(
@@ -3960,6 +4217,7 @@ const inputSelesai =
                         item.tanggal +
                         "T00:00:00"
                     );
+
 
                 return tanggal.toLocaleDateString(
                     "id-ID",
@@ -3979,85 +4237,96 @@ const inputSelesai =
         );
 
 
-    // Data High
+    // =============================================
+    // DATA DALAM KAWASAN
+    // =============================================
 
-    const dataHigh =
+    const dataKawasan =
         dataFilter.map(
             function(item) {
 
                 return Number(
-                    item.high || 0
+                    item.kawasan || 0
                 );
 
             }
         );
 
 
-    // Data Medium
+    // =============================================
+    // DATA PBPH
+    // =============================================
 
-    const dataMedium =
+    const dataPBPH =
         dataFilter.map(
             function(item) {
 
                 return Number(
-                    item.medium || 0
+                    item.pbph || 0
                 );
 
             }
         );
 
 
-    // Data Low
+    // =============================================
+    // DATA DI LUAR KAWASAN
+    // =============================================
 
-    const dataLow =
+    const dataLuarKawasan =
         dataFilter.map(
             function(item) {
 
                 return Number(
-                    item.low || 0
+                    item.luar_kawasan || 0
                 );
 
             }
         );
 
 
-    // Data Total
-
-    const dataTotal =
-        dataFilter.map(
-            function(item) {
-
-                return Number(
-                    item.total || 0
-                );
-
-            }
-        );
-
-
-    // Update grafik yang sudah ada
+    // =============================================
+    // UPDATE GRAFIK DALAM KAWASAN
+    // =============================================
 
     if (
-        grafikTrenHotspot
+        grafikTrenKawasan
     ) {
 
-        grafikTrenHotspot.data.labels =
+        grafikTrenKawasan.data.labels =
             labels;
 
-        grafikTrenHotspot.data.datasets[0].data =
-            dataHigh;
 
-        grafikTrenHotspot.data.datasets[1].data =
-            dataMedium;
-
-        grafikTrenHotspot.data.datasets[2].data =
-            dataLow;
-
-        grafikTrenHotspot.data.datasets[3].data =
-            dataTotal;
+        grafikTrenKawasan.data.datasets[0].data =
+            dataKawasan;
 
 
-        grafikTrenHotspot.update();
+        grafikTrenKawasan.update();
+
+    }
+
+
+    // =============================================
+    // UPDATE GRAFIK PBPH DAN LUAR KAWASAN
+    // =============================================
+
+    if (
+        grafikTrenSemua
+    ) {
+
+        grafikTrenSemua.data.labels =
+            labels;
+
+
+        grafikTrenSemua.data.datasets[0].data =
+            dataPBPH;
+
+
+        grafikTrenSemua.data.datasets[1].data =
+            dataLuarKawasan;
+
+
+        grafikTrenSemua.update();
 
     }
 
