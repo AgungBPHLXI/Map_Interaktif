@@ -5,6 +5,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const turf = require("@turf/turf");
 
 
 // =====================================================
@@ -221,350 +222,30 @@ function ambilFeatures(
 
 
 // =====================================================
-// CEK POINT BERADA DI GARIS
-// =====================================================
-
-function pointOnSegment(
-    point,
-    a,
-    b
-) {
-
-    const x =
-        point[0];
-
-    const y =
-        point[1];
-
-    const x1 =
-        a[0];
-
-    const y1 =
-        a[1];
-
-    const x2 =
-        b[0];
-
-    const y2 =
-        b[1];
-
-
-    const cross =
-        (
-            x - x1
-        ) *
-        (
-            y2 - y1
-        )
-        -
-        (
-            y - y1
-        ) *
-        (
-            x2 - x1
-        );
-
-
-    if (
-        Math.abs(
-            cross
-        ) > 1e-10
-    ) {
-
-        return false;
-
-    }
-
-
-    const dot =
-        (
-            x - x1
-        ) *
-        (
-            x2 - x1
-        )
-        +
-        (
-            y - y1
-        ) *
-        (
-            y2 - y1
-        );
-
-
-    if (
-        dot < 0
-    ) {
-
-        return false;
-
-    }
-
-
-    const lengthSquared =
-        (
-            x2 - x1
-        ) *
-        (
-            x2 - x1
-        )
-        +
-        (
-            y2 - y1
-        ) *
-        (
-            y2 - y1
-        );
-
-
-    return (
-        dot <=
-        lengthSquared
-    );
-
-}
-
-
-// =====================================================
-// CEK POINT DALAM RING POLYGON
-// =====================================================
-
-function pointInRing(
-    point,
-    ring
-) {
-
-    if (
-        !Array.isArray(
-            ring
-        ) ||
-        ring.length < 3
-    ) {
-
-        return false;
-
-    }
-
-
-    const x =
-        point[0];
-
-    const y =
-        point[1];
-
-    let inside =
-        false;
-
-
-    for (
-        let i = 0,
-            j = ring.length - 1;
-
-        i < ring.length;
-
-        j = i++
-    ) {
-
-        const xi =
-            ring[i][0];
-
-        const yi =
-            ring[i][1];
-
-        const xj =
-            ring[j][0];
-
-        const yj =
-            ring[j][1];
-
-
-        // Titik berada tepat pada batas
-        if (
-            pointOnSegment(
-                point,
-                ring[j],
-                ring[i]
-            )
-        ) {
-
-            return true;
-
-        }
-
-
-        const intersect =
-            (
-                (
-                    yi > y
-                ) !==
-                (
-                    yj > y
-                )
-            )
-            &&
-            (
-                x <
-                (
-                    (
-                        xj - xi
-                    ) *
-                    (
-                        y - yi
-                    )
-                ) /
-                (
-                    yj - yi
-                )
-                +
-                xi
-            );
-
-
-        if (
-            intersect
-        ) {
-
-            inside =
-                !inside;
-
-        }
-
-    }
-
-
-    return inside;
-
-}
-
-
-// =====================================================
-// CEK POINT DALAM POLYGON
-// =====================================================
-
-function pointInPolygon(
-    point,
-    coordinates
-) {
-
-    if (
-        !Array.isArray(
-            coordinates
-        ) ||
-        coordinates.length === 0
-    ) {
-
-        return false;
-
-    }
-
-
-    // Ring luar
-    if (
-        !pointInRing(
-            point,
-            coordinates[0]
-        )
-    ) {
-
-        return false;
-
-    }
-
-
-    // Cek lubang polygon
-    for (
-        let i = 1;
-
-        i < coordinates.length;
-
-        i++
-    ) {
-
-        if (
-            pointInRing(
-                point,
-                coordinates[i]
-            )
-        ) {
-
-            return false;
-
-        }
-
-    }
-
-
-    return true;
-
-}
-
-
-// =====================================================
-// CEK POINT DALAM GEOMETRY
-// MENDUKUNG POLYGON DAN MULTIPOLYGON
-// =====================================================
-
-function pointInGeometry(
-    point,
-    geometry
-) {
-
-    if (
-        !geometry
-    ) {
-
-        return false;
-
-    }
-
-
-    if (
-        geometry.type ===
-        "Polygon"
-    ) {
-
-        return pointInPolygon(
-            point,
-            geometry.coordinates
-        );
-
-    }
-
-
-    if (
-        geometry.type ===
-        "MultiPolygon"
-    ) {
-
-        return geometry.coordinates.some(
-            function(
-                polygon
-            ) {
-
-                return pointInPolygon(
-                    point,
-                    polygon
-                );
-
-            }
-        );
-
-    }
-
-
-    return false;
-
-}
-
-
-// =====================================================
 // CARI PBPH
+//
+// MENGGUNAKAN TURF.JS
+// SAMA DENGAN METODE DI APLIKASI
 // =====================================================
 
 function cariPBPH(
     titik,
     featuresPBPH
 ) {
+
+    // =============================================
+    // UBAH KOORDINAT MENJADI TURF POINT
+    // =============================================
+
+    const titikTurf =
+        turf.point(
+            titik
+        );
+
+
+    // =============================================
+    // CEK SETIAP POLIGON PBPH
+    // =============================================
 
     for (
         const feature
@@ -581,49 +262,95 @@ function cariPBPH(
         }
 
 
-        if (
-            pointInGeometry(
-                titik,
-                feature.geometry
-            )
+        try {
+
+            // =========================================
+            // CEK HOTSPOT BERADA DALAM PBPH
+            //
+            // METODE SAMA DENGAN APLIKASI
+            // =========================================
+
+            if (
+                turf.booleanPointInPolygon(
+                    titikTurf,
+                    feature
+                )
+            ) {
+
+                return {
+
+                    ditemukan:
+                        true,
+
+
+                    nama:
+                        String(
+                            feature.properties?.NAMOBJ ||
+                            "PBPH"
+                        )
+                        .trim()
+
+                };
+
+            }
+
+        }
+
+        catch (
+            error
         ) {
 
-            return {
-                ditemukan:
-                    true,
-
-                nama:
-                    String(
-                        feature.properties?.NAMOBJ ||
-                        "PBPH"
-                    )
-                    .trim()
-            };
+            console.warn(
+                "Error cek PBPH:",
+                error.message
+            );
 
         }
 
     }
 
 
+    // =============================================
+    // HOTSPOT TIDAK BERADA DALAM PBPH
+    // =============================================
+
     return {
+
         ditemukan:
             false,
 
+
         nama:
             ""
+
     };
 
 }
-
-
 // =====================================================
 // CARI KATEGORI KAWASAN HUTAN
+//
+// MENGGUNAKAN TURF.JS
+// SAMA DENGAN METODE DI APLIKASI
 // =====================================================
 
 function cariKawasan(
     titik,
     featuresKawasan
 ) {
+
+    // =============================================
+    // UBAH KOORDINAT MENJADI TURF POINT
+    // =============================================
+
+    const titikTurf =
+        turf.point(
+            titik
+        );
+
+
+    // =============================================
+    // CEK SETIAP POLIGON KAWASAN
+    // =============================================
 
     for (
         const feature
@@ -641,7 +368,7 @@ function cariKawasan(
 
 
         // =============================================
-        // AMBIL NILAI F2025
+        // AMBIL KATEGORI KAWASAN
         // =============================================
 
         const f2025 =
@@ -654,11 +381,15 @@ function cariKawasan(
 
 
         // =============================================
-        // ABAIKAN DATA NON-KAWASAN HUTAN
+        // HANYA GUNAKAN KATEGORI KAWASAN YANG VALID
         // =============================================
 
         if (
-            f2025 === ""
+            f2025 !== "HL" &&
+            f2025 !== "HP" &&
+            f2025 !== "HPT" &&
+            f2025 !== "HPK" &&
+            f2025 !== "HK"
         ) {
 
             continue;
@@ -666,99 +397,19 @@ function cariKawasan(
         }
 
 
-        if (
-            f2025 === "SISTEM LAHAN"
-        ) {
-
-            continue;
-
-        }
-
-
-        if (
-            f2025 === "PAPH"
-        ) {
-
-            continue;
-
-        }
-
-
-        // =============================================
-        // CEK TITIK BERADA DALAM POLIGON
-        // =============================================
-
-        if (
-            pointInGeometry(
-                titik,
-                feature.geometry
-            )
-        ) {
+        try {
 
             // =========================================
-            // NORMALISASI KATEGORI KAWASAN
-            // =========================================
-
-            let kategori =
-                "";
-
-
-            if (
-                f2025 === "HL"
-            ) {
-
-                kategori =
-                    "HL";
-
-            }
-
-
-            else if (
-                f2025 === "HP"
-            ) {
-
-                kategori =
-                    "HP";
-
-            }
-
-
-            else if (
-                f2025 === "HPT"
-            ) {
-
-                kategori =
-                    "HPT";
-
-            }
-
-
-            else if (
-                f2025 === "HPK"
-            ) {
-
-                kategori =
-                    "HPK";
-
-            }
-
-
-            else if (
-                f2025 === "HK"
-            ) {
-
-                kategori =
-                    "HK";
-
-            }
-
-
-            // =========================================
-            // HANYA KEMBALIKAN KATEGORI YANG VALID
+            // CEK HOTSPOT BERADA DALAM KAWASAN
+            //
+            // METODE SAMA DENGAN TURF.JS APLIKASI
             // =========================================
 
             if (
-                kategori !== ""
+                turf.booleanPointInPolygon(
+                    titikTurf,
+                    feature
+                )
             ) {
 
                 return {
@@ -767,7 +418,7 @@ function cariKawasan(
                         true,
 
                     kategori:
-                        kategori
+                        f2025
 
                 };
 
@@ -775,11 +426,22 @@ function cariKawasan(
 
         }
 
+        catch (
+            error
+        ) {
+
+            console.warn(
+                "Error cek Kawasan:",
+                error.message
+            );
+
+        }
+
     }
 
 
     // =============================================
-    // TITIK TIDAK BERADA DALAM KAWASAN HUTAN
+    // HOTSPOT TIDAK BERADA DALAM KAWASAN HUTAN
     // =============================================
 
     return {
@@ -793,7 +455,11 @@ function cariKawasan(
     };
 
 }
+
+
 // =====================================================
+// AMBIL DATA DARI SIPONGI
+// =====================================================// =====================================================
 // AMBIL DATA DARI SIPONGI
 // =====================================================
 
@@ -843,24 +509,93 @@ async function updateHotspot() {
         );
 
 
-        const dataKawasan =
-            bacaGeoJSON(
-                fileKawasan,
-                "Kawasanhutan.geojson"
-            );
+       // =================================================
+// BACA DATA KAWASAN HUTAN
+// =================================================
+
+const dataKawasan =
+    bacaGeoJSON(
+        fileKawasan,
+        "Kawasanhutan.geojson"
+    );
 
 
-        const featuresPBPH =
-            ambilFeatures(
-                dataPBPH
-            );
+// =================================================
+// BACA DATA KONSERVASI
+// =================================================
+
+const dataKonservasi =
+    bacaGeoJSON(
+        fileKonservasi,
+        "Konservasi.geojson"
+    );
 
 
-        const featuresKawasan =
-            ambilFeatures(
-                dataKawasan
-            );
+// =================================================
+// AMBIL FEATURE PBPH
+// =================================================
 
+const featuresPBPH =
+    ambilFeatures(
+        dataPBPH
+    );
+
+
+// =================================================
+// AMBIL FEATURE KAWASAN HUTAN
+// =================================================
+
+const featuresKawasan =
+    ambilFeatures(
+        dataKawasan
+    );
+
+
+// =================================================
+// AMBIL FEATURE KONSERVASI
+// =================================================
+
+const featuresKonservasi =
+    ambilFeatures(
+        dataKonservasi
+    );
+
+
+// =================================================
+// SAMAKAN KATEGORI KONSERVASI DENGAN APLIKASI
+//
+// Semua feature Konservasi dikategorikan sebagai HK
+// =================================================
+
+featuresKonservasi.forEach(
+    function(
+        feature
+    ) {
+
+        if (
+            !feature.properties
+        ) {
+
+            feature.properties =
+                {};
+
+        }
+
+
+        feature.properties.F2025 =
+            "HK";
+
+    }
+);
+
+
+// =================================================
+// GABUNGKAN KAWASAN HUTAN + KONSERVASI
+// =================================================
+
+featuresKawasan.push(
+    ...featuresKonservasi
+);
 
         console.log(
             "Jumlah feature PBPH:",
