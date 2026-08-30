@@ -14,6 +14,17 @@
     "total": 305,
     "pbph": 305,
     "kawasan": 0,
-    "luar_kawasan": 0
+    "luar_kawasan": 0,
+    "rekap_kawasan": {
+      "HL": 0,
+      "HP": 0,
+      "HPT": 0,
+      "HPK": 0,
+      "HK": 0,
+      "Di Luar Kawasan": 0
+    },
+    "rekap_pbph": {
+      "PT. Aya Yayang Indonesia": 305
+    }
   }
 ]
