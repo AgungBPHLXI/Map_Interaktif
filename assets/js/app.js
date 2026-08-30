@@ -3016,6 +3016,7 @@ $(document).on(
 // =====================================================
 
 let grafikTrenHotspot = null;
+let dataTrenHotspot = [];
 
 
 async function tampilkanTrenHotspot() {
@@ -3188,6 +3189,7 @@ async function tampilkanTrenHotspot() {
 
         const data =
             await response.json();
+        dataTrenHotspot = data;
 
 
         // =============================================
@@ -3732,6 +3734,216 @@ function tutupTrenHotspot() {
             null;
 
     }
+
+}
+// =====================================================
+// FILTER RENTANG TANGGAL TREN HOTSPOT
+// =====================================================
+
+function filterRentangTanggalHotspot() {
+
+    const inputMulai =
+        document.getElementById(
+            "tanggalMulaiHotspot"
+        );
+
+    const inputSelesai =
+        document.getElementById(
+            "tanggalSelesaiHotspot"
+        );
+
+    const tanggalMulai =
+        inputMulai ?
+        inputMulai.value :
+        "";
+
+    const tanggalSelesai =
+        inputSelesai ?
+        inputSelesai.value :
+        "";
+
+
+    // Validasi tanggal
+
+    if (
+        !tanggalMulai ||
+        !tanggalSelesai
+    ) {
+
+        alert(
+            "Silakan pilih tanggal mulai dan tanggal selesai."
+        );
+
+        return;
+
+    }
+
+
+    // Validasi urutan tanggal
+
+    if (
+        tanggalMulai >
+        tanggalSelesai
+    ) {
+
+        alert(
+            "Tanggal mulai tidak boleh lebih besar dari tanggal selesai."
+        );
+
+        return;
+
+    }
+
+
+    // Filter data berdasarkan rentang tanggal
+
+    const dataFilter =
+        dataTrenHotspot.filter(
+            function(item) {
+
+                return (
+                    item.tanggal >= tanggalMulai &&
+                    item.tanggal <= tanggalSelesai
+                );
+
+            }
+        );
+
+
+    // Jika tidak ada data
+
+    if (
+        dataFilter.length === 0
+    ) {
+
+        alert(
+            "Tidak ada data hotspot pada rentang tanggal yang dipilih."
+        );
+
+        return;
+
+    }
+
+
+    // Format label tanggal
+
+    const labels =
+        dataFilter.map(
+            function(item) {
+
+                const tanggal =
+                    new Date(
+                        item.tanggal +
+                        "T00:00:00"
+                    );
+
+                return tanggal.toLocaleDateString(
+                    "id-ID",
+                    {
+                        day:
+                            "2-digit",
+
+                        month:
+                            "short",
+
+                        year:
+                            "numeric"
+                    }
+                );
+
+            }
+        );
+
+
+    // Data High
+
+    const dataHigh =
+        dataFilter.map(
+            function(item) {
+
+                return Number(
+                    item.high || 0
+                );
+
+            }
+        );
+
+
+    // Data Medium
+
+    const dataMedium =
+        dataFilter.map(
+            function(item) {
+
+                return Number(
+                    item.medium || 0
+                );
+
+            }
+        );
+
+
+    // Data Low
+
+    const dataLow =
+        dataFilter.map(
+            function(item) {
+
+                return Number(
+                    item.low || 0
+                );
+
+            }
+        );
+
+
+    // Data Total
+
+    const dataTotal =
+        dataFilter.map(
+            function(item) {
+
+                return Number(
+                    item.total || 0
+                );
+
+            }
+        );
+
+
+    // Update grafik yang sudah ada
+
+    if (
+        grafikTrenHotspot
+    ) {
+
+        grafikTrenHotspot.data.labels =
+            labels;
+
+        grafikTrenHotspot.data.datasets[0].data =
+            dataHigh;
+
+        grafikTrenHotspot.data.datasets[1].data =
+            dataMedium;
+
+        grafikTrenHotspot.data.datasets[2].data =
+            dataLow;
+
+        grafikTrenHotspot.data.datasets[3].data =
+            dataTotal;
+
+
+        grafikTrenHotspot.update();
+
+    }
+
+
+    console.log(
+        "Filter tanggal berhasil:",
+        tanggalMulai,
+        "sampai",
+        tanggalSelesai
+    );
 
 }
 
