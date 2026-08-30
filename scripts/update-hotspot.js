@@ -1404,60 +1404,35 @@ if (
         }
 
 
-        // =================================================
-        // HAPUS DATA DENGAN TANGGAL YANG SAMA
-        // =================================================
+     // =================================================
+// HAPUS DATA DENGAN TANGGAL YANG SAMA
+// =================================================
 
-        dataTren =
-            dataTren.filter(
-                function(
-                    item
-                ) {
+dataTren =
+    dataTren.filter(
+        function(
+            item
+        ) {
 
-                    return (
-                        item.tanggal !==
-                        hariIni
-                    );
-
-                }
+            return (
+                item.tanggal !==
+                hariIni
             );
 
-
-        // =================================================
-        // TAMBAHKAN DATA HARI INI
-        // =================================================
-
-        dataTren.push(
-            rekapHariIni
-        );
+        }
+    );
 
 
-        // =================================================
-        // URUTKAN BERDASARKAN TANGGAL
-        // =================================================
+// =================================================
+// TAMBAHKAN DATA HARI INI
+// =================================================
 
-        dataTren.sort(
-            function(
-                a,
-                b
-            ) {
-
-                return (
-                    String(
-                        a.tanggal
-                    )
-                    .localeCompare(
-                        String(
-                            b.tanggal
-                        )
-                    )
-                );
-
-            }
-        );
+dataTren.push(
+    rekapHariIni
+);
 
 
-        // =================================================
+// =================================================
 // URUTKAN DATA BERDASARKAN TANGGAL
 // =================================================
 
@@ -1467,14 +1442,19 @@ dataTren.sort(
         b
     ) {
 
-        return a.tanggal.localeCompare(
-            b.tanggal
+        return (
+            String(
+                a.tanggal
+            )
+            .localeCompare(
+                String(
+                    b.tanggal
+                )
+            )
         );
 
     }
 );
-
-
 // =================================================
 // SIMPAN SELURUH DATA HISTORIS HOTSPOT
 //
