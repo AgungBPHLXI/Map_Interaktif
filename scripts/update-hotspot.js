@@ -914,6 +914,34 @@ async function updateHotspot() {
 
         let totalLuarKawasan =
             0;
+        // =================================================
+// REKAP DETAIL UNTUK DATA TREN
+// =================================================
+
+const rekapKawasan = {
+
+    HL:
+        0,
+
+    HP:
+        0,
+
+    HPT:
+        0,
+
+    HPK:
+        0,
+
+    HK:
+        0,
+
+    "Di Luar Kawasan":
+        0
+
+};
+
+
+const rekapPBPH = {};
 
 
         // =================================================
@@ -1060,94 +1088,195 @@ async function updateHotspot() {
                     );
 
 
-                // =========================================
-                // PRIORITAS KATEGORI
-                //
-                // 1. PBPH + Kawasan
-                // 2. Kawasan Hutan
-                // 3. Di Luar Kawasan
-                //
-                // MENGIKUTI LOGIKA REKAP APLIKASI
-                // =========================================
+               // =========================================
+// PRIORITAS KATEGORI
+//
+// 1. PBPH + Kawasan
+// 2. Kawasan Hutan
+// 3. Di Luar Kawasan
+//
+// MENGIKUTI LOGIKA REKAP APLIKASI
+// =========================================
 
-                if (
-                    hasilPBPH.ditemukan &&
-                    hasilKawasan.ditemukan
-                ) {
+if (
+    hasilPBPH.ditemukan &&
+    hasilKawasan.ditemukan
+) {
 
-                    totalPBPH++;
+    // =====================================
+    // TOTAL PBPH
+    // =====================================
 
-                }
-
-
-                else if (
-                    hasilKawasan.ditemukan
-                ) {
-
-                    totalKawasan++;
-
-                }
+    totalPBPH++;
 
 
-                else {
+    // =====================================
+    // AMBIL NAMA PBPH
+    // =====================================
 
-                    totalLuarKawasan++;
+    const namaPBPH =
+        hasilPBPH.nama;
 
-                }
+
+    // Jika nama PBPH tersedia
+    // tambahkan ke rekap berdasarkan nama
+
+    if (
+        namaPBPH
+    ) {
+
+        if (
+            !rekapPBPH[
+                namaPBPH
+            ]
+        ) {
+
+            rekapPBPH[
+                namaPBPH
+            ] = 0;
+
+        }
+
+
+        rekapPBPH[
+            namaPBPH
+        ]++;
+
+    }
+
+}
+
+
+else if (
+    hasilKawasan.ditemukan
+) {
+
+    // =====================================
+    // TOTAL KAWASAN
+    // =====================================
+
+    totalKawasan++;
+
+
+    // =====================================
+    // AMBIL KATEGORI KAWASAN
+    // =====================================
+
+    const kategoriKawasan =
+        String(
+            hasilKawasan.kategori ||
+            ""
+        )
+        .trim()
+        .toUpperCase();
+
+
+    // =====================================
+    // TAMBAHKAN KE REKAP KAWASAN
+    // =====================================
+
+    if (
+        rekapKawasan[
+            kategoriKawasan
+        ] !== undefined
+    ) {
+
+        rekapKawasan[
+            kategoriKawasan
+        ]++;
+
+    }
+
+}
+
+
+else {
+
+    // =====================================
+    // DI LUAR KAWASAN
+    // =====================================
+
+    totalLuarKawasan++;
+
+
+    rekapKawasan[
+        "Di Luar Kawasan"
+    ]++;
+
+}
 
             }
         );
 
 
-        // =================================================
-        // BUAT DATA REKAP HARI INI
-        // =================================================
+       // =================================================
+// BUAT DATA REKAP HARI INI
+// =================================================
 
-        const rekapHariIni = {
+const rekapHariIni = {
 
-            tanggal:
-                hariIni,
-
-
-            high:
-                high,
+    tanggal:
+        hariIni,
 
 
-            medium:
-                medium,
+    high:
+        high,
 
 
-            low:
-                low,
+    medium:
+        medium,
 
 
-            total:
-                totalHotspot,
+    low:
+        low,
 
 
-            pbph:
-                totalPBPH,
+    total:
+        totalHotspot,
 
 
-            kawasan:
-                totalKawasan,
+    // =================================================
+    // TOTAL REKAP
+    // =================================================
+
+    pbph:
+        totalPBPH,
 
 
-            luar_kawasan:
-                totalLuarKawasan
-
-        };
+    kawasan:
+        totalKawasan,
 
 
-        console.log(
-            "Rekap hari ini:"
-        );
+    luar_kawasan:
+        totalLuarKawasan,
 
 
-        console.log(
-            rekapHariIni
-        );
+    // =================================================
+    // REKAP DETAIL UNTUK DATA TREN
+    // =================================================
 
+    rekap_kawasan:
+        rekapKawasan,
+
+
+    rekap_pbph:
+        rekapPBPH
+
+};
+
+
+// =================================================
+// TAMPILKAN HASIL REKAP DI CONSOLE
+// =================================================
+
+console.log(
+    "Rekap hari ini:"
+);
+
+
+console.log(
+    rekapHariIni
+);
 
         // =================================================
         // VALIDASI TOTAL SPASIAL
