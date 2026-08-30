@@ -24,4 +24,22 @@
  .print-page-info{display:none!important}
  #printLegend{position:absolute!important;right:calc(var(--print-margin) + 3mm)!important;bottom:calc(var(--print-footer-h) + 7mm)!important;z-index:9000!important;width:48mm!important;max-height:62mm!important;overflow:hidden!important;background:rgba(255,255,255,.97)!important;border:.25mm solid #444!important;padding:3mm!important;font-size:7.5pt!important}.print-legend-title{text-align:center!important;font-weight:800!important;margin-bottom:2mm!important;border-bottom:.2mm solid #777!important;padding-bottom:1mm!important}.print-legend-item{display:flex!important;align-items:center!important;gap:2mm!important;margin:1.2mm 0!important;line-height:1.2!important}.print-legend-swatch{display:inline-block!important;width:5mm!important;height:3.5mm!important;border:.2mm solid #333!important;flex:none!important;opacity:1!important;filter:none!important}.print-legend-line{width:7mm!important;height:0!important;border-top:.35mm solid #222!important;display:inline-block!important;flex:none!important}.print-legend-line--pbph{border-top:.6mm solid #FF5500!important}.print-legend-line--kabupaten{border-top:.4mm solid #000!important}
  .print-page-footer{position:absolute!important;left:var(--print-margin)!important;bottom:5mm!important;width:var(--print-map-w)!important;height:calc(var(--print-footer-h) - 5mm)!important;border-top:.35mm solid #173f20!important;padding-top:3mm!important;display:flex!important;justify-content:flex-start!important;align-items:flex-start!important;font-size:7.5pt!important;color:#333!important;box-sizing:border-box!important}
+
+ /* Browser dapat menonaktifkan background graphics saat print. Karena itu
+    warna legenda dibuat dengan BORDER padat yang tetap tercetak, bukan
+    hanya background-color. */
+ .print-legend-swatch{box-sizing:border-box!important;background:#fff!important;border-width:1.9mm!important}
+ .print-legend-swatch.legend-color-HL{border-color:#02AD00!important}
+ .print-legend-swatch.legend-color-HPT{border-color:#8AF200!important}
+ .print-legend-swatch.legend-color-HP{border-color:#FFFF00!important}
+ .print-legend-swatch.legend-color-HPK{border-color:#FF5EFF!important}
+ .print-legend-swatch.legend-color-HK{border-color:#AD3FFF!important}
+ .print-legend-swatch.legend-color-KSA,.print-legend-swatch.legend-color-KPA{border-color:#AD3FFF!important}
+
+ .print-summary-row i{box-sizing:border-box!important;background:#fff!important;border-width:1.25mm!important}
+ .print-summary-row i[style*="#02AD00"]{border-color:#02AD00!important}
+ .print-summary-row i[style*="#8AF200"]{border-color:#8AF200!important}
+ .print-summary-row i[style*="#FFFF00"]{border-color:#FFFF00!important}
+ .print-summary-row i[style*="#FF5EFF"]{border-color:#FF5EFF!important}
+ .print-summary-row i[style*="#AD3FFF"]{border-color:#AD3FFF!important}
 }
