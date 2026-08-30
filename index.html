@@ -1,33 +1,83 @@
 <!DOCTYPE html>
 <html>
 <head>
-
     <meta charset="utf-8">
-
     <title>INFORMASI SPASIAL BPHL Wilayah XI</title>
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- CSS APLIKASI -->
     <link rel="stylesheet" href="assets/css/main.css">
-
-    <!-- FAVICON -->
     <link rel="icon" type="image/png" sizes="32x32" href="favicon_bphl_pro_32.png">
-
-    <!-- LEAFLET CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-
-    <!-- LEAFLET ROUTING CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css">
-
-    <!-- SELECT2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-
 </head>
 
 <body>
 
     <div id="map"></div>
+
+    <!-- LAYOUT CETAK PROFESIONAL: hanya muncul saat cetak -->
+    <div id="printMapLayout" aria-hidden="true">
+        <div class="print-page-header">
+            <img src="logo-kemenhut.png" class="print-logo" alt="Logo Kementerian Kehutanan">
+            <div class="print-title-block">
+                <div class="print-instansi">KEMENTERIAN KEHUTANAN REPUBLIK INDONESIA</div>
+                <div class="print-instansi print-instansi--unit">BALAI PENGELOLAAN HUTAN LESTARI WILAYAH XI BANJARBARU</div>
+                <div id="printLayoutTitle" class="print-map-title">PETA INFORMASI SPASIAL</div>
+                <div id="printLayoutSubtitle" class="print-map-subtitle"></div>
+            </div>
+        </div>
+        <div class="print-page-info">
+            <span id="printLayoutNote">Tampilan seluruh layer yang aktif</span>
+            <span id="printLayoutMeta"></span>
+        </div>
+        <div id="printLegend" class="print-legend">
+            <div class="print-legend-title">LEGENDA</div>
+            <div id="printLegendItems"></div>
+        </div>
+        <div class="print-page-footer">
+            <span>Sumber: Informasi Spasial BPHL Wilayah XI Banjarbaru</span>
+            <span>© BPHL Wilayah XI Banjarbaru</span>
+        </div>
+    </div>
+
+    <!-- DIALOG PENGATURAN CETAK -->
+    <div id="printMapModal" class="print-modal" hidden>
+        <div class="print-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="printModalTitle">
+            <div class="print-modal__header">
+                <div>
+                    <span class="print-modal__eyebrow">LAYOUT PETA</span>
+                    <h2 id="printModalTitle">Cetak Peta PDF</h2>
+                    <p>Atur judul peta sebelum membuka dialog cetak PDF.</p>
+                </div>
+                <button id="btnClosePrintMap" type="button" class="print-modal__close" aria-label="Tutup">✕</button>
+            </div>
+
+            <div class="print-form-group">
+                <label for="printMapTitle">Judul Peta</label>
+                <input id="printMapTitle" type="text" value="PETA INFORMASI SPASIAL" placeholder="Contoh: PETA SEBARAN PBPH">
+            </div>
+
+            <div class="print-form-group">
+                <label for="printMapSubtitle">Subjudul</label>
+                <input id="printMapSubtitle" type="text" value="BALAI PENGELOLAAN HUTAN LESTARI WILAYAH XI BANJARBARU" placeholder="Opsional">
+            </div>
+
+            <div class="print-form-group">
+                <label for="printMapNote">Keterangan / Wilayah</label>
+                <textarea id="printMapNote" rows="3" placeholder="Opsional. Contoh: Kabupaten Tabalong, Provinsi Kalimantan Selatan"></textarea>
+            </div>
+
+            <div class="print-modal__info">
+                <strong>Layout cetak:</strong> A4 lanskap • Logo Kementerian Kehutanan • Judul dinamis • Legenda • Skala • Informasi sumber.
+            </div>
+
+            <div class="print-modal__actions">
+                <button id="btnCancelPrintMap" type="button" class="print-action-btn print-action-btn--secondary">Batal</button>
+                <button id="btnPrintMap" type="button" class="print-action-btn print-action-btn--primary">🖨️ Cetak / Simpan PDF</button>
+            </div>
+        </div>
+    </div>
 
     <div id="chartOverlay" class="monitoring-dashboard" aria-hidden="true">
         <div class="monitoring-dashboard__header">
@@ -40,7 +90,6 @@
         </div>
 
         <div id="dashboardKpi" class="monitoring-kpi-grid"></div>
-
         <div class="monitoring-dashboard__toolbar">
             <div id="dashboardStatus" class="monitoring-status">Menyiapkan data…</div>
             <div class="monitoring-dashboard__actions">
@@ -122,11 +171,9 @@
                 </div>
 
                 <div id="rekapHotspot" class="hotspot-rekap"><b>📊 Rekapitulasi Hotspot</b><br><br>Data belum dihitung.</div>
-
                 <label>Upload SHP (.zip)</label>
                 <input type="file" id="uploadShp" accept=".zip" class="upload-shp-input">
                 <div class="upload-shp-help"><b>Format Upload:</b><br>File harus dalam bentuk <b>.zip</b><br>dan berisi file:<br>• .shp<br>• .dbf<br>• .shx<br>• .prj</div>
-
                 <div id="pptInfo">
                     <img src="Slide1.1.png" class="slide-img" alt="Slide 1">
                     <img src="Slide2.png" class="slide-img" alt="Slide 2">
@@ -134,6 +181,10 @@
                     <img src="Slide4.png" class="slide-img" alt="Slide 4">
                 </div>
             </div>
+        </div>
+
+        <div class="menu-group menu-group--print">
+            <button id="btnOpenPrintMap" type="button" class="print-map-menu-btn">🖨️ Cetak Peta PDF</button>
         </div>
     </div>
 
@@ -153,6 +204,7 @@
     <script src="assets/js/app.js"></script>
     <script src="assets/js/symbology-sk399.js"></script>
     <script src="assets/js/monitoring-ui.js"></script>
+    <script src="assets/js/print-map.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
 </body>
