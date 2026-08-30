@@ -2708,8 +2708,16 @@ document.addEventListener("DOMContentLoaded", function(){
     chartSemuaInstance = null;
 }
 
-            // Tutup overlay
-            overlay.style.display = "none";
+
+// Hapus grafik Tren Hotspot jika ada
+if(grafikTrenHotspot){
+    grafikTrenHotspot.destroy();
+    grafikTrenHotspot = null;
+}
+
+
+// Tutup overlay
+overlay.style.display = "none";
 
             // Hapus header jika ada
             let oldTotal = document.getElementById("totalBox");
@@ -3003,4 +3011,729 @@ $(document).on(
 
     }
 );
+// =====================================================
+// GRAFIK TREN HOTSPOT 30 HARI
+// =====================================================
+
+let grafikTrenHotspot = null;
+
+
+async function tampilkanTrenHotspot() {
+
+    try {
+
+        // =============================================
+        // HAPUS PANEL LAMA JIKA SUDAH ADA
+        // =============================================
+
+        const panelLama =
+            document.getElementById(
+                "panel-tren-hotspot"
+            );
+
+
+        if (
+            panelLama
+        ) {
+
+            panelLama.remove();
+
+        }
+
+
+        // =============================================
+        // BUAT PANEL GRAFIK
+        // =============================================
+
+        const panel =
+            document.createElement(
+                "div"
+            );
+
+
+        panel.id =
+            "panel-tren-hotspot";
+
+
+        panel.style.position =
+            "fixed";
+
+        panel.style.top =
+            "50%";
+
+        panel.style.left =
+            "50%";
+
+        panel.style.transform =
+            "translate(-50%, -50%)";
+
+        panel.style.width =
+            "min(900px, 90vw)";
+
+        panel.style.maxHeight =
+            "85vh";
+
+        panel.style.background =
+            "white";
+
+        panel.style.zIndex =
+            "99999";
+
+        panel.style.padding =
+            "25px";
+
+        panel.style.borderRadius =
+            "15px";
+
+        panel.style.boxShadow =
+            "0 10px 40px rgba(0,0,0,0.35)";
+
+        panel.style.overflow =
+            "auto";
+
+
+        panel.innerHTML = `
+
+            <div
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    margin-bottom:20px;
+                "
+            >
+
+                <h2
+                    style="
+                        margin:0;
+                        color:#8b3d2e;
+                    "
+                >
+                    🔥 Tren Hotspot 30 Hari
+                </h2>
+
+
+                <button
+                    onclick="tutupTrenHotspot()"
+                    style="
+                        border:none;
+                        background:#8b3d2e;
+                        color:white;
+                        width:35px;
+                        height:35px;
+                        border-radius:50%;
+                        cursor:pointer;
+                        font-size:18px;
+                    "
+                >
+                    ✕
+                </button>
+
+            </div>
+
+
+            <div
+                id="info-tren-hotspot"
+                style="
+                    text-align:center;
+                    padding:30px;
+                    color:#666;
+                "
+            >
+                Memuat data tren hotspot...
+            </div>
+
+
+            <div
+                id="container-grafik-hotspot"
+                style="
+                    display:none;
+                    position:relative;
+                    height:400px;
+                "
+            >
+                <canvas
+                    id="grafik-tren-hotspot"
+                ></canvas>
+            </div>
+
+        `;
+
+
+        document.body.appendChild(
+            panel
+        );
+
+
+        // =============================================
+        // AMBIL DATA JSON
+        // =============================================
+
+        const response =
+            await fetch(
+                "data/hotspot-harian/hotspot-tren-30-hari.json"
+            );
+
+
+        if (
+            !response.ok
+        ) {
+
+            throw new Error(
+                "Data tren hotspot tidak ditemukan"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        // =============================================
+        // VALIDASI DATA
+        // =============================================
+
+        if (
+            !Array.isArray(
+                data
+            )
+        ) {
+
+            throw new Error(
+                "Format data tren tidak valid"
+            );
+
+        }
+
+
+        if (
+            data.length === 0
+        ) {
+
+            document.getElementById(
+                "info-tren-hotspot"
+            ).innerHTML =
+                `
+                <div
+                    style="
+                        font-size:18px;
+                        margin-bottom:10px;
+                    "
+                >
+                    📭
+                </div>
+
+                Belum ada data hotspot.
+                `;
+
+
+            return;
+
+        }
+
+
+        // =============================================
+        // FORMAT LABEL TANGGAL
+        // =============================================
+
+        const labels =
+            data.map(
+                function(item) {
+
+                    const tanggal =
+                        new Date(
+                            item.tanggal +
+                            "T00:00:00"
+                        );
+
+
+                    return tanggal.toLocaleDateString(
+                        "id-ID",
+                        {
+                            day:
+                                "2-digit",
+
+                            month:
+                                "short"
+                        }
+                    );
+
+                }
+            );
+
+
+        // =============================================
+        // DATA HIGH
+        // =============================================
+
+        const dataHigh =
+            data.map(
+                function(item) {
+
+                    return Number(
+                        item.high || 0
+                    );
+
+                }
+            );
+
+
+        // =============================================
+        // DATA MEDIUM
+        // =============================================
+
+        const dataMedium =
+            data.map(
+                function(item) {
+
+                    return Number(
+                        item.medium || 0
+                    );
+
+                }
+            );
+
+
+        // =============================================
+        // DATA LOW
+        // =============================================
+
+        const dataLow =
+            data.map(
+                function(item) {
+
+                    return Number(
+                        item.low || 0
+                    );
+
+                }
+            );
+
+
+        // =============================================
+        // DATA TOTAL
+        // =============================================
+
+        const dataTotal =
+            data.map(
+                function(item) {
+
+                    return Number(
+                        item.total || 0
+                    );
+
+                }
+            );
+
+
+        // =============================================
+        // TAMPILKAN GRAFIK
+        // =============================================
+
+        document.getElementById(
+            "info-tren-hotspot"
+        ).style.display =
+            "none";
+
+
+        document.getElementById(
+            "container-grafik-hotspot"
+        ).style.display =
+            "block";
+
+
+        const canvas =
+            document.getElementById(
+                "grafik-tren-hotspot"
+            );
+
+
+        const context =
+            canvas.getContext(
+                "2d"
+            );
+
+
+        // HAPUS GRAFIK SEBELUMNYA
+        if (
+            grafikTrenHotspot
+        ) {
+
+            grafikTrenHotspot.destroy();
+
+        }
+
+
+        // =============================================
+        // BUAT GRAFIK
+        // =============================================
+
+        grafikTrenHotspot =
+            new Chart(
+                context,
+                {
+
+                    type:
+                        "line",
+
+
+                    data:
+                        {
+
+                            labels:
+                                labels,
+
+
+                            datasets:
+                                [
+
+                                    {
+
+                                        label:
+                                            "High",
+
+
+                                        data:
+                                            dataHigh,
+
+
+                                        borderColor:
+                                            "#d9534f",
+
+
+                                        backgroundColor:
+                                            "rgba(217,83,79,0.15)",
+
+
+                                        borderWidth:
+                                            3,
+
+
+                                        tension:
+                                            0.3,
+
+
+                                        pointRadius:
+                                            4,
+
+
+                                        pointHoverRadius:
+                                            6
+
+                                    },
+
+
+                                    {
+
+                                        label:
+                                            "Medium",
+
+
+                                        data:
+                                            dataMedium,
+
+
+                                        borderColor:
+                                            "#f0ad4e",
+
+
+                                        backgroundColor:
+                                            "rgba(240,173,78,0.15)",
+
+
+                                        borderWidth:
+                                            3,
+
+
+                                        tension:
+                                            0.3,
+
+
+                                        pointRadius:
+                                            4,
+
+
+                                        pointHoverRadius:
+                                            6
+
+                                    },
+
+
+                                    {
+
+                                        label:
+                                            "Low",
+
+
+                                        data:
+                                            dataLow,
+
+
+                                        borderColor:
+                                            "#5cb85c",
+
+
+                                        backgroundColor:
+                                            "rgba(92,184,92,0.15)",
+
+
+                                        borderWidth:
+                                            3,
+
+
+                                        tension:
+                                            0.3,
+
+
+                                        pointRadius:
+                                            4,
+
+
+                                        pointHoverRadius:
+                                            6
+
+                                    },
+
+
+                                    {
+
+                                        label:
+                                            "Total Hotspot",
+
+
+                                        data:
+                                            dataTotal,
+
+
+                                        borderColor:
+                                            "#333333",
+
+
+                                        backgroundColor:
+                                            "rgba(0,0,0,0.05)",
+
+
+                                        borderWidth:
+                                            3,
+
+
+                                        tension:
+                                            0.3,
+
+
+                                        pointRadius:
+                                            4,
+
+
+                                        pointHoverRadius:
+                                            6
+
+                                    }
+
+                                ]
+
+                        },
+
+
+                    options:
+                        {
+
+                            responsive:
+                                true,
+
+
+                            maintainAspectRatio:
+                                false,
+
+
+                            interaction:
+                                {
+
+                                    mode:
+                                        "index",
+
+
+                                    intersect:
+                                        false
+
+                                },
+
+
+                            plugins:
+                                {
+
+                                    legend:
+                                        {
+
+                                            position:
+                                                "top"
+
+                                        },
+
+
+                                    title:
+                                        {
+
+                                            display:
+                                                true,
+
+
+                                            text:
+                                                "Perkembangan Hotspot Kalimantan Selatan"
+
+                                        }
+
+                                },
+
+
+                            scales:
+                                {
+
+                                    y:
+                                        {
+
+                                            beginAtZero:
+                                                true,
+
+
+                                            ticks:
+                                                {
+
+                                                    precision:
+                                                        0
+
+                                                },
+
+
+                                            title:
+                                                {
+
+                                                    display:
+                                                        true,
+
+
+                                                    text:
+                                                        "Jumlah Hotspot"
+
+                                                }
+
+                                        },
+
+
+                                    x:
+                                        {
+
+                                            title:
+                                                {
+
+                                                    display:
+                                                        true,
+
+
+                                                    text:
+                                                        "Tanggal"
+
+                                                }
+
+                                        }
+
+                                }
+
+                        }
+
+                }
+            );
+
+
+    }
+
+    catch (
+        error
+    ) {
+
+        console.error(
+            error
+        );
+
+
+        const info =
+            document.getElementById(
+                "info-tren-hotspot"
+            );
+
+
+        if (
+            info
+        ) {
+
+            info.innerHTML =
+                `
+
+                <div
+                    style="
+                        font-size:30px;
+                        margin-bottom:10px;
+                    "
+                >
+                    ⚠️
+                </div>
+
+
+                <b>
+                    Gagal memuat data tren hotspot
+                </b>
+
+
+                <br>
+
+
+                <small>
+                    ${error.message}
+                </small>
+
+                `;
+
+        }
+
+    }
+
+}
+
+
+// =====================================================
+// TUTUP PANEL TREN HOTSPOT
+// =====================================================
+
+function tutupTrenHotspot() {
+
+    const panel =
+        document.getElementById(
+            "panel-tren-hotspot"
+        );
+
+
+    if (
+        panel
+    ) {
+
+        panel.remove();
+
+    }
+
+
+    if (
+        grafikTrenHotspot
+    ) {
+
+        grafikTrenHotspot.destroy();
+
+        grafikTrenHotspot =
+            null;
+
+    }
+
+}
+
 // loadHotspotSipongi();
+
