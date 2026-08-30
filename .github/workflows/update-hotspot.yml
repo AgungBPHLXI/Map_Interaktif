@@ -58,6 +58,13 @@ jobs:
 
         run: node --version
 
+      # ================================================
+      # INSTALL DEPENDENCIES
+      # ================================================
+
+      - name: Install dependencies
+
+        run: npm install
 
       # ================================================
       # JALANKAN UPDATE HOTSPOT
