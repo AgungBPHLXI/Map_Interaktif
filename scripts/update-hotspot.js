@@ -15,7 +15,6 @@ const path = require("path");
 
 const sekarang = new Date();
 
-
 const formatterTanggal =
     new Intl.DateTimeFormat(
         "en-CA",
@@ -63,7 +62,7 @@ const SIPONGI_HOTSPOT_URL =
 
 
 // =====================================================
-// FOLDER DATA HOTSPOT
+// PATH DATA
 // =====================================================
 
 const folderData =
@@ -75,17 +74,30 @@ const folderData =
     );
 
 
-// =====================================================
-// FILE TREN 30 HARI
-//
-// DISIMPAN DI:
-// data/hotspot-harian/
-// =====================================================
-
 const fileTren =
     path.join(
         folderData,
         "hotspot-tren-30-hari.json"
+    );
+
+
+// =====================================================
+// FILE SPASIAL
+// =====================================================
+
+const filePBPH =
+    path.join(
+        __dirname,
+        "..",
+        "pbph.geojson"
+    );
+
+
+const fileKawasan =
+    path.join(
+        __dirname,
+        "..",
+        "Kawasanhutan.geojson"
     );
 
 
@@ -105,6 +117,602 @@ if (
             recursive: true
         }
     );
+
+}
+
+
+// =====================================================
+// FUNGSI BACA GEOJSON
+// =====================================================
+
+function bacaGeoJSON(
+    filePath,
+    namaFile
+) {
+
+    if (
+        !fs.existsSync(
+            filePath
+        )
+    ) {
+
+        throw new Error(
+            namaFile +
+            " tidak ditemukan: " +
+            filePath
+        );
+
+    }
+
+
+    try {
+
+        return JSON.parse(
+            fs.readFileSync(
+                filePath,
+                "utf8"
+            )
+        );
+
+    }
+
+    catch (
+        error
+    ) {
+
+        throw new Error(
+            "Gagal membaca " +
+            namaFile +
+            ": " +
+            error.message
+        );
+
+    }
+
+}
+
+
+// =====================================================
+// AMBIL FEATURE DARI GEOJSON
+// =====================================================
+
+function ambilFeatures(
+    geojson
+) {
+
+    if (
+        !geojson
+    ) {
+
+        return [];
+
+    }
+
+
+    if (
+        geojson.type ===
+        "FeatureCollection"
+    ) {
+
+        return Array.isArray(
+            geojson.features
+        )
+            ? geojson.features
+            : [];
+
+    }
+
+
+    if (
+        geojson.type ===
+        "Feature"
+    ) {
+
+        return [
+            geojson
+        ];
+
+    }
+
+
+    return [];
+
+}
+
+
+// =====================================================
+// CEK POINT BERADA DI GARIS
+// =====================================================
+
+function pointOnSegment(
+    point,
+    a,
+    b
+) {
+
+    const x =
+        point[0];
+
+    const y =
+        point[1];
+
+    const x1 =
+        a[0];
+
+    const y1 =
+        a[1];
+
+    const x2 =
+        b[0];
+
+    const y2 =
+        b[1];
+
+
+    const cross =
+        (
+            x - x1
+        ) *
+        (
+            y2 - y1
+        )
+        -
+        (
+            y - y1
+        ) *
+        (
+            x2 - x1
+        );
+
+
+    if (
+        Math.abs(
+            cross
+        ) > 1e-10
+    ) {
+
+        return false;
+
+    }
+
+
+    const dot =
+        (
+            x - x1
+        ) *
+        (
+            x2 - x1
+        )
+        +
+        (
+            y - y1
+        ) *
+        (
+            y2 - y1
+        );
+
+
+    if (
+        dot < 0
+    ) {
+
+        return false;
+
+    }
+
+
+    const lengthSquared =
+        (
+            x2 - x1
+        ) *
+        (
+            x2 - x1
+        )
+        +
+        (
+            y2 - y1
+        ) *
+        (
+            y2 - y1
+        );
+
+
+    return (
+        dot <=
+        lengthSquared
+    );
+
+}
+
+
+// =====================================================
+// CEK POINT DALAM RING POLYGON
+// =====================================================
+
+function pointInRing(
+    point,
+    ring
+) {
+
+    if (
+        !Array.isArray(
+            ring
+        ) ||
+        ring.length < 3
+    ) {
+
+        return false;
+
+    }
+
+
+    const x =
+        point[0];
+
+    const y =
+        point[1];
+
+    let inside =
+        false;
+
+
+    for (
+        let i = 0,
+            j = ring.length - 1;
+
+        i < ring.length;
+
+        j = i++
+    ) {
+
+        const xi =
+            ring[i][0];
+
+        const yi =
+            ring[i][1];
+
+        const xj =
+            ring[j][0];
+
+        const yj =
+            ring[j][1];
+
+
+        // Titik berada tepat pada batas
+        if (
+            pointOnSegment(
+                point,
+                ring[j],
+                ring[i]
+            )
+        ) {
+
+            return true;
+
+        }
+
+
+        const intersect =
+            (
+                (
+                    yi > y
+                ) !==
+                (
+                    yj > y
+                )
+            )
+            &&
+            (
+                x <
+                (
+                    (
+                        xj - xi
+                    ) *
+                    (
+                        y - yi
+                    )
+                ) /
+                (
+                    yj - yi
+                )
+                +
+                xi
+            );
+
+
+        if (
+            intersect
+        ) {
+
+            inside =
+                !inside;
+
+        }
+
+    }
+
+
+    return inside;
+
+}
+
+
+// =====================================================
+// CEK POINT DALAM POLYGON
+// =====================================================
+
+function pointInPolygon(
+    point,
+    coordinates
+) {
+
+    if (
+        !Array.isArray(
+            coordinates
+        ) ||
+        coordinates.length === 0
+    ) {
+
+        return false;
+
+    }
+
+
+    // Ring luar
+    if (
+        !pointInRing(
+            point,
+            coordinates[0]
+        )
+    ) {
+
+        return false;
+
+    }
+
+
+    // Cek lubang polygon
+    for (
+        let i = 1;
+
+        i < coordinates.length;
+
+        i++
+    ) {
+
+        if (
+            pointInRing(
+                point,
+                coordinates[i]
+            )
+        ) {
+
+            return false;
+
+        }
+
+    }
+
+
+    return true;
+
+}
+
+
+// =====================================================
+// CEK POINT DALAM GEOMETRY
+// MENDUKUNG POLYGON DAN MULTIPOLYGON
+// =====================================================
+
+function pointInGeometry(
+    point,
+    geometry
+) {
+
+    if (
+        !geometry
+    ) {
+
+        return false;
+
+    }
+
+
+    if (
+        geometry.type ===
+        "Polygon"
+    ) {
+
+        return pointInPolygon(
+            point,
+            geometry.coordinates
+        );
+
+    }
+
+
+    if (
+        geometry.type ===
+        "MultiPolygon"
+    ) {
+
+        return geometry.coordinates.some(
+            function(
+                polygon
+            ) {
+
+                return pointInPolygon(
+                    point,
+                    polygon
+                );
+
+            }
+        );
+
+    }
+
+
+    return false;
+
+}
+
+
+// =====================================================
+// CARI PBPH
+// =====================================================
+
+function cariPBPH(
+    titik,
+    featuresPBPH
+) {
+
+    for (
+        const feature
+        of featuresPBPH
+    ) {
+
+        if (
+            !feature ||
+            !feature.geometry
+        ) {
+
+            continue;
+
+        }
+
+
+        if (
+            pointInGeometry(
+                titik,
+                feature.geometry
+            )
+        ) {
+
+            return {
+                ditemukan:
+                    true,
+
+                nama:
+                    String(
+                        feature.properties?.NAMOBJ ||
+                        "PBPH"
+                    )
+                    .trim()
+            };
+
+        }
+
+    }
+
+
+    return {
+        ditemukan:
+            false,
+
+        nama:
+            ""
+    };
+
+}
+
+
+// =====================================================
+// CARI KATEGORI KAWASAN HUTAN
+// =====================================================
+
+function cariKawasan(
+    titik,
+    featuresKawasan
+) {
+
+    for (
+        const feature
+        of featuresKawasan
+    ) {
+
+        if (
+            !feature ||
+            !feature.geometry
+        ) {
+
+            continue;
+
+        }
+
+
+        const f2025 =
+            String(
+                feature.properties?.F2025 ||
+                ""
+            )
+            .trim()
+            .toUpperCase();
+
+
+        // =============================================
+        // ABAIKAN DATA NON-KAWASAN HUTAN
+        // =============================================
+
+        if (
+            f2025 === ""
+        ) {
+
+            continue;
+
+        }
+
+
+        if (
+            f2025 ===
+            "SISTEM LAHAN"
+        ) {
+
+            continue;
+
+        }
+
+
+        if (
+            f2025 ===
+            "PAPH"
+        ) {
+
+            continue;
+
+        }
+
+
+        // =============================================
+        // CEK TITIK DALAM KAWASAN
+        // =============================================
+
+        if (
+            pointInGeometry(
+                titik,
+                feature.geometry
+            )
+        ) {
+
+            return {
+                ditemukan:
+                    true,
+
+                kategori:
+                    f2025
+            };
+
+        }
+
+    }
+
+
+    return {
+        ditemukan:
+            false,
+
+        kategori:
+            ""
+    };
 
 }
 
@@ -139,7 +747,59 @@ async function updateHotspot() {
 
 
         // =============================================
-        // AMBIL DATA API
+        // BACA DATA SPASIAL
+        // =============================================
+
+        console.log(
+            "Membaca data PBPH..."
+        );
+
+
+        const dataPBPH =
+            bacaGeoJSON(
+                filePBPH,
+                "pbph.geojson"
+            );
+
+
+        console.log(
+            "Membaca data Kawasan Hutan..."
+        );
+
+
+        const dataKawasan =
+            bacaGeoJSON(
+                fileKawasan,
+                "Kawasanhutan.geojson"
+            );
+
+
+        const featuresPBPH =
+            ambilFeatures(
+                dataPBPH
+            );
+
+
+        const featuresKawasan =
+            ambilFeatures(
+                dataKawasan
+            );
+
+
+        console.log(
+            "Jumlah feature PBPH:",
+            featuresPBPH.length
+        );
+
+
+        console.log(
+            "Jumlah feature Kawasan:",
+            featuresKawasan.length
+        );
+
+
+        // =============================================
+        // AMBIL DATA API SIPONGI
         // =============================================
 
         console.log(
@@ -153,10 +813,6 @@ async function updateHotspot() {
             );
 
 
-        // =============================================
-        // VALIDASI RESPONSE
-        // =============================================
-
         if (
             !response.ok
         ) {
@@ -168,10 +824,6 @@ async function updateHotspot() {
 
         }
 
-
-        // =============================================
-        // UBAH RESPONSE MENJADI JSON
-        // =============================================
 
         const data =
             await response.json();
@@ -201,7 +853,9 @@ async function updateHotspot() {
 
 
         // =================================================
-        // SIMPAN DATA HOTSPOT HARIAN LENGKAP
+        // SIMPAN DATA HOTSPOT HARIAN ASLI
+        //
+        // DATA DARI SIPONGI TIDAK DIUBAH
         // =================================================
 
         const fileHarian =
@@ -223,7 +877,7 @@ async function updateHotspot() {
 
 
         console.log(
-            "Data harian disimpan:"
+            "Data harian asli disimpan:"
         );
 
 
@@ -233,22 +887,96 @@ async function updateHotspot() {
 
 
         // =================================================
-        // HITUNG REKAP CONFIDENCE
+        // HITUNG REKAP
         // =================================================
 
-        let high = 0;
+        let high =
+            0;
 
-        let medium = 0;
+        let medium =
+            0;
 
-        let low = 0;
+        let low =
+            0;
 
 
-        // =============================================
+        let totalHotspot =
+            0;
+
+
+        let totalPBPH =
+            0;
+
+
+        let totalKawasan =
+            0;
+
+
+        let totalLuarKawasan =
+            0;
+
+
+        // =================================================
         // PROSES SETIAP HOTSPOT
-        // =============================================
+        // =================================================
 
         data.features.forEach(
-            function(feature) {
+            function(
+                feature
+            ) {
+
+                if (
+                    !feature ||
+                    !feature.geometry ||
+                    feature.geometry.type !==
+                    "Point"
+                ) {
+
+                    return;
+
+                }
+
+
+                const coordinates =
+                    feature.geometry.coordinates;
+
+
+                if (
+                    !Array.isArray(
+                        coordinates
+                    ) ||
+                    coordinates.length < 2
+                ) {
+
+                    return;
+
+                }
+
+
+                const longitude =
+                    Number(
+                        coordinates[0]
+                    );
+
+
+                const latitude =
+                    Number(
+                        coordinates[1]
+                    );
+
+
+                if (
+                    !Number.isFinite(
+                        longitude
+                    ) ||
+                    !Number.isFinite(
+                        latitude
+                    )
+                ) {
+
+                    return;
+
+                }
 
 
                 const p =
@@ -257,18 +985,20 @@ async function updateHotspot() {
 
                 const confidence =
                     String(
-                        p.confidence_level || ""
+                        p.confidence_level ||
+                        ""
                     )
                     .trim()
                     .toLowerCase();
 
 
                 // =========================================
-                // HIGH
+                // HITUNG CONFIDENCE
                 // =========================================
 
                 if (
-                    confidence === "high"
+                    confidence ===
+                    "high"
                 ) {
 
                     high++;
@@ -276,12 +1006,9 @@ async function updateHotspot() {
                 }
 
 
-                // =========================================
-                // MEDIUM
-                // =========================================
-
                 else if (
-                    confidence === "medium"
+                    confidence ===
+                    "medium"
                 ) {
 
                     medium++;
@@ -289,16 +1016,82 @@ async function updateHotspot() {
                 }
 
 
-                // =========================================
-                // LOW
-                //
-                // TERMASUK CONFIDENCE TIDAK VALID /
-                // KOSONG AGAR KONSISTEN DENGAN APLIKASI
-                // =========================================
-
                 else {
 
                     low++;
+
+                }
+
+
+                totalHotspot++;
+
+
+                // =========================================
+                // TITIK UNTUK ANALISIS SPASIAL
+                // [LONGITUDE, LATITUDE]
+                // =========================================
+
+                const titik =
+                    [
+                        longitude,
+                        latitude
+                    ];
+
+
+                // =========================================
+                // CEK PBPH
+                // =========================================
+
+                const hasilPBPH =
+                    cariPBPH(
+                        titik,
+                        featuresPBPH
+                    );
+
+
+                // =========================================
+                // CEK KAWASAN HUTAN
+                // =========================================
+
+                const hasilKawasan =
+                    cariKawasan(
+                        titik,
+                        featuresKawasan
+                    );
+
+
+                // =========================================
+                // PRIORITAS KATEGORI
+                //
+                // 1. PBPH + Kawasan
+                // 2. Kawasan Hutan
+                // 3. Di Luar Kawasan
+                //
+                // MENGIKUTI LOGIKA REKAP APLIKASI
+                // =========================================
+
+                if (
+                    hasilPBPH.ditemukan &&
+                    hasilKawasan.ditemukan
+                ) {
+
+                    totalPBPH++;
+
+                }
+
+
+                else if (
+                    hasilKawasan.ditemukan
+                ) {
+
+                    totalKawasan++;
+
+                }
+
+
+                else {
+
+                    totalLuarKawasan++;
 
                 }
 
@@ -315,17 +1108,33 @@ async function updateHotspot() {
             tanggal:
                 hariIni,
 
+
             high:
                 high,
+
 
             medium:
                 medium,
 
+
             low:
                 low,
 
+
             total:
-                data.features.length
+                totalHotspot,
+
+
+            pbph:
+                totalPBPH,
+
+
+            kawasan:
+                totalKawasan,
+
+
+            luar_kawasan:
+                totalLuarKawasan
 
         };
 
@@ -341,10 +1150,33 @@ async function updateHotspot() {
 
 
         // =================================================
+        // VALIDASI TOTAL SPASIAL
+        // =================================================
+
+        const totalKategori =
+            totalPBPH +
+            totalKawasan +
+            totalLuarKawasan;
+
+
+        if (
+            totalKategori !==
+            totalHotspot
+        ) {
+
+            console.warn(
+                "PERINGATAN: Total kategori spasial tidak sama dengan total hotspot."
+            );
+
+        }
+
+
+        // =================================================
         // BACA DATA TREN LAMA
         // =================================================
 
-        let dataTren = [];
+        let dataTren =
+            [];
 
 
         if (
@@ -362,10 +1194,6 @@ async function updateHotspot() {
                     )
                     .trim();
 
-
-                // =========================================
-                // JIKA FILE TIDAK KOSONG
-                // =========================================
 
                 if (
                     isiFile
@@ -406,7 +1234,8 @@ async function updateHotspot() {
                 );
 
 
-                dataTren = [];
+                dataTren =
+                    [];
 
             }
 
@@ -415,13 +1244,13 @@ async function updateHotspot() {
 
         // =================================================
         // HAPUS DATA DENGAN TANGGAL YANG SAMA
-        //
-        // AGAR DATA HARI INI TIDAK DUPLIKAT
         // =================================================
 
         dataTren =
             dataTren.filter(
-                function(item) {
+                function(
+                    item
+                ) {
 
                     return (
                         item.tanggal !==
@@ -446,12 +1275,16 @@ async function updateHotspot() {
         // =================================================
 
         dataTren.sort(
-            function(a, b) {
+            function(
+                a,
+                b
+            ) {
 
                 return (
                     String(
                         a.tanggal
-                    ).localeCompare(
+                    )
+                    .localeCompare(
                         String(
                             b.tanggal
                         )
@@ -487,19 +1320,28 @@ async function updateHotspot() {
         );
 
 
+        // =================================================
+        // LOG HASIL
+        // =================================================
+
         console.log(
             "========================================"
         );
 
 
         console.log(
-            "DATA TREN BERHASIL DIPERBARUI"
+            "DATA HOTSPOT BERHASIL DIPERBARUI"
         );
 
 
         console.log(
-            "File tren:",
-            fileTren
+            "========================================"
+        );
+
+
+        console.log(
+            "Tanggal:",
+            hariIni
         );
 
 
@@ -523,7 +1365,37 @@ async function updateHotspot() {
 
         console.log(
             "Total:",
-            data.features.length
+            totalHotspot
+        );
+
+
+        console.log(
+            "PBPH:",
+            totalPBPH
+        );
+
+
+        console.log(
+            "Kawasan:",
+            totalKawasan
+        );
+
+
+        console.log(
+            "Di Luar Kawasan:",
+            totalLuarKawasan
+        );
+
+
+        console.log(
+            "Total Kategori:",
+            totalKategori
+        );
+
+
+        console.log(
+            "File tren:",
+            fileTren
         );
 
 
@@ -531,8 +1403,8 @@ async function updateHotspot() {
             "========================================"
         );
 
-
     }
+
 
     catch (
         error
