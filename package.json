@@ -1,1 +1,8 @@
-
+{
+  "name": "map-interaktif",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@turf/turf": "^7.2.0"
+  }
+}
