@@ -1,0 +1,23 @@
+[
+  {
+    "tanggal": "2026-08-30",
+    "high": 4,
+    "medium": 301,
+    "low": 0,
+    "total": 305,
+    "pbph": 305,
+    "kawasan": 305,
+    "luar_kawasan": 0,
+    "rekap_kawasan": {
+      "HL": 305,
+      "HP": 0,
+      "HPT": 0,
+      "HPK": 0,
+      "HK": 0,
+      "Di Luar Kawasan": 0
+    },
+    "rekap_pbph": {
+      "PT. Aya Yayang Indonesia": 305
+    }
+  }
+]
