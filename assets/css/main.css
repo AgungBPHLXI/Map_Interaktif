@@ -1,121 +1,344 @@
-<style>
+/* =====================================================
+   INFORMASI SPASIAL BPHL WILAYAH XI
+   UI UTAMA + DASHBOARD MONITORING
+===================================================== */
+
+:root{
+    --ui-primary:#1b5e20;
+    --ui-primary-dark:#0f3d14;
+    --ui-surface:#ffffff;
+    --ui-soft:#f5f7f5;
+    --ui-border:#e2e8e3;
+    --ui-text:#17221a;
+    --ui-muted:#647067;
+    --ui-shadow:0 18px 50px rgba(17,34,24,.22);
+}
+
+*{ box-sizing:border-box; }
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    color:var(--ui-text);
+    background:#eef2ee;
+}
+
+#map{ height:100vh; }
+
 .leaflet-popup-content{
     font-size:14px;
     font-weight:bold;
 }
 
-body {
-    margin:0;
-    font-family: Arial, sans-serif;
-}
-
-#map{
-    height:100vh;
-}
-
-/* =========================
-   CHART OVERLAY
-========================= */
+/* =====================================================
+   DASHBOARD MONITORING
+===================================================== */
 
 #chartOverlay{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    width:90%;
-    height:80vh;
-    background:white;
-    border-radius:15px;
-    box-shadow:0 10px 40px rgba(0,0,0,0.4);
-    padding:20px;
-    z-index:2000;
+    position:fixed;
+    inset:0;
+    width:min(1180px, calc(100vw - 48px));
+    height:min(88vh, 860px);
+    margin:auto;
+    transform:none;
+    background:var(--ui-surface);
+    border:1px solid rgba(255,255,255,.55);
+    border-radius:20px;
+    box-shadow:var(--ui-shadow);
+    padding:22px;
+    z-index:7000;
     display:none;
-    resize:both;
     overflow:auto;
+    resize:none;
 }
 
-#chartOverlay button{
+.monitoring-dashboard__header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:20px;
+    padding:0 44px 18px 0;
+    border-bottom:1px solid var(--ui-border);
+}
+
+.monitoring-dashboard__heading h2{
+    margin:4px 0 6px;
+    font-size:24px;
+    line-height:1.2;
+}
+
+.monitoring-dashboard__eyebrow{
+    color:var(--ui-primary);
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.14em;
+}
+
+.monitoring-dashboard__heading p,
+.dashboard-panel__title-row p{
+    margin:0;
+    color:var(--ui-muted);
+    font-size:13px;
+    line-height:1.5;
+}
+
+.monitoring-dashboard__close{
     position:absolute;
-    top:10px;
-    right:15px;
-    background:red;
-    color:white;
-    border:none;
-    border-radius:50%;
-    width:30px;
-    height:30px;
+    top:18px;
+    right:18px;
+    width:38px;
+    height:38px;
+    border:0;
+    border-radius:12px;
+    background:#f2f4f2;
+    color:#39443b;
+    cursor:pointer;
+    font-size:18px;
+    transition:.2s ease;
+}
+
+.monitoring-dashboard__close:hover{
+    background:#e7ece7;
+    transform:scale(1.04);
+}
+
+.monitoring-kpi-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px;
+    margin:18px 0;
+}
+
+.monitoring-kpi-card{
+    min-height:102px;
+    padding:15px 16px;
+    border:1px solid var(--ui-border);
+    border-radius:14px;
+    background:linear-gradient(180deg,#fff,#fafcfb);
+}
+
+.monitoring-kpi-card__label{
+    display:block;
+    color:var(--ui-muted);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+}
+
+.monitoring-kpi-card__value{
+    display:block;
+    margin-top:8px;
+    font-size:21px;
+    font-weight:800;
+    color:var(--ui-text);
+}
+
+.monitoring-kpi-card__note{
+    display:block;
+    margin-top:5px;
+    color:var(--ui-muted);
+    font-size:11px;
+}
+
+.monitoring-dashboard__toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:14px;
+}
+
+.monitoring-status{
+    color:var(--ui-muted);
+    font-size:12px;
+    min-height:18px;
+}
+
+.monitoring-dashboard__actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.dashboard-view-btn{
+    border:1px solid var(--ui-border);
+    background:#fff;
+    color:#425046;
+    padding:8px 11px;
+    border-radius:9px;
+    cursor:pointer;
+    font-size:12px;
+    font-weight:700;
+}
+
+.dashboard-view-btn:hover,
+.dashboard-view-btn.is-active{
+    color:#fff;
+    background:var(--ui-primary);
+    border-color:var(--ui-primary);
+}
+
+.dashboard-panel{
+    border:1px solid var(--ui-border);
+    border-radius:16px;
+    background:#fff;
+    overflow:hidden;
+}
+
+.dashboard-panel__title-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    padding:17px 18px;
+    border-bottom:1px solid var(--ui-border);
+}
+
+.dashboard-panel__title-row h3{
+    margin:0 0 5px;
+    font-size:15px;
+}
+
+.dashboard-legend-hint{
+    color:var(--ui-muted);
+    font-size:11px;
+    text-align:right;
+}
+
+.dashboard-chart-wrap{
+    position:relative;
+    height:430px;
+    padding:16px 18px 22px;
+}
+
+#chartKawasan,
+#chartSemua{
+    width:100% !important;
+    height:100% !important;
+}
+
+#chartSemua{ display:none; }
+
+.dashboard-table-wrap{
+    max-height:430px;
+    overflow:auto;
+    padding:0;
+}
+
+.dashboard-table-wrap table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
+}
+
+.dashboard-table-wrap th{
+    position:sticky;
+    top:0;
+    z-index:1;
+    background:#f1f6f1;
+    color:#2d4031;
+    text-align:left;
+    padding:10px;
+    border-bottom:1px solid var(--ui-border);
+    white-space:nowrap;
+}
+
+.dashboard-table-wrap td{
+    padding:9px 10px;
+    border-bottom:1px solid #edf1ed;
+    vertical-align:top;
+}
+
+.dashboard-table-wrap tr:hover td{ background:#f8fbf8; }
+
+.dashboard-empty,
+.dashboard-loading,
+.dashboard-error{
+    padding:36px 20px;
+    text-align:center;
+    color:var(--ui-muted);
+}
+
+.dashboard-error{ color:#b3261e; }
+
+/* Filter hotspot tetap tersedia tetapi tidak mengganggu dashboard monitoring */
+.hotspot-date-filter{
+    display:none;
+    margin-top:16px;
+    padding:14px;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:end;
+    background:var(--ui-soft);
+    border:1px solid var(--ui-border);
+    border-radius:12px;
+}
+
+.hotspot-date-filter label{
+    margin:0;
+}
+
+.hotspot-date-filter input,
+.hotspot-date-filter button{
+    min-height:38px;
+    border-radius:8px;
+    border:1px solid #d9e1da;
+    padding:0 10px;
+}
+
+.hotspot-date-filter button{
+    background:var(--ui-primary);
+    color:#fff;
+    border-color:var(--ui-primary);
     cursor:pointer;
 }
 
-#chartSemua{
-    display:none;
-}
-
-/* =========================
+/* =====================================================
    SELECT2
-========================= */
+===================================================== */
+.select2-container{ width:100% !important; }
 
-.select2-container{
-    width:100% !important;
-}
-
-/* =========================
+/* =====================================================
    SIDEBAR
-========================= */
-
+===================================================== */
 #sidebar{
     position:absolute;
     top:0;
     left:0;
     width:350px;
     height:95vh;
-
-    background:rgba(255,255,255,0.6);
+    background:rgba(255,255,255,.6);
     backdrop-filter:blur(10px);
     -webkit-backdrop-filter:blur(10px);
-
-    border:1px solid rgba(255,255,255,0.4);
+    border:1px solid rgba(255,255,255,.4);
     border-radius:0 15px 15px 0;
-    box-shadow:0 15px 30px rgba(0,0,0,0.15);
-
+    box-shadow:0 15px 30px rgba(0,0,0,.15);
     padding:15px;
     overflow-y:auto;
-    transition:0.3s ease;
+    transition:.3s ease;
     z-index:1000;
 }
 
-#sidebar.collapsed{
-    transform:translateX(-110%);
-}
-
-/* =========================
-   TOGGLE SIDEBAR
-========================= */
+#sidebar.collapsed{ transform:translateX(-110%); }
 
 #toggleSidebar{
     position:absolute;
     top:20px;
     left:320px;
     z-index:2000;
-
-    background:white;
-    border:none;
+    background:#fff;
+    border:0;
     width:35px;
     height:35px;
     border-radius:8px;
     cursor:pointer;
     font-size:18px;
-    box-shadow:0 2px 6px rgba(0,0,0,0.3);
-    transition:0.3s;
+    box-shadow:0 2px 6px rgba(0,0,0,.3);
+    transition:.3s;
 }
 
-#sidebar.collapsed + #toggleSidebar{
-    left:20px;
-}
-
-/* =========================
-   HEADER
-========================= */
+#sidebar.collapsed + #toggleSidebar{ left:20px; }
 
 .sidebar-header{
     display:flex;
@@ -129,24 +352,18 @@ body {
     gap:10px;
 }
 
-.sidebar-header img{
-    height:45px;
-}
+.sidebar-header img{ height:45px; }
 
 .sidebar-title .main-title{
     font-weight:bold;
     font-size:16px;
-    color:#1b5e20;
+    color:var(--ui-primary);
 }
 
 .sidebar-title .sub-title{
     font-size:11px;
     color:#555;
 }
-
-/* =========================
-   MENU
-========================= */
 
 .menu-parent{
     padding:10px;
@@ -162,19 +379,13 @@ body {
     padding:10px 5px;
 }
 
-.menu-child div{
+.menu-child > div{
     padding:8px;
     cursor:pointer;
     border-radius:6px;
 }
 
-.menu-child div:hover{
-    background:#e8f5e9;
-}
-
-/* =========================
-   LABEL
-========================= */
+.menu-child > div:hover{ background:#e8f5e9; }
 
 label{
     font-size:12px;
@@ -182,10 +393,6 @@ label{
     margin-top:10px;
     display:block;
 }
-
-/* =========================
-   PPT INFO
-========================= */
 
 #pptInfo{
     width:260px;
@@ -198,47 +405,76 @@ label{
     width:100%;
     margin-bottom:10px;
     border-radius:10px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.2);
+    box-shadow:0 2px 8px rgba(0,0,0,.2);
 }
 
-/* =========================
-   DASHBOARD
-========================= */
-
-#dashboardContent{
-    overflow-y:auto;
-    max-height:45vh;
+/* =====================================================
+   HOTSPOT SIDEBAR
+===================================================== */
+#hotspotFilterPanel,
+.hotspot-rekap{
     margin-top:15px;
-    padding:10px;
-    background:white;
-    border-radius:10px;
-}
-
-#dashboardContent table{
-    width:100%;
-    border-collapse:collapse;
-    font-size:11px;
-}
-
-#dashboardContent th{
-    background:#2e7d32;
-    color:white;
-    padding:4px;
-    position:sticky;
-    top:0;
-}
-
-#dashboardContent td{
-    padding:4px;
+    padding:12px;
+    background:#f5f5f5;
+    border-radius:8px;
     border:1px solid #ddd;
 }
 
-/* =========================
-   ROUTING
-========================= */
+.hotspot-filter-title{
+    font-weight:bold;
+    margin-bottom:10px;
+}
 
+.hotspot-filter-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:0 0 8px;
+    cursor:pointer;
+}
+
+.hotspot-filter-item:last-child{ margin-bottom:0; }
+
+.hotspot-dot{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    display:inline-block;
+}
+
+.hotspot-dot--high{ background:#e53935; }
+.hotspot-dot--medium{ background:#fbc02d; }
+.hotspot-dot--low{ background:#43a047; }
+
+.hotspot-rekap{
+    font-size:13px;
+    max-height:350px;
+    overflow-y:auto;
+}
+
+.upload-shp-input{
+    width:100%;
+    padding:6px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    background:#fff;
+}
+
+.upload-shp-help{
+    font-size:11px;
+    color:#555;
+    margin-top:6px;
+    line-height:1.5;
+    background:#f5f5f5;
+    padding:8px;
+    border-radius:6px;
+}
+
+/* =====================================================
+   ROUTING
+===================================================== */
 .routing-btn{
-    background:white;
+    background:#fff;
     width:40px;
     height:40px;
     border-radius:10px;
@@ -247,23 +483,18 @@ label{
     align-items:center;
     justify-content:center;
     cursor:pointer;
-    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    box-shadow:0 4px 12px rgba(0,0,0,.15);
     font-size:18px;
 }
 
 .routing-btn.active{
     background:#2e7d32;
-    color:white;
+    color:#fff;
     border-color:#2e7d32;
 }
 
-.leaflet-routing-container{
-    display:none !important;
-}
-
-.leaflet-routing-alt{
-    display:none !important;
-}
+.leaflet-routing-container,
+.leaflet-routing-alt{ display:none !important; }
 
 .distance-popup{
     font-size:14px;
@@ -272,455 +503,144 @@ label{
     text-align:center;
 }
 
-/* =========================
-   MOBILE
-========================= */
+.hotspot-summary-control{
+    background:rgba(255,255,255,.95);
+    padding:12px;
+    border-radius:10px;
+    box-shadow:0 3px 12px rgba(0,0,0,.25);
+    min-width:180px;
+    border-left:4px solid #d32f2f;
+}
 
+/* =====================================================
+   MOBILE & TABLET
+===================================================== */
 @media(max-width:768px){
+    #map{
+        position:fixed;
+        inset:0;
+        width:100%;
+        height:100dvh;
+        z-index:1;
+    }
 
     #sidebar{
-        width:100%;
+        width:min(88vw,380px);
+        max-width:380px;
         height:100vh;
-        left:-100%;
+        position:fixed;
         top:0;
+        left:-100%;
+        overflow-y:auto;
         border-radius:0;
-        backdrop-filter:none;
-        background:white;
-        z-index:3000;
+        background:#fff;
+        z-index:3000 !important;
+        transition:left .3s ease;
     }
 
-    #sidebar.active{
-        left:0;
-    }
+    #sidebar.active{ left:0; }
 
     #toggleSidebar{
-        left:15px !important;
+        position:fixed;
         top:15px;
-        width:40px;
-        height:40px;
+        left:15px !important;
+        width:42px;
+        height:42px;
         font-size:20px;
+        z-index:4000 !important;
     }
+
+    #sidebar.active ~ #toggleSidebar{
+        left:calc(min(88vw,380px) - 55px) !important;
+    }
+
+    .sidebar-header{ padding-top:15px; }
+    .logo-area img{ max-width:55px; height:auto; }
+    .main-title{ font-size:17px; }
+    .sub-title{ font-size:12px; }
+    .menu-parent{ font-size:16px; padding:12px; }
+    .menu-child > div{ font-size:15px; padding:10px; }
+
+    #sidebar label{ display:block; margin-top:12px; }
+    .select2-container{ width:100% !important; }
+    .select2-container--default .select2-selection--multiple{ min-height:40px; }
+    .select2-container--open{ z-index:5000; }
 
     #chartOverlay{
-        width:100%;
-        height:100%;
-        top:0;
-        left:0;
-        transform:none;
+        width:100vw;
+        height:100dvh;
+        max-width:none;
+        max-height:none;
+        inset:0;
+        margin:0;
         border-radius:0;
-        padding:15px;
+        padding:18px 12px 24px;
+        z-index:7000;
     }
 
-    #chartOverlay button{
-        top:15px;
-        right:15px;
+    .monitoring-dashboard__header{
+        padding-right:42px;
+        gap:12px;
     }
 
-    canvas{
-        height:80% !important;
+    .monitoring-dashboard__heading h2{ font-size:20px; }
+
+    .monitoring-kpi-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:8px;
     }
 
-    .menu-parent{
-        font-size:16px;
+    .monitoring-kpi-card{
+        min-height:92px;
+        padding:12px;
     }
 
-    .menu-child div{
-        font-size:15px;
+    .monitoring-kpi-card__value{ font-size:17px; }
+
+    .monitoring-dashboard__toolbar{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .monitoring-dashboard__actions{ width:100%; }
+    .dashboard-view-btn{ flex:1; }
+
+    .dashboard-chart-wrap{
+        height:58vh;
+        min-height:360px;
         padding:10px;
     }
-}
-/* =====================================================
-   TAHAP 9 - RESPONSIVE / MOBILE
-   ===================================================== */
 
-
-/* =========================
-   MOBILE & TABLET
-========================= */
-
-@media (max-width: 768px) {
-
-    /* =========================
-       PETA
-    ========================= */
-
-    #map {
-        width: 100%;
-        height: 100vh;
+    .dashboard-panel__title-row{
+        padding:14px;
     }
 
+    .dashboard-legend-hint{ display:none; }
+    .dashboard-table-wrap{ max-height:60vh; }
 
-    /* =========================
-       SIDEBAR
-    ========================= */
-
-    #sidebar {
-        width: min(88vw, 380px);
-        max-width: 380px;
-
-        height: 100vh;
-
-        position: fixed;
-
-        top: 0;
-        left: -100%;
-
-        overflow-y: auto;
-
-        border-radius: 0;
-
-        background: white;
-
-        z-index: 3000;
-
-        transition: left 0.3s ease;
+    .leaflet-control-container{
+        position:absolute !important;
+        inset:0;
+        width:100%;
+        height:100%;
+        z-index:2000 !important;
+        pointer-events:none;
     }
 
-
-    #sidebar.active {
-        left: 0;
-    }
-
-
-    /* =========================
-       TOMBOL MENU
-    ========================= */
-
-    #toggleSidebar {
-        position: fixed;
-
-        top: 15px;
-        left: 15px;
-
-        width: 42px;
-        height: 42px;
-
-        font-size: 20px;
-
-        z-index: 3100;
-    }
-
-
-    /* Saat sidebar terbuka,
-       tombol tetap terlihat */
-    #sidebar.active ~ #toggleSidebar {
-        left: calc(min(88vw, 380px) - 55px);
-    }
-
-
-    /* =========================
-       SIDEBAR HEADER
-    ========================= */
-
-    .sidebar-header {
-        padding-top: 15px;
-    }
-
-
-    .logo-area {
-        align-items: center;
-    }
-
-
-    .logo-area img {
-        max-width: 55px;
-        height: auto;
-    }
-
-
-    .main-title {
-        font-size: 17px;
-    }
-
-
-    .sub-title {
-        font-size: 12px;
-    }
-
-
-    /* =========================
-       MENU
-    ========================= */
-
-    .menu-parent {
-        font-size: 16px;
-        padding: 12px;
-    }
-
-
-    .menu-child div {
-        font-size: 15px;
-        padding: 10px;
-    }
-
-
-    /* =========================
-       FILTER
-    ========================= */
-
-    #sidebar label {
-        display: block;
-        margin-top: 12px;
-    }
-
-
-    /* Select2 harus penuh */
-    .select2-container {
-        width: 100% !important;
-    }
-
-
-    .select2-container--default
-    .select2-selection--multiple {
-        min-height: 40px;
-    }
-
-
-    /* Dropdown Select2 di atas sidebar */
-    .select2-container--open {
-        z-index: 5000;
-    }
-
-
-    /* =========================
-       UPLOAD SHP
-    ========================= */
-
-    #uploadShp {
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-
-    /* =========================
-       CHART OVERLAY
-    ========================= */
-
-    #chartOverlay {
-        position: fixed;
-
-        width: 100vw;
-        height: 100vh;
-
-        max-width: none;
-        max-height: none;
-
-        top: 0 !important;
-        left: 0 !important;
-
-        transform: none !important;
-
-        margin: 0;
-
-        border-radius: 0;
-
-        padding: 55px 15px 15px 15px;
-
-        box-sizing: border-box;
-
-        z-index: 6000;
-
-        overflow: auto;
-    }
-
-
-    #chartOverlay canvas {
-        width: 100% !important;
-
-        height: auto !important;
-
-        max-height: calc(100vh - 100px);
-    }
-
-
-    #btnCloseChart {
-        position: fixed;
-
-        top: 15px;
-        right: 15px;
-
-        z-index: 6100;
-    }
-
-
-    /* =========================
-       LEAFLET CONTROL
-    ========================= */
-
-    .leaflet-top.leaflet-right {
-        top: 65px;
-    }
-
-
-    .leaflet-control {
-        max-width: 45px;
-    }
-
-
-    /* Popup tidak terlalu lebar */
-    .leaflet-popup-content {
-        max-width: 250px;
-        font-size: 13px;
-    }
-
-}
-
-
-/* =====================================================
-   LAYAR KECIL
-   ===================================================== */
-
-@media (max-width: 480px) {
-
-    #sidebar {
-        width: 92vw;
-        max-width: none;
-    }
-
-
-    #sidebar.active ~ #toggleSidebar {
-        left: calc(92vw - 55px);
-    }
-
-
-    .main-title {
-        font-size: 16px;
-    }
-
-
-    .sub-title {
-        font-size: 11px;
-    }
-
-
-    .menu-parent {
-        font-size: 15px;
-    }
-
-
-    .menu-child div {
-        font-size: 14px;
-    }
-
-
-    #chartOverlay {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-
-}
-/* =====================================================
-   FIX KONTROL LEAFLET MOBILE
-   ===================================================== */
-
-@media (max-width: 768px) {
-
-    .leaflet-control-container {
-        z-index: 1500;
-    }
-
-
-    .leaflet-top,
-    .leaflet-bottom {
-        z-index: 1500;
-    }
-
-
-    /* Saat sidebar terbuka, kontrol berada di bawah sidebar */
-    #sidebar.active ~ .leaflet-control-container {
-        z-index: 1500;
-    }
-
-
-    /* Setelah sidebar ditutup, kontrol tetap terlihat */
-    .leaflet-top.leaflet-right {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-    }
-
-}
-/* =====================================================
-   FIX LEAFLET CONTROL MOBILE SETELAH FILTER
-   ===================================================== */
-
-@media (max-width: 768px) {
-
-    /* Pastikan container peta berada di bawah sidebar */
-    #map {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-
-        width: 100%;
-        height: 100dvh;
-
-        z-index: 1;
-    }
-
-
-    /* Pastikan kontrol Leaflet selalu di atas peta */
-    .leaflet-control-container {
-        position: absolute !important;
-
-        top: 0;
-        left: 0;
-
-        width: 100%;
-        height: 100%;
-
-        z-index: 2000 !important;
-
-        pointer-events: none;
-    }
-
-
-    /* Tombol Leaflet tetap bisa diklik */
     .leaflet-control-container a,
-    .leaflet-control-container button {
-        pointer-events: auto;
-    }
-
-
-    .leaflet-top,
-    .leaflet-bottom {
-        z-index: 2001 !important;
-    }
-
-
-    /* Sidebar harus berada di atas kontrol saat terbuka */
-    #sidebar {
-        z-index: 3000 !important;
-    }
-
-
-    /* Toggle sidebar paling atas */
-    #toggleSidebar {
-        z-index: 4000 !important;
-    }
-
+    .leaflet-control-container button{ pointer-events:auto; }
+    .leaflet-top,.leaflet-bottom{ z-index:2001 !important; }
+    .leaflet-top.leaflet-right{ top:65px; }
+    .leaflet-popup-content{ max-width:250px; font-size:13px; }
 }
-/* =====================================================
-   HOTSPOT SIPONGI
-===================================================== */
 
-.hotspot-summary-control{
-
-    background:rgba(255,255,255,0.95);
-
-    padding:12px;
-
-    border-radius:10px;
-
-    box-shadow:
-        0 3px 12px
-        rgba(0,0,0,0.25);
-
-    min-width:180px;
-
-    border-left:
-        4px solid #d32f2f;
+@media(max-width:480px){
+    #sidebar{ width:92vw; max-width:none; }
+    #sidebar.active ~ #toggleSidebar{ left:calc(92vw - 55px) !important; }
+    .main-title{ font-size:16px; }
+    .sub-title{ font-size:11px; }
+    .menu-parent{ font-size:15px; }
+    .menu-child > div{ font-size:14px; }
+    .monitoring-kpi-grid{ grid-template-columns:1fr; }
+    .dashboard-view-btn{ min-width:calc(50% - 4px); }
 }
-</style>
