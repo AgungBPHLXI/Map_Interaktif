@@ -30,21 +30,24 @@
         </div>
         <div class="print-page-info">
             <span id="printLayoutNote">Tampilan seluruh layer yang aktif</span>
-            <span id="printLayoutMeta"></span>
         </div>
         <div id="printCoordinateGrid" class="print-coordinate-grid" hidden></div>
         <div id="printScaleBox" class="print-scale-box" hidden>
             <div class="print-scale-title">SKALA</div>
-            <div id="printScaleText" class="print-scale-text">1 : Otomatis</div>
+            <div id="printScaleText" class="print-scale-text">1 : -</div>
             <div id="printScaleGraphic" class="print-scale-graphic"></div>
         </div>
+        <div id="printNorthArrow" class="print-north-arrow" hidden aria-label="Arah Utara">
+            <div class="print-north-arrow__n">U</div>
+            <div class="print-north-arrow__symbol"><span></span></div>
+        </div>
+        <div id="printFilterSummary" class="print-filter-summary" hidden></div>
         <div id="printLegend" class="print-legend">
             <div class="print-legend-title">LEGENDA</div>
             <div id="printLegendItems"></div>
         </div>
         <div class="print-page-footer">
             <span>Sumber: Informasi Spasial BPHL Wilayah XI Banjarbaru</span>
-            <span>© BPHL Wilayah XI Banjarbaru</span>
         </div>
     </div>
 
@@ -55,7 +58,7 @@
                 <div>
                     <span class="print-modal__eyebrow">LAYOUT PETA</span>
                     <h2 id="printModalTitle">Cetak Peta PDF</h2>
-                    <p>Atur elemen kartografi sebelum membuka dialog cetak.</p>
+                    <p>Ukuran kertas dan orientasi akan menyesuaikan framing peta secara otomatis.</p>
                 </div>
                 <button id="btnClosePrintMap" type="button" class="print-modal__close" aria-label="Tutup">✕</button>
             </div>
@@ -73,36 +76,41 @@
 
                 <div class="print-form-group print-form-group--full">
                     <label for="printMapNote">Keterangan / Wilayah</label>
-                    <textarea id="printMapNote" rows="2" placeholder="Opsional. Contoh: Kabupaten Tabalong, Provinsi Kalimantan Selatan"></textarea>
+                    <textarea id="printMapNote" rows="2" placeholder="Kosongkan untuk memakai filter aktif secara otomatis"></textarea>
                 </div>
 
                 <div class="print-form-group">
-                    <label for="printScaleMode">Skala Peta</label>
-                    <select id="printScaleMode">
-                        <option value="auto">Otomatis mengikuti tampilan</option>
-                        <option value="25000">1 : 25.000</option>
-                        <option value="50000">1 : 50.000</option>
-                        <option value="100000">1 : 100.000</option>
-                        <option value="250000">1 : 250.000</option>
-                        <option value="500000">1 : 500.000</option>
-                        <option value="1000000">1 : 1.000.000</option>
+                    <label for="printPaperSize">Ukuran Kertas</label>
+                    <select id="printPaperSize">
+                        <option value="A4">A4</option>
+                        <option value="A3">A3</option>
                     </select>
-                    <div class="print-scale-help">Skala grafis dan angka akan disesuaikan dengan pilihan ini.</div>
+                    <div class="print-scale-help">Peta akan otomatis fit ke bidang kertas yang dipilih.</div>
                 </div>
 
                 <div class="print-form-group">
+                    <label for="printOrientation">Orientasi</label>
+                    <select id="printOrientation">
+                        <option value="landscape">Landscape</option>
+                        <option value="portrait">Portrait</option>
+                    </select>
+                    <div class="print-scale-help">Skala dihitung otomatis setelah extent peta disesuaikan.</div>
+                </div>
+
+                <div class="print-form-group print-form-group--full">
                     <label>Elemen Peta</label>
                     <div class="print-option-grid">
                         <label class="print-option-item"><input type="checkbox" id="printShowLegend" checked> Legenda</label>
-                        <label class="print-option-item"><input type="checkbox" id="printShowScale" checked> Skala</label>
+                        <label class="print-option-item"><input type="checkbox" id="printShowScale" checked> Skala otomatis</label>
                         <label class="print-option-item"><input type="checkbox" id="printShowCoordinates" checked> Koordinat geografis</label>
-                        <label class="print-option-item"><input type="checkbox" id="printShowFilterNote" checked> Keterangan filter</label>
+                        <label class="print-option-item"><input type="checkbox" id="printShowNorthArrow" checked> Arah utara</label>
+                        <label class="print-option-item"><input type="checkbox" id="printShowFilterNote" checked> Ringkasan filter & luas</label>
                     </div>
                 </div>
             </div>
 
             <div class="print-modal__info">
-                <strong>Catatan:</strong> warna legenda mengambil simbolisasi kawasan aktif sesuai SK 399/2024, sedangkan koordinat geografis dibangkitkan dari extent peta yang sedang ditampilkan.
+                <strong>Otomatis:</strong> peta akan fit ke kertas, skala dihitung dari extent hasil fit, legenda mengikuti warna simbologi peta, dan ringkasan luas kawasan mengikuti filter yang aktif.
             </div>
 
             <div class="print-modal__actions">
@@ -151,7 +159,7 @@
         <div class="menu-group"><div class="menu-parent" onclick="toggleMenu(this)">🔎 Filter ▼</div><div class="menu-child">
             <label>Kabupaten</label><select id="filterKabupaten" multiple></select><label>Kawasan</label><select id="filterF2025" multiple></select><label>PBPH</label><select id="filterNama" multiple></select><label>Industri 6000 UP</label><select id="filterIndustri" multiple></select>
             <div id="hotspotFilterPanel"><div class="hotspot-filter-title">🔥 Filter Hotspot</div><label class="hotspot-filter-item"><input type="checkbox" id="filterHotspotHigh" checked onchange="updateHotspotFilter()"><span class="hotspot-dot hotspot-dot--high"></span>High</label><label class="hotspot-filter-item"><input type="checkbox" id="filterHotspotMedium" checked onchange="updateHotspotFilter()"><span class="hotspot-dot hotspot-dot--medium"></span>Medium</label><label class="hotspot-filter-item"><input type="checkbox" id="filterHotspotLow" checked onchange="updateHotspotFilter()"><span class="hotspot-dot hotspot-dot--low"></span>Low</label></div>
-            <div id="rekapHotspot" class="hotspot-rekap"><b>📊 Rekapitulasi Hotspot</b><br><br>Data belum dihitung.</div><label>Upload SHP (.zip)</label><input type="file" id="uploadShp" accept=".zip" class="upload-shp-input"><div class="upload-shp-help"><b>Format Upload:</b><br>File harus dalam bentuk <b>.zip</b><br>dan berisi file:<br>• .shp<br>• .dbf<br>• .shx<br>• .prj</div><div id="pptInfo"><img src="Slide1.1.png" class="slide-img" alt="Slide 1"><img src="Slide2.png" class="slide-img" alt="Slide 2"><img src="Slide3.png" class="slide-img" alt="Slide 3"><img src="Slide4.png" class="slide-img" alt="Slide 4"></div>
+            <div id="rekapHotspot" class="hotspot-rekap"><b>📊 Rekapitulasi Hotspot</b><br><br>Data belum dihitung.</div><label>Upload SHP (.zip)</label><input type="file" id="uploadShp" accept=".zip" class="upload-shp-input"><div class="upload-shp-help"><b>Format Upload:</b><br>File harus dalam bentuk <b>.zip</b><br>dan berisi file:<br>• .shp<br>• .dbf<br>• .shx<br>• .prj</div><div id="pptInfo"><img src="Slide1.1.png" class="slide-img" alt="Slide 1"><img src="Slide2.png" class="slide-img" alt="Slide 2"><img src="Slide3.png" class="slide-img" alt="Slide 4"><img src="Slide4.png" class="slide-img" alt="Slide 4"></div>
         </div></div>
         <div class="menu-group menu-group--print"><button id="btnOpenPrintMap" type="button" class="print-map-menu-btn">🖨️ Cetak Peta PDF</button></div>
     </div>
