@@ -640,6 +640,10 @@ function cariKawasan(
         }
 
 
+        // =============================================
+        // AMBIL NILAI F2025
+        // =============================================
+
         const f2025 =
             String(
                 feature.properties?.F2025 ||
@@ -663,8 +667,7 @@ function cariKawasan(
 
 
         if (
-            f2025 ===
-            "SISTEM LAHAN"
+            f2025 === "SISTEM LAHAN"
         ) {
 
             continue;
@@ -673,8 +676,7 @@ function cariKawasan(
 
 
         if (
-            f2025 ===
-            "PAPH"
+            f2025 === "PAPH"
         ) {
 
             continue;
@@ -683,7 +685,7 @@ function cariKawasan(
 
 
         // =============================================
-        // CEK TITIK DALAM KAWASAN
+        // CEK TITIK BERADA DALAM POLIGON
         // =============================================
 
         if (
@@ -693,30 +695,104 @@ function cariKawasan(
             )
         ) {
 
-            return {
-                ditemukan:
-                    true,
+            // =========================================
+            // NORMALISASI KATEGORI KAWASAN
+            // =========================================
 
-                kategori:
-                    f2025
-            };
+            let kategori =
+                "";
+
+
+            if (
+                f2025 === "HL"
+            ) {
+
+                kategori =
+                    "HL";
+
+            }
+
+
+            else if (
+                f2025 === "HP"
+            ) {
+
+                kategori =
+                    "HP";
+
+            }
+
+
+            else if (
+                f2025 === "HPT"
+            ) {
+
+                kategori =
+                    "HPT";
+
+            }
+
+
+            else if (
+                f2025 === "HPK"
+            ) {
+
+                kategori =
+                    "HPK";
+
+            }
+
+
+            else if (
+                f2025 === "HK"
+            ) {
+
+                kategori =
+                    "HK";
+
+            }
+
+
+            // =========================================
+            // HANYA KEMBALIKAN KATEGORI YANG VALID
+            // =========================================
+
+            if (
+                kategori !== ""
+            ) {
+
+                return {
+
+                    ditemukan:
+                        true,
+
+                    kategori:
+                        kategori
+
+                };
+
+            }
 
         }
 
     }
 
 
+    // =============================================
+    // TITIK TIDAK BERADA DALAM KAWASAN HUTAN
+    // =============================================
+
     return {
+
         ditemukan:
             false,
 
         kategori:
             ""
+
     };
 
 }
-
-
 // =====================================================
 // AMBIL DATA DARI SIPONGI
 // =====================================================
@@ -1077,16 +1153,28 @@ const rekapPBPH = {};
                     );
 
 
-                // =========================================
-                // CEK KAWASAN HUTAN
-                // =========================================
+               // =========================================
+// CEK KAWASAN HUTAN
+// =========================================
 
-                const hasilKawasan =
-                    cariKawasan(
-                        titik,
-                        featuresKawasan
-                    );
+const hasilKawasan =
+    cariKawasan(
+        titik,
+        featuresKawasan
+    );
 
+
+// =========================================
+// CEK PBPH
+//
+// Dilakukan TERPISAH dari klasifikasi kawasan.
+// =========================================
+
+const hasilPBPH =
+    cariPBPH(
+        titik,
+        featuresPBPH
+    );
             // =========================================
 // KLASIFIKASI KAWASAN
 //
