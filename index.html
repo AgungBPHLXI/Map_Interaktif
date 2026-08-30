@@ -27,24 +27,15 @@
 
 <body>
 
-    <!-- =========================
-         MAP
-    ========================== -->
     <div id="map"></div>
 
-    <!-- =========================
-         MONITORING DASHBOARD OVERLAY
-         (PRESENTATION ONLY - DATA LOGIC TETAP DI app.js)
-    ========================== -->
     <div id="chartOverlay" class="monitoring-dashboard" aria-hidden="true">
-
         <div class="monitoring-dashboard__header">
             <div class="monitoring-dashboard__heading">
                 <div id="dashboardEyebrow" class="monitoring-dashboard__eyebrow">MONITORING</div>
                 <h2 id="dashboardTitle">Dashboard Monitoring</h2>
                 <p id="dashboardSubtitle">Ringkasan data monitoring BPHL Wilayah XI</p>
             </div>
-
             <button id="btnCloseChart" class="monitoring-dashboard__close" type="button" aria-label="Tutup dashboard">✕</button>
         </div>
 
@@ -90,7 +81,6 @@
             <input type="date" id="hotspotDateEnd">
             <button id="btnApplyHotspotRange" type="button">🔎 Tampilkan</button>
         </div>
-
     </div>
 
     <div id="sidebar">
@@ -162,7 +152,6 @@
     <script src="assets/js/turf.js"></script>
     <script src="assets/js/app.js"></script>
     <script src="assets/js/symbology-sk399.js"></script>
-    <script src="assets/js/filter-kabupaten-clip.js"></script>
     <script src="assets/js/monitoring-ui.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
