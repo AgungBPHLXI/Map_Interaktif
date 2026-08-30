@@ -1087,72 +1087,19 @@ const rekapPBPH = {};
                         featuresKawasan
                     );
 
-
-               // =========================================
-// PRIORITAS KATEGORI
+            // =========================================
+// KLASIFIKASI KAWASAN
 //
-// 1. PBPH + Kawasan
-// 2. Kawasan Hutan
-// 3. Di Luar Kawasan
-//
-// MENGIKUTI LOGIKA REKAP APLIKASI
+// Klasifikasi kawasan dilakukan
+// TERPISAH dari klasifikasi PBPH.
 // =========================================
 
 if (
-    hasilPBPH.ditemukan &&
     hasilKawasan.ditemukan
 ) {
 
     // =====================================
-    // TOTAL PBPH
-    // =====================================
-
-    totalPBPH++;
-
-
-    // =====================================
-    // AMBIL NAMA PBPH
-    // =====================================
-
-    const namaPBPH =
-        hasilPBPH.nama;
-
-
-    // Jika nama PBPH tersedia
-    // tambahkan ke rekap berdasarkan nama
-
-    if (
-        namaPBPH
-    ) {
-
-        if (
-            !rekapPBPH[
-                namaPBPH
-            ]
-        ) {
-
-            rekapPBPH[
-                namaPBPH
-            ] = 0;
-
-        }
-
-
-        rekapPBPH[
-            namaPBPH
-        ]++;
-
-    }
-
-}
-
-
-else if (
-    hasilKawasan.ditemukan
-) {
-
-    // =====================================
-    // TOTAL KAWASAN
+    // TAMBAHKAN TOTAL KAWASAN
     // =====================================
 
     totalKawasan++;
@@ -1193,7 +1140,7 @@ else if (
 else {
 
     // =====================================
-    // DI LUAR KAWASAN
+    // HOTSPOT DI LUAR KAWASAN
     // =====================================
 
     totalLuarKawasan++;
@@ -1204,6 +1151,63 @@ else {
     ]++;
 
 }
+
+
+// =========================================
+// KLASIFIKASI PBPH
+//
+// Dilakukan TERPISAH dari kawasan.
+// =========================================
+
+if (
+    hasilPBPH.ditemukan
+) {
+
+    // =====================================
+    // TAMBAHKAN TOTAL PBPH
+    // =====================================
+
+    totalPBPH++;
+
+
+    // =====================================
+    // AMBIL NAMA PBPH
+    // =====================================
+
+    const namaPBPH =
+        hasilPBPH.nama;
+
+
+    // =====================================
+    // TAMBAHKAN KE REKAP BERDASARKAN
+    // NAMA PBPH
+    // =====================================
+
+    if (
+        namaPBPH
+    ) {
+
+        if (
+            rekapPBPH[
+                namaPBPH
+            ] === undefined
+        ) {
+
+            rekapPBPH[
+                namaPBPH
+            ] = 0;
+
+        }
+
+
+        rekapPBPH[
+            namaPBPH
+        ]++;
+
+    }
+
+}
+ 
 
             }
         );
