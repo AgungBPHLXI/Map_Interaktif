@@ -1,7 +1,7 @@
 // =====================================================
-// CETAK PETA PDF
-// Pengaturan kartografi: judul, legenda, skala, koordinat.
-// Tidak mengubah sumber data maupun logika layer/filter.
+// CETAK PETA PROFESIONAL
+// Satu halaman, ukuran kertas dinamis, extent otomatis.
+// Tidak mengubah sumber data maupun logika hotspot/filter.
 // =====================================================
 
 (function () {
@@ -20,7 +20,6 @@
     const printTitle = document.getElementById('printLayoutTitle');
     const printSubtitle = document.getElementById('printLayoutSubtitle');
     const printNote = document.getElementById('printLayoutNote');
-    const printMeta = document.getElementById('printLayoutMeta');
     const printLegend = document.getElementById('printLegend');
     const printLegendItems = document.getElementById('printLegendItems');
     const coordinateGrid = document.getElementById('printCoordinateGrid');
@@ -28,20 +27,46 @@
     const printScaleText = document.getElementById('printScaleText');
     const printScaleGraphic = document.getElementById('printScaleGraphic');
 
-    // Menyimpan tampilan pengguna agar setelah cetak peta kembali seperti semula.
     let originalView = null;
-    let originalMapStyle = null;
+    let originalStyle = null;
     let printPrepared = false;
+    let printPageStyle = null;
+
+    // Ukuran landscape dalam milimeter. mapW/mapH adalah bidang peta bersih.
+    const papers = {
+        A4: { w: 297, h: 210, margin: 8, header: 30, footer: 15, mapW: 281, mapH: 157 },
+        A3: { w: 420, h: 297, margin: 10, header: 35, footer: 18, mapW: 400, mapH: 234 },
+        A0: { w: 1189, h: 841, margin: 12, header: 52, footer: 26, mapW: 1165, mapH: 751 }
+    };
+
+    const standardScales = {
+        A4: [25000, 50000, 100000, 250000, 500000, 1000000, 2000000, 5000000],
+        A3: [25000, 50000, 100000, 250000, 500000, 1000000, 2000000, 5000000],
+        A0: [50000, 100000, 250000, 500000, 1000000, 2000000, 5000000, 10000000]
+    };
 
     const kawasanColors = {
         'KSA/KPA': '#AD3FFF', 'KSA': '#AD3FFF', 'KPA': '#AD3FFF', 'HK': '#AD3FFF',
         'HL': '#02AD00', 'HPT': '#8AF200', 'HP': '#FFFF00', 'HPK': '#FF5EFF', 'APL': '#FFFFFF'
     };
 
-    const kawasanLabels = {
-        'KSA/KPA': 'KSA/KPA', 'KSA': 'KSA', 'KPA': 'KPA', 'HK': 'HK',
-        'HL': 'HL', 'HPT': 'HPT', 'HP': 'HP', 'HPK': 'HPK', 'APL': 'APL'
-    };
+    function addPaperSelector() {
+        if (document.getElementById('printPaperSize')) return;
+        const group = document.createElement('div');
+        group.className = 'print-form-group';
+        group.innerHTML = `
+            <label for="printPaperSize">Ukuran Kertas</label>
+            <select id="printPaperSize">
+                <option value="A4">A4 Landscape</option>
+                <option value="A3">A3 Landscape</option>
+                <option value="A0">A0 Landscape</option>
+            </select>
+            <div class="print-scale-help">Peta, extent, skala dan ukuran elemen akan menyesuaikan otomatis.</div>`;
+        scaleMode.closest('.print-form-group').parentNode.insertBefore(group, scaleMode.closest('.print-form-group'));
+    }
+
+    addPaperSelector();
+    const paperSize = document.getElementById('printPaperSize');
 
     function selectedValues(selector) {
         if (typeof window.$ === 'function') {
@@ -50,12 +75,6 @@
         }
         const select = document.querySelector(selector);
         return select ? Array.from(select.selectedOptions).map(o => o.value).filter(Boolean) : [];
-    }
-
-    function formatDate() {
-        return new Intl.DateTimeFormat('id-ID', {
-            day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-        }).format(new Date());
     }
 
     function currentFilterText() {
@@ -72,207 +91,194 @@
     }
 
     function escapeHtml(value) {
-        return String(value || '').replace(/[&<>"']/g, char => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-        })[char]);
+        return String(value || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' })[c]);
     }
 
     function buildLegend() {
-        const selectedKawasan = selectedValues('#filterF2025');
-        const kawasan = selectedKawasan.length ? selectedKawasan : ['KSA/KPA', 'HL', 'HPT', 'HP', 'HPK'];
+        const selected = selectedValues('#filterF2025');
+        const kawasan = selected.length ? selected : ['KSA/KPA', 'HL', 'HPT', 'HP', 'HPK'];
         const items = [];
         kawasan.forEach(name => {
             const key = String(name).trim().toUpperCase();
             if (!kawasanColors[key]) return;
-            items.push(`<div class="print-legend-item"><span class="print-legend-swatch" style="background:${kawasanColors[key]}"></span><span>${escapeHtml(kawasanLabels[key] || key)}</span></div>`);
+            items.push(`<div class="print-legend-item"><span class="print-legend-swatch" style="background:${kawasanColors[key]}"></span><span>${escapeHtml(key)}</span></div>`);
         });
-        if (typeof window.pbphLayer !== 'undefined' && window.pbphLayer && map.hasLayer(window.pbphLayer)) {
-            items.push('<div class="print-legend-item"><span class="print-legend-line print-legend-line--pbph"></span><span>PBPH</span></div>');
-        }
-        if (typeof window.paphLayer !== 'undefined' && window.paphLayer && map.hasLayer(window.paphLayer)) {
-            items.push('<div class="print-legend-item"><span class="print-legend-line print-legend-line--paph"></span><span>PAPH</span></div>');
-        }
-        if (typeof window.kabupatenLayer !== 'undefined' && window.kabupatenLayer && map.hasLayer(window.kabupatenLayer)) {
-            items.push('<div class="print-legend-item"><span class="print-legend-line print-legend-line--kabupaten"></span><span>Batas Kabupaten</span></div>');
-        }
+        if (window.pbphLayer && map.hasLayer(window.pbphLayer)) items.push('<div class="print-legend-item"><span class="print-legend-line print-legend-line--pbph"></span><span>PBPH</span></div>');
+        if (window.paphLayer && map.hasLayer(window.paphLayer)) items.push('<div class="print-legend-item"><span class="print-legend-line print-legend-line--paph"></span><span>PAPH</span></div>');
+        if (window.kabupatenLayer && map.hasLayer(window.kabupatenLayer)) items.push('<div class="print-legend-item"><span class="print-legend-line print-legend-line--kabupaten"></span><span>Batas Kabupaten</span></div>');
         printLegendItems.innerHTML = items.join('') || '<div class="print-legend-item">Tidak ada layer tematik aktif</div>';
     }
 
-    function niceDistance(meters) {
-        const options = [100,200,250,500,1000,2000,2500,5000,10000,20000,25000,50000,100000,200000];
-        let chosen = options[0];
-        options.forEach(v => { if (v <= meters) chosen = v; });
-        return chosen;
-    }
-
-    function formatDistance(meters) {
-        if (meters >= 1000) {
-            const km = meters / 1000;
-            return `${Number.isInteger(km) ? km : km.toFixed(1)} km`;
-        }
-        return `${Math.round(meters)} m`;
-    }
-
-    function updateScale() {
-        const selected = scaleMode.value;
-        let denominator;
-        if (selected !== 'auto') denominator = Number(selected);
-        else {
-            const lat = map.getCenter().lat * Math.PI / 180;
-            const resolution = 156543.03392 * Math.cos(lat) / Math.pow(2, map.getZoom());
-            denominator = Math.max(1, Math.round(resolution / 0.000264583));
-        }
-        printScaleText.textContent = `1 : ${Math.round(denominator).toLocaleString('id-ID')}`;
-
-        const mapSize = map.getSize();
-        const bounds = map.getBounds();
-        const mapWidthMeters = bounds.getNorthEast().distanceTo(L.latLng(bounds.getNorthEast().lat, bounds.getSouthWest().lng));
-        const targetMeters = niceDistance(mapWidthMeters / 5);
-        const segmentWidth = Math.max(45, Math.min(150, (targetMeters / Math.max(mapWidthMeters, 1)) * Math.max(mapSize.x, 1)));
-        const half = Math.max(1, targetMeters / 2);
-        printScaleGraphic.innerHTML = `
-            <div class="print-scale-bar" style="width:${segmentWidth}px"><span></span><span></span><span></span><span></span></div>
-            <div class="print-scale-labels" style="width:${segmentWidth}px"><span>0</span><span>${formatDistance(half)}</span><span>${formatDistance(targetMeters)}</span></div>`;
-    }
-
-    function formatCoordinate(value, isLat) {
-        const abs = Math.abs(value);
-        const deg = Math.floor(abs);
-        const minFloat = (abs - deg) * 60;
-        const min = Math.floor(minFloat);
-        const sec = Math.round((minFloat - min) * 60);
-        const direction = isLat ? (value >= 0 ? 'LU' : 'LS') : (value >= 0 ? 'BT' : 'BB');
-        return `${deg}°${String(min).padStart(2,'0')}′${String(sec).padStart(2,'0')}″ ${direction}`;
-    }
-
-    function createCoordinateGrid() {
-        coordinateGrid.innerHTML = '';
-        if (!showCoordinates.checked || typeof map === 'undefined') return;
-        const bounds = map.getBounds();
-        const west = bounds.getWest(), east = bounds.getEast();
-        const south = bounds.getSouth(), north = bounds.getNorth();
-        const divisions = 5;
-        for (let i = 0; i <= divisions; i++) {
-            const x = (i / divisions) * 100;
-            const lng = west + ((east - west) * i / divisions);
-            const line = document.createElement('div');
-            line.className = 'grid-v'; line.style.left = `${x}%`; coordinateGrid.appendChild(line);
-            ['coord-top','coord-bottom'].forEach(pos => {
-                const label = document.createElement('span');
-                label.className = `coord-label ${pos}`; label.style.left = `${x}%`;
-                label.textContent = formatCoordinate(lng, false); coordinateGrid.appendChild(label);
-            });
-        }
-        for (let i = 0; i <= divisions; i++) {
-            const y = (i / divisions) * 100;
-            const lat = north - ((north - south) * i / divisions);
-            const line = document.createElement('div');
-            line.className = 'grid-h'; line.style.top = `${y}%`; coordinateGrid.appendChild(line);
-            ['coord-left','coord-right'].forEach(pos => {
-                const label = document.createElement('span');
-                label.className = `coord-label ${pos}`; label.style.top = `${y}%`;
-                label.textContent = formatCoordinate(lat, true); coordinateGrid.appendChild(label);
-            });
-        }
-    }
-
-    // Mengumpulkan batas layer vektor yang benar-benar aktif.
-    // Tile basemap, marker, popup, dan kontrol tidak dihitung.
     function getActiveDataBounds() {
         let combined = null;
         map.eachLayer(layer => {
             if (!layer || !layer.getBounds || layer instanceof L.TileLayer) return;
-            let bounds;
-            try { bounds = layer.getBounds(); } catch (e) { return; }
-            if (!bounds || !bounds.isValid()) return;
-            combined = combined ? combined.extend(bounds) : L.latLngBounds(bounds);
+            // Jangan gunakan kontrol, marker, atau layer yang tidak terlihat.
+            if (layer instanceof L.LayerGroup && !map.hasLayer(layer)) return;
+            try {
+                const b = layer.getBounds();
+                if (b && b.isValid()) combined = combined ? combined.extend(b) : L.latLngBounds(b);
+            } catch (e) {}
         });
         return combined && combined.isValid() ? combined : null;
     }
 
-    // Memperluas bounds mengikuti rasio bidang peta pada A4 landscape.
-    function fitBoundsToPrintAspect(bounds) {
-        if (!bounds || !bounds.isValid()) return;
-        const center = bounds.getCenter();
-        const currentSize = map.getSize();
-        const targetRatio = 279 / 145; // bidang peta A4: 297-18 mm x 145 mm
-        const currentRatio = Math.max(1, currentSize.x) / Math.max(1, currentSize.y);
-        const padding = currentSize.x < 800 ? [24, 24] : [55, 45];
-
-        // Leaflet fitBounds sudah menangani proyeksi. Padding memberi ruang agar objek tidak mepet frame.
-        map.fitBounds(bounds, { padding, animate: false, maxZoom: 13 });
-
-        // Jika rasio layar aplikasi berbeda jauh dari bidang cetak, zoom satu tingkat lebih longgar.
-        if (Math.abs(currentRatio - targetRatio) > 0.18) {
-            map.setView(map.getCenter(), Math.max(map.getMinZoom(), map.getZoom() - 0.35), { animate: false });
-        }
-
-        // Pertahankan pusat data setelah koreksi zoom.
-        if (center) map.panTo(center, { animate: false });
+    function groundWidth(bounds) {
+        const cLat = bounds.getCenter().lat;
+        return L.latLng(cLat, bounds.getWest()).distanceTo(L.latLng(cLat, bounds.getEast()));
     }
 
-    function updatePrintLayout() {
-        const title = titleInput.value.trim() || 'PETA INFORMASI SPASIAL';
-        const subtitle = subtitleInput.value.trim();
-        const note = noteInput.value.trim();
-        printTitle.textContent = title.toUpperCase();
-        printSubtitle.textContent = subtitle || 'BALAI PENGELOLAAN HUTAN LESTARI WILAYAH XI BANJARBARU';
-        printNote.textContent = note || currentFilterText();
-        printMeta.textContent = `Dicetak: ${formatDate()}`;
+    function chooseAutoScale(required, paper) {
+        const list = standardScales[paper] || standardScales.A4;
+        return list.find(v => v >= required) || list[list.length - 1];
+    }
+
+    function scaleFromCurrentView(config) {
+        const width = groundWidth(map.getBounds());
+        return width / (config.mapW / 1000);
+    }
+
+    function zoomForScale(denominator, lat) {
+        const metersPerCssPixel = denominator * 0.000264583333;
+        const zoom = Math.log2((156543.03392804097 * Math.cos(lat * Math.PI / 180)) / metersPerCssPixel);
+        return Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), zoom));
+    }
+
+    function applyAutoScale(config, paper) {
+        const required = scaleFromCurrentView(config) * 1.04; // ruang aman 4%
+        const chosen = chooseAutoScale(required, paper);
+        const zoom = zoomForScale(chosen, map.getCenter().lat);
+        map.setView(map.getCenter(), zoom, { animate: false });
+        return chosen;
+    }
+
+    function applyRequestedScale(config, paper) {
+        if (scaleMode.value === 'auto') return applyAutoScale(config, paper);
+        const requested = Number(scaleMode.value);
+        map.setView(map.getCenter(), zoomForScale(requested, map.getCenter().lat), { animate: false });
+        return requested;
+    }
+
+    function niceDistance(meters) {
+        const values = [100,200,250,500,1000,2000,2500,5000,10000,20000,25000,50000,100000,200000,250000,500000];
+        return values.reduce((best, v) => Math.abs(v - meters) < Math.abs(best - meters) ? v : best, values[0]);
+    }
+
+    function distanceLabel(meters) {
+        return meters >= 1000 ? `${meters / 1000} km` : `${meters} m`;
+    }
+
+    function updateScaleGraphic(denominator, config) {
+        printScaleText.textContent = `1 : ${Math.round(denominator).toLocaleString('id-ID')}`;
+        const widthMeters = groundWidth(map.getBounds());
+        const target = niceDistance(widthMeters / 5);
+        const widthMm = Math.max(25, Math.min(70, (target / widthMeters) * config.mapW));
+        printScaleGraphic.innerHTML = `<div class="print-scale-bar" style="width:${widthMm}mm"><span></span><span></span><span></span><span></span></div><div class="print-scale-labels" style="width:${widthMm}mm"><span>0</span><span>${distanceLabel(target / 2)}</span><span>${distanceLabel(target)}</span></div>`;
+    }
+
+    // Grid geografis tetap ada bila dipilih, tetapi label DMS di sudut dihapus agar tidak tampak seperti jam.
+    function createCoordinateGrid() {
+        coordinateGrid.innerHTML = '';
+        if (!showCoordinates.checked) return;
+        for (let i = 0; i <= 5; i++) {
+            const v = document.createElement('div');
+            v.className = 'grid-v'; v.style.left = `${i * 20}%`; coordinateGrid.appendChild(v);
+            const h = document.createElement('div');
+            h.className = 'grid-h'; h.style.top = `${i * 20}%`; coordinateGrid.appendChild(h);
+        }
+    }
+
+    function applyPaperLayout(paper) {
+        const c = papers[paper];
+        const root = document.documentElement.style;
+        root.setProperty('--print-page-w', `${c.w}mm`);
+        root.setProperty('--print-page-h', `${c.h}mm`);
+        root.setProperty('--print-margin', `${c.margin}mm`);
+        root.setProperty('--print-header-h', `${c.header}mm`);
+        root.setProperty('--print-footer-h', `${c.footer}mm`);
+        root.setProperty('--print-map-w', `${c.mapW}mm`);
+        root.setProperty('--print-map-h', `${c.mapH}mm`);
+        root.setProperty('--print-map-top', `${c.margin + c.header}mm`);
+        root.setProperty('--print-map-left', `${c.margin}mm`);
+        root.setProperty('--print-map-bottom', `${c.h - c.margin - c.footer}mm`);
+
+        if (printPageStyle) printPageStyle.remove();
+        printPageStyle = document.createElement('style');
+        printPageStyle.id = 'dynamicPrintPageSize';
+        printPageStyle.textContent = `@page { size: ${paper} landscape; margin: 0; }`;
+        document.head.appendChild(printPageStyle);
+    }
+
+    function setMapPrintViewport(config) {
+        // 96 CSS pixel per inch agar rasio layar Leaflet sama dengan bidang cetak browser.
+        const pxPerMm = 96 / 25.4;
+        const mapEl = map.getContainer();
+        mapEl.style.width = `${Math.round(config.mapW * pxPerMm)}px`;
+        mapEl.style.height = `${Math.round(config.mapH * pxPerMm)}px`;
+        map.invalidateSize({ pan: false });
+    }
+
+    function updatePrintLayout(scaleDenominator) {
+        const paper = paperSize.value;
+        const config = papers[paper];
+        printTitle.textContent = (titleInput.value.trim() || 'PETA INFORMASI SPASIAL').toUpperCase();
+        printSubtitle.textContent = subtitleInput.value.trim() || 'BALAI PENGELOLAAN HUTAN LESTARI WILAYAH XI BANJARBARU';
+        printNote.textContent = noteInput.value.trim() || currentFilterText();
         printLegend.hidden = !showLegend.checked;
         printScaleBox.hidden = !showScale.checked;
         coordinateGrid.hidden = !showCoordinates.checked;
         document.querySelector('.print-page-info').style.display = showFilterNote.checked ? '' : 'none';
-        buildLegend(); updateScale(); createCoordinateGrid();
+        buildLegend();
+        createCoordinateGrid();
+        updateScaleGraphic(scaleDenominator || scaleFromCurrentView(config), config);
     }
-
-    function openPrintModal() { updatePrintLayout(); modal.hidden = false; titleInput.focus(); }
-    function closePrintModal() { modal.hidden = true; }
 
     function preparePrintMap() {
         if (printPrepared) return;
         printPrepared = true;
         originalView = { center: map.getCenter(), zoom: map.getZoom() };
-        originalMapStyle = map.getContainer().getAttribute('style');
+        originalStyle = map.getContainer().getAttribute('style');
 
-        // Ubah sementara bidang Leaflet ke proporsi bidang peta A4 landscape,
-        // lalu fit layer aktif secara otomatis.
-        const mapEl = map.getContainer();
-        const maxWidth = Math.min(window.innerWidth - 60, 1180);
-        const printRatio = 279 / 145;
-        const maxHeight = Math.min(window.innerHeight - 160, maxWidth / printRatio);
-        const width = Math.max(640, Math.min(maxWidth, maxHeight * printRatio));
-        const height = Math.max(330, width / printRatio);
+        const paper = paperSize.value;
+        const config = papers[paper];
+        applyPaperLayout(paper);
+        setMapPrintViewport(config);
 
-        mapEl.style.width = `${Math.round(width)}px`;
-        mapEl.style.height = `${Math.round(height)}px`;
-        map.invalidateSize({ pan: false });
+        const bounds = getActiveDataBounds();
+        if (bounds) {
+            // Fokuskan seluruh data aktif terlebih dahulu, kemudian ubah ke skala standar yang aman.
+            map.fitBounds(bounds, { padding: [Math.round(map.getSize().x * 0.04), Math.round(map.getSize().y * 0.04)], animate: false, maxZoom: 14 });
+        }
 
-        const activeBounds = getActiveDataBounds();
-        if (activeBounds) fitBoundsToPrintAspect(activeBounds);
-
-        // Setelah Leaflet selesai menghitung extent baru, elemen kartografi dibuat ulang.
         setTimeout(() => {
+            const chosenScale = applyRequestedScale(config, paper);
             map.invalidateSize({ pan: false });
-            updatePrintLayout();
-        }, 180);
+            updatePrintLayout(chosenScale);
+        }, 220);
     }
 
     function restoreMapAfterPrint() {
         if (!printPrepared) return;
         const mapEl = map.getContainer();
-        if (originalMapStyle === null) mapEl.removeAttribute('style');
-        else mapEl.setAttribute('style', originalMapStyle);
+        if (originalStyle === null) mapEl.removeAttribute('style'); else mapEl.setAttribute('style', originalStyle);
         map.invalidateSize({ pan: false });
         if (originalView) map.setView(originalView.center, originalView.zoom, { animate: false });
-        originalView = null; originalMapStyle = null; printPrepared = false;
+        originalView = null; originalStyle = null; printPrepared = false;
     }
 
-    function printMap() {
+    function openPrintModal() {
+        applyPaperLayout(paperSize.value);
         updatePrintLayout();
+        modal.hidden = false;
+        titleInput.focus();
+    }
+
+    function closePrintModal() { modal.hidden = true; }
+
+    function printMap() {
         closePrintModal();
         preparePrintMap();
-        setTimeout(() => window.print(), 700);
+        setTimeout(() => window.print(), 900);
     }
 
     window.openPrintMapModal = openPrintModal;
@@ -283,18 +289,15 @@
     document.getElementById('btnClosePrintMap').addEventListener('click', closePrintModal);
     document.getElementById('btnCancelPrintMap').addEventListener('click', closePrintModal);
     document.getElementById('btnPrintMap').addEventListener('click', printMap);
-    modal.addEventListener('click', event => { if (event.target === modal) closePrintModal(); });
+    modal.addEventListener('click', e => { if (e.target === modal) closePrintModal(); });
 
-    [titleInput, subtitleInput, noteInput, scaleMode, showLegend, showScale, showCoordinates, showFilterNote]
-        .forEach(input => input.addEventListener('input', updatePrintLayout));
-    [scaleMode, showLegend, showScale, showCoordinates, showFilterNote]
-        .forEach(input => input.addEventListener('change', updatePrintLayout));
+    [titleInput, subtitleInput, noteInput, scaleMode, paperSize, showLegend, showScale, showCoordinates, showFilterNote]
+        .forEach(el => el.addEventListener('input', () => updatePrintLayout()));
+    [scaleMode, paperSize, showLegend, showScale, showCoordinates, showFilterNote]
+        .forEach(el => el.addEventListener('change', () => { applyPaperLayout(paperSize.value); updatePrintLayout(); }));
 
     window.addEventListener('beforeprint', () => { if (!printPrepared) preparePrintMap(); });
-    window.addEventListener('afterprint', () => setTimeout(restoreMapAfterPrint, 350));
-    map.on('moveend zoomend', () => { if (!modal.hidden) updatePrintLayout(); });
+    window.addEventListener('afterprint', () => setTimeout(restoreMapAfterPrint, 250));
 
-    if (typeof L !== 'undefined') {
-        L.control.scale({ position: 'bottomleft', imperial: false, maxWidth: 180 }).addTo(map);
-    }
+    if (typeof L !== 'undefined') L.control.scale({ position: 'bottomleft', imperial: false, maxWidth: 180 }).addTo(map);
 })();
