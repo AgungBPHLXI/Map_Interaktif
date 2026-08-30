@@ -9,20 +9,30 @@
 .print-option-item input{width:16px;height:16px;accent-color:#1b5e20;}
 .print-scale-help{font-size:11px;color:#667268;line-height:1.5;margin-top:5px;}
 
-/* Grid koordinat yang dibangkitkan oleh aplikasi saat cetak */
-.print-coordinate-grid{position:absolute;inset:0;pointer-events:none;z-index:6500;overflow:visible;}
+/* Elemen tambahan pada layout cetak */
+.print-coordinate-grid{position:fixed;left:9mm;right:9mm;top:35mm;bottom:30mm;pointer-events:none;z-index:6500;overflow:visible;}
 .print-coordinate-grid[hidden]{display:none!important;}
-.print-coordinate-grid .grid-v,.print-coordinate-grid .grid-h{position:absolute;background:rgba(0,0,0,.38);}
-.print-coordinate-grid .grid-v{top:0;bottom:0;width:1px;border-left:1px dashed rgba(0,0,0,.55);background:transparent;}
-.print-coordinate-grid .grid-h{left:0;right:0;height:1px;border-top:1px dashed rgba(0,0,0,.55);background:transparent;}
-.print-coordinate-grid .coord-label{position:absolute;background:rgba(255,255,255,.86);border:1px solid rgba(0,0,0,.2);padding:2px 4px;font:10px Arial,sans-serif;color:#111;line-height:1.1;white-space:nowrap;}
+.print-coordinate-grid .grid-v,.print-coordinate-grid .grid-h{position:absolute;background:transparent;}
+.print-coordinate-grid .grid-v{top:0;bottom:0;width:0;border-left:1px dashed rgba(0,0,0,.42);}
+.print-coordinate-grid .grid-h{left:0;right:0;height:0;border-top:1px dashed rgba(0,0,0,.42);}
+.print-coordinate-grid .coord-label{position:absolute;background:rgba(255,255,255,.88);border:1px solid rgba(0,0,0,.2);padding:2px 4px;font:10px Arial,sans-serif;color:#111;line-height:1.1;white-space:nowrap;}
 .print-coordinate-grid .coord-top{top:2px;transform:translateX(-50%);}
 .print-coordinate-grid .coord-bottom{bottom:2px;transform:translateX(-50%);}
 .print-coordinate-grid .coord-left{left:2px;transform:translateY(-50%) rotate(-90deg);transform-origin:left center;}
 .print-coordinate-grid .coord-right{right:2px;transform:translateY(-50%) rotate(90deg);transform-origin:right center;}
 
+.print-scale-box{position:fixed;right:12mm;top:37mm;z-index:6600;width:48mm;background:rgba(255,255,255,.94);border:1px solid #555;padding:2.5mm;text-align:center;font-family:Arial,sans-serif;}
+.print-scale-title{font-size:7pt;font-weight:800;letter-spacing:.08em;}
+.print-scale-text{font-size:8pt;font-weight:700;margin:1.2mm 0;}
+.print-scale-bar{height:4mm;display:flex;margin:1.5mm auto 0;border:1px solid #111;}
+.print-scale-bar span{flex:1;}
+.print-scale-bar span:nth-child(odd){background:#111;}.print-scale-bar span:nth-child(even){background:#fff;}
+.print-scale-labels{display:flex;justify-content:space-between;margin:1mm auto 0;font-size:6.5pt;}
+
 @media(max-width:768px){.print-settings-grid,.print-option-grid{grid-template-columns:1fr;}}
 
 @media print{
   .print-coordinate-grid{display:block!important;}
+  .print-scale-box[hidden]{display:none!important;}
+  #printLegend[hidden]{display:none!important;}
 }
