@@ -101,6 +101,13 @@ const fileKawasan =
         "Kawasanhutan.geojson"
     );
 
+const fileKonservasi =
+    path.join(
+        __dirname,
+        "..",
+        "Konservasi.geojson"
+    );
+
 
 // =====================================================
 // BUAT FOLDER JIKA BELUM ADA
