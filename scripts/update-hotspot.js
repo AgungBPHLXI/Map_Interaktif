@@ -1283,25 +1283,54 @@ console.log(
 );
 
         // =================================================
-        // VALIDASI TOTAL SPASIAL
-        // =================================================
+// VALIDASI TOTAL KAWASAN
+//
+// Setiap hotspot harus masuk salah satu:
+//
+// 1. Kawasan Hutan
+// 2. Di Luar Kawasan
+//
+// PBPH TIDAK dijumlahkan di sini karena PBPH adalah
+// klasifikasi terpisah dan dapat tumpang tindih
+// dengan Kawasan Hutan.
+// =================================================
 
-        const totalKategori =
-            totalPBPH +
-            totalKawasan +
-            totalLuarKawasan;
+const totalKategori =
+    totalKawasan +
+    totalLuarKawasan;
 
 
-        if (
-            totalKategori !==
-            totalHotspot
-        ) {
+if (
+    totalKategori !==
+    totalHotspot
+) {
 
-            console.warn(
-                "PERINGATAN: Total kategori spasial tidak sama dengan total hotspot."
-            );
+    console.warn(
+        "PERINGATAN: Total Kawasan + Di Luar Kawasan tidak sama dengan total hotspot."
+    );
 
-        }
+}
+
+
+// =================================================
+// VALIDASI PBPH
+//
+// PBPH adalah klasifikasi terpisah.
+//
+// Nilai totalPBPH boleh sama atau lebih kecil
+// dari totalHotspot.
+// =================================================
+
+if (
+    totalPBPH >
+    totalHotspot
+) {
+
+    console.warn(
+        "PERINGATAN: Total PBPH lebih besar dari total hotspot."
+    );
+
+}
 
 
         // =================================================
@@ -1429,28 +1458,40 @@ console.log(
 
 
         // =================================================
-        // AMBIL MAKSIMAL 30 DATA TERAKHIR
-        // =================================================
+// URUTKAN DATA BERDASARKAN TANGGAL
+// =================================================
 
-        dataTren =
-            dataTren.slice(
-                -30
-            );
+dataTren.sort(
+    function(
+        a,
+        b
+    ) {
 
-
-        // =================================================
-        // SIMPAN DATA TREN 30 HARI
-        // =================================================
-
-        fs.writeFileSync(
-            fileTren,
-            JSON.stringify(
-                dataTren,
-                null,
-                2
-            ),
-            "utf8"
+        return a.tanggal.localeCompare(
+            b.tanggal
         );
+
+    }
+);
+
+
+// =================================================
+// SIMPAN SELURUH DATA HISTORIS HOTSPOT
+//
+// Data tidak lagi dibatasi 30 hari.
+// Data dari bulan dan tahun sebelumnya
+// tetap tersimpan.
+// =================================================
+
+fs.writeFileSync(
+    fileTren,
+    JSON.stringify(
+        dataTren,
+        null,
+        2
+    ),
+    "utf8"
+);
 
 
         // =================================================
