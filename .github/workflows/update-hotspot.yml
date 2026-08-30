@@ -82,7 +82,6 @@ jobs:
           echo "Isi folder hotspot harian:"
           ls -lah data/hotspot-harian/ || true
 
-
       # ================================================
       # SIMPAN PERUBAHAN KE GITHUB
       # ================================================
@@ -104,6 +103,10 @@ jobs:
 
             git commit -m "Update data hotspot harian"
 
-            git push
+            # Ambil perubahan terbaru dari GitHub
+            git pull --rebase origin main
+
+            # Push kembali ke repository
+            git push origin main
 
           fi
