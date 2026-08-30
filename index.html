@@ -48,19 +48,52 @@
     <div id="map"></div>
 
 
+   <!-- =========================
+     CHART OVERLAY
+========================== -->
+<div id="chartOverlay">
+
+    <button id="btnCloseChart">✖</button>
+
     <!-- =========================
-         CHART OVERLAY
+         FILTER RENTANG TANGGAL HOTSPOT
     ========================== -->
-    <div id="chartOverlay">
+    <div id="hotspotDateFilter">
 
-        <button id="btnCloseChart">✖</button>
+        <label for="hotspotDateStart">
+            Tanggal Mulai
+        </label>
 
-        <canvas id="chartKawasan"></canvas>
+        <input
+            type="date"
+            id="hotspotDateStart"
+        >
 
-        <canvas id="chartSemua"></canvas>
+        <label for="hotspotDateEnd">
+            Tanggal Selesai
+        </label>
+
+        <input
+            type="date"
+            id="hotspotDateEnd"
+        >
+
+        <button id="btnApplyHotspotRange">
+            🔎 Tampilkan
+        </button>
 
     </div>
 
+
+    <!-- =========================
+         CHART
+    ========================== -->
+
+    <canvas id="chartKawasan"></canvas>
+
+    <canvas id="chartSemua"></canvas>
+
+</div>
 
     <!-- =========================
          SIDEBAR
