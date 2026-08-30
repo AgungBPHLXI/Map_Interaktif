@@ -1,7 +1,8 @@
 // =====================================================
 // MONITORING UI
 // Lapisan presentasi bersama untuk 4 dashboard Google Sheet.
-// Endpoint, spreadsheet ID, dan data hotspot tidak diubah.
+// Sumber spreadsheet tetap sama. Akses dibuat fallback agar
+// tidak bergantung pada layanan yang dapat menampilkan API key required.
 // =====================================================
 
 (function () {
@@ -87,9 +88,55 @@
         tableContent.innerHTML = `<div class="dashboard-error">${safe(message)}</div>`;
     }
 
+    // =====================================================
+    // PEMBACA GOOGLE SHEET TANPA API KEY
+    // =====================================================
+    function parseGoogleVisualization(text){
+        const start = text.indexOf('google.visualization.Query.setResponse(');
+        if(start === -1) throw new Error('Respons Google Sheet tidak dikenali');
+
+        const jsonStart = text.indexOf('{', start);
+        const jsonEnd = text.lastIndexOf(')');
+        if(jsonStart === -1 || jsonEnd === -1) throw new Error('Format respons Google Sheet tidak valid');
+
+        const json = JSON.parse(text.substring(jsonStart, jsonEnd));
+        if(json.status !== 'ok') throw new Error(json.errors?.[0]?.detailed_message || 'Google Sheet tidak dapat dibaca');
+
+        const cols = json.table?.cols || [];
+        const rows = json.table?.rows || [];
+
+        return rows.map(row => {
+            const item = {};
+            cols.forEach((col, index) => {
+                const key = col.label || col.id || `Kolom ${index + 1}`;
+                const cell = row.c ? row.c[index] : null;
+                item[key] = cell && cell.v !== null && cell.v !== undefined
+                    ? (cell.f !== null && cell.f !== undefined ? cell.f : cell.v)
+                    : '';
+            });
+            return item;
+        }).filter(row => Object.values(row).some(value => String(value ?? '').trim() !== ''));
+    }
+
+    async function fetchGoogleVisualization(spreadsheetId, sheetName){
+        const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+        const response = await fetch(url, { cache: 'no-store' });
+        if(!response.ok) throw new Error(`Google Sheet HTTP ${response.status}`);
+        return parseGoogleVisualization(await response.text());
+    }
+
     async function fetchSheet(spreadsheetId, sheetName){
+        // Jalur utama: Google Visualization langsung.
+        // Tidak membutuhkan API key dan memakai spreadsheet yang sama.
+        try{
+            return await fetchGoogleVisualization(spreadsheetId, sheetName);
+        }catch(googleError){
+            console.warn('Akses langsung Google Sheet gagal, mencoba OpenSheet:', googleError);
+        }
+
+        // Fallback kompatibilitas untuk konfigurasi lama.
         const url = `${API_CONFIG.baseURL}/${spreadsheetId}/${encodeURIComponent(sheetName)}`;
-        const response = await fetch(url);
+        const response = await fetch(url, { cache: 'no-store' });
         if(!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         if(!Array.isArray(data)) throw new Error('Format data tidak sesuai');
@@ -187,7 +234,6 @@
     async function loadIndustriDashboard(){
         openDashboard({ title:'Produksi Industri 6000 UP', subtitle:'Tampilan data produksi industri dari sumber Google Sheet yang sama.', chartTitle:'Produksi Industri 6000 UP', chartHint:'Ringkasan data sumber monitoring', unit:'' });
         try{
-            // Nama sheet yang sudah digunakan di konfigurasi lama dipertahankan sebagai sumber.
             const candidates = ['Produksi Industri','Industri','Sheet1'];
             let data = null;
             let usedSheet = '';
