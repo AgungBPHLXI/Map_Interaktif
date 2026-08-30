@@ -12,174 +12,25 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 </head>
-
 <body>
+<div id="map"></div>
 
-    <div id="map"></div>
+<div id="printMapLayout" aria-hidden="true">
+    <div class="print-page-header"><img src="logo-kemenhut.png" class="print-logo" alt="Logo Kementerian Kehutanan"><div class="print-title-block"><div class="print-instansi">KEMENTERIAN KEHUTANAN REPUBLIK INDONESIA</div><div class="print-instansi print-instansi--unit">BALAI PENGELOLAAN HUTAN LESTARI WILAYAH XI BANJARBARU</div><div id="printLayoutTitle" class="print-map-title">PETA INFORMASI SPASIAL</div><div id="printLayoutSubtitle" class="print-map-subtitle"></div></div></div>
+    <div class="print-page-info"><span id="printLayoutNote">Tampilan seluruh layer yang aktif</span></div>
+    <div id="printCoordinateGrid" class="print-coordinate-grid" hidden></div>
+    <div id="printScaleBox" class="print-scale-box" hidden><div class="print-scale-title">SKALA</div><div id="printScaleText" class="print-scale-text">1 : -</div><div id="printScaleGraphic" class="print-scale-graphic"></div></div>
+    <div id="printNorthArrow" class="print-north-arrow" hidden aria-label="Arah Utara"><div class="print-north-arrow__n">U</div><div class="print-north-arrow__symbol"><span></span></div></div>
+    <div id="printFilterSummary" class="print-filter-summary" hidden></div>
+    <div id="printLegend" class="print-legend"><div class="print-legend-title">LEGENDA</div><div id="printLegendItems"></div></div>
+    <div class="print-page-footer"><span>Sumber: Informasi Spasial BPHL Wilayah XI Banjarbaru</span></div>
+</div>
 
-    <!-- LAYOUT CETAK PROFESIONAL -->
-    <div id="printMapLayout" aria-hidden="true">
-        <div class="print-page-header">
-            <img src="logo-kemenhut.png" class="print-logo" alt="Logo Kementerian Kehutanan">
-            <div class="print-title-block">
-                <div class="print-instansi">KEMENTERIAN KEHUTANAN REPUBLIK INDONESIA</div>
-                <div class="print-instansi print-instansi--unit">BALAI PENGELOLAAN HUTAN LESTARI WILAYAH XI BANJARBARU</div>
-                <div id="printLayoutTitle" class="print-map-title">PETA INFORMASI SPASIAL</div>
-                <div id="printLayoutSubtitle" class="print-map-subtitle"></div>
-            </div>
-        </div>
-        <div class="print-page-info">
-            <span id="printLayoutNote">Tampilan seluruh layer yang aktif</span>
-        </div>
-        <div id="printCoordinateGrid" class="print-coordinate-grid" hidden></div>
-        <div id="printScaleBox" class="print-scale-box" hidden>
-            <div class="print-scale-title">SKALA</div>
-            <div id="printScaleText" class="print-scale-text">1 : -</div>
-            <div id="printScaleGraphic" class="print-scale-graphic"></div>
-        </div>
-        <div id="printNorthArrow" class="print-north-arrow" hidden aria-label="Arah Utara">
-            <div class="print-north-arrow__n">U</div>
-            <div class="print-north-arrow__symbol"><span></span></div>
-        </div>
-        <div id="printFilterSummary" class="print-filter-summary" hidden></div>
-        <div id="printLegend" class="print-legend">
-            <div class="print-legend-title">LEGENDA</div>
-            <div id="printLegendItems"></div>
-        </div>
-        <div class="print-page-footer">
-            <span>Sumber: Informasi Spasial BPHL Wilayah XI Banjarbaru</span>
-        </div>
-    </div>
+<div id="printMapModal" class="print-modal" hidden><div class="print-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="printModalTitle"><div class="print-modal__header"><div><span class="print-modal__eyebrow">LAYOUT PETA</span><h2 id="printModalTitle">Cetak Peta PDF</h2><p>Ukuran kertas dan orientasi akan menyesuaikan framing peta secara otomatis.</p></div><button id="btnClosePrintMap" type="button" class="print-modal__close" aria-label="Tutup">✕</button></div><div class="print-settings-grid"><div class="print-form-group print-form-group--full"><label for="printMapTitle">Judul Peta</label><input id="printMapTitle" type="text" value="PETA INFORMASI SPASIAL"></div><div class="print-form-group print-form-group--full"><label for="printMapSubtitle">Subjudul</label><input id="printMapSubtitle" type="text" value="BALAI PENGELOLAAN HUTAN LESTARI WILAYAH XI BANJARBARU"></div><div class="print-form-group print-form-group--full"><label for="printMapNote">Keterangan / Wilayah</label><textarea id="printMapNote" rows="2"></textarea></div><div class="print-form-group"><label for="printPaperSize">Ukuran Kertas</label><select id="printPaperSize"><option value="A4">A4</option><option value="A3">A3</option></select><div class="print-scale-help">Peta akan otomatis fit ke bidang kertas yang dipilih.</div></div><div class="print-form-group"><label for="printOrientation">Orientasi</label><select id="printOrientation"><option value="landscape">Landscape</option><option value="portrait">Portrait</option></select><div class="print-scale-help">Skala dihitung otomatis setelah extent peta disesuaikan.</div></div><div class="print-form-group print-form-group--full"><label>Elemen Peta</label><div class="print-option-grid"><label class="print-option-item"><input type="checkbox" id="printShowLegend" checked> Legenda</label><label class="print-option-item"><input type="checkbox" id="printShowScale" checked> Skala otomatis</label><label class="print-option-item"><input type="checkbox" id="printShowCoordinates" checked> Koordinat geografis</label><label class="print-option-item"><input type="checkbox" id="printShowNorthArrow" checked> Arah utara</label><label class="print-option-item"><input type="checkbox" id="printShowFilterNote" checked> Ringkasan filter & luas</label></div></div></div><div class="print-modal__info"><strong>Otomatis:</strong> peta akan fit ke kertas, skala dihitung dari extent hasil fit, legenda mengikuti warna simbologi peta, dan ringkasan luas kawasan mengikuti filter yang aktif.</div><div class="print-modal__actions"><button id="btnCancelPrintMap" type="button" class="print-action-btn print-action-btn--secondary">Batal</button><button id="btnPrintMap" type="button" class="print-action-btn print-action-btn--primary">🖨️ Cetak / Simpan PDF</button></div></div></div>
 
-    <!-- DIALOG PENGATURAN CETAK -->
-    <div id="printMapModal" class="print-modal" hidden>
-        <div class="print-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="printModalTitle">
-            <div class="print-modal__header">
-                <div>
-                    <span class="print-modal__eyebrow">LAYOUT PETA</span>
-                    <h2 id="printModalTitle">Cetak Peta PDF</h2>
-                    <p>Ukuran kertas dan orientasi akan menyesuaikan framing peta secara otomatis.</p>
-                </div>
-                <button id="btnClosePrintMap" type="button" class="print-modal__close" aria-label="Tutup">✕</button>
-            </div>
+<div id="chartOverlay" class="monitoring-dashboard" aria-hidden="true"><div class="monitoring-dashboard__header"><div class="monitoring-dashboard__heading"><div id="dashboardEyebrow" class="monitoring-dashboard__eyebrow">MONITORING</div><h2 id="dashboardTitle">Dashboard Monitoring</h2><p id="dashboardSubtitle">Ringkasan data monitoring BPHL Wilayah XI</p></div><button id="btnCloseChart" class="monitoring-dashboard__close" type="button" aria-label="Tutup dashboard">✕</button></div><div id="dashboardKpi" class="monitoring-kpi-grid"></div><div class="monitoring-dashboard__toolbar"><div id="dashboardStatus" class="monitoring-status">Menyiapkan data…</div><div class="monitoring-dashboard__actions"><button id="btnDashboardChart" class="dashboard-view-btn is-active" type="button">📊 Grafik</button><button id="btnDashboardTable" class="dashboard-view-btn" type="button">☷ Tabel</button><button id="btnDashboardReset" class="dashboard-view-btn" type="button">↻ Muat Ulang</button></div></div><div id="dashboardChartPanel" class="dashboard-panel dashboard-panel--chart"><div class="dashboard-panel__title-row"><div><h3 id="dashboardChartTitle">Visualisasi Data</h3><p id="dashboardChartHint">Perbandingan data utama</p></div><div id="dashboardLegendHint" class="dashboard-legend-hint"></div></div><div class="dashboard-chart-wrap"><canvas id="chartKawasan"></canvas><canvas id="chartSemua"></canvas></div></div><div id="dashboardTablePanel" class="dashboard-panel dashboard-panel--table" hidden><div class="dashboard-panel__title-row"><div><h3 id="dashboardTableTitle">Data Detail</h3><p id="dashboardTableHint">Data dari sumber monitoring yang aktif</p></div></div><div id="dashboardContent" class="dashboard-table-wrap"></div></div><div id="hotspotDateFilter" class="hotspot-date-filter"><label for="hotspotDateStart">Tanggal Mulai</label><input type="date" id="hotspotDateStart"><label for="hotspotDateEnd">Tanggal Selesai</label><input type="date" id="hotspotDateEnd"><button id="btnApplyHotspotRange" type="button">🔎 Tampilkan</button></div></div>
 
-            <div class="print-settings-grid">
-                <div class="print-form-group print-form-group--full">
-                    <label for="printMapTitle">Judul Peta</label>
-                    <input id="printMapTitle" type="text" value="PETA INFORMASI SPASIAL" placeholder="Contoh: PETA SEBARAN KAWASAN HUTAN">
-                </div>
-
-                <div class="print-form-group print-form-group--full">
-                    <label for="printMapSubtitle">Subjudul</label>
-                    <input id="printMapSubtitle" type="text" value="BALAI PENGELOLAAN HUTAN LESTARI WILAYAH XI BANJARBARU" placeholder="Opsional">
-                </div>
-
-                <div class="print-form-group print-form-group--full">
-                    <label for="printMapNote">Keterangan / Wilayah</label>
-                    <textarea id="printMapNote" rows="2" placeholder="Kosongkan untuk memakai filter aktif secara otomatis"></textarea>
-                </div>
-
-                <div class="print-form-group">
-                    <label for="printPaperSize">Ukuran Kertas</label>
-                    <select id="printPaperSize">
-                        <option value="A4">A4</option>
-                        <option value="A3">A3</option>
-                    </select>
-                    <div class="print-scale-help">Peta akan otomatis fit ke bidang kertas yang dipilih.</div>
-                </div>
-
-                <div class="print-form-group">
-                    <label for="printOrientation">Orientasi</label>
-                    <select id="printOrientation">
-                        <option value="landscape">Landscape</option>
-                        <option value="portrait">Portrait</option>
-                    </select>
-                    <div class="print-scale-help">Skala dihitung otomatis setelah extent peta disesuaikan.</div>
-                </div>
-
-                <div class="print-form-group print-form-group--full">
-                    <label>Elemen Peta</label>
-                    <div class="print-option-grid">
-                        <label class="print-option-item"><input type="checkbox" id="printShowLegend" checked> Legenda</label>
-                        <label class="print-option-item"><input type="checkbox" id="printShowScale" checked> Skala otomatis</label>
-                        <label class="print-option-item"><input type="checkbox" id="printShowCoordinates" checked> Koordinat geografis</label>
-                        <label class="print-option-item"><input type="checkbox" id="printShowNorthArrow" checked> Arah utara</label>
-                        <label class="print-option-item"><input type="checkbox" id="printShowFilterNote" checked> Ringkasan filter & luas</label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="print-modal__info">
-                <strong>Otomatis:</strong> peta akan fit ke kertas, skala dihitung dari extent hasil fit, legenda mengikuti warna simbologi peta, dan ringkasan luas kawasan mengikuti filter yang aktif.
-            </div>
-
-            <div class="print-modal__actions">
-                <button id="btnCancelPrintMap" type="button" class="print-action-btn print-action-btn--secondary">Batal</button>
-                <button id="btnPrintMap" type="button" class="print-action-btn print-action-btn--primary">🖨️ Cetak / Simpan PDF</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="chartOverlay" class="monitoring-dashboard" aria-hidden="true">
-        <div class="monitoring-dashboard__header">
-            <div class="monitoring-dashboard__heading">
-                <div id="dashboardEyebrow" class="monitoring-dashboard__eyebrow">MONITORING</div>
-                <h2 id="dashboardTitle">Dashboard Monitoring</h2>
-                <p id="dashboardSubtitle">Ringkasan data monitoring BPHL Wilayah XI</p>
-            </div>
-            <button id="btnCloseChart" class="monitoring-dashboard__close" type="button" aria-label="Tutup dashboard">✕</button>
-        </div>
-        <div id="dashboardKpi" class="monitoring-kpi-grid"></div>
-        <div class="monitoring-dashboard__toolbar">
-            <div id="dashboardStatus" class="monitoring-status">Menyiapkan data…</div>
-            <div class="monitoring-dashboard__actions">
-                <button id="btnDashboardChart" class="dashboard-view-btn is-active" type="button">📊 Grafik</button>
-                <button id="btnDashboardTable" class="dashboard-view-btn" type="button">☷ Tabel</button>
-                <button id="btnDashboardReset" class="dashboard-view-btn" type="button">↻ Muat Ulang</button>
-            </div>
-        </div>
-        <div id="dashboardChartPanel" class="dashboard-panel dashboard-panel--chart">
-            <div class="dashboard-panel__title-row"><div><h3 id="dashboardChartTitle">Visualisasi Data</h3><p id="dashboardChartHint">Perbandingan data utama</p></div><div id="dashboardLegendHint" class="dashboard-legend-hint"></div></div>
-            <div class="dashboard-chart-wrap"><canvas id="chartKawasan"></canvas><canvas id="chartSemua"></canvas></div>
-        </div>
-        <div id="dashboardTablePanel" class="dashboard-panel dashboard-panel--table" hidden>
-            <div class="dashboard-panel__title-row"><div><h3 id="dashboardTableTitle">Data Detail</h3><p id="dashboardTableHint">Data dari sumber monitoring yang aktif</p></div></div>
-            <div id="dashboardContent" class="dashboard-table-wrap"></div>
-        </div>
-        <div id="hotspotDateFilter" class="hotspot-date-filter">
-            <label for="hotspotDateStart">Tanggal Mulai</label><input type="date" id="hotspotDateStart">
-            <label for="hotspotDateEnd">Tanggal Selesai</label><input type="date" id="hotspotDateEnd">
-            <button id="btnApplyHotspotRange" type="button">🔎 Tampilkan</button>
-        </div>
-    </div>
-
-    <div id="sidebar">
-        <div class="sidebar-header"><div class="logo-area"><img src="logo-kemenhut.png" alt="Logo Kementerian Kehutanan"><div class="sidebar-title"><div class="main-title">BPHL XI Banjarbaru</div><div class="sub-title">Kementerian Kehutanan RI</div></div></div></div>
-        <div class="menu-group"><div class="menu-parent" onclick="toggleMenu(this)">📊 Monitoring ▼</div><div class="menu-child"><div onclick="loadKawasan(); closeSidebarMobile()">Luas Kawasan Hutan</div><div onclick="loadPenanaman(); closeSidebarMobile()">Penanaman PBPH</div><div onclick="loadProduksi(); closeSidebarMobile()">Produksi PBPH</div><div onclick="loadProduksiIndustri(); closeSidebarMobile()">Produksi Industri 6000 UP</div><div onclick="loadHotspotSipongi(); closeSidebarMobile()">🔥 Hotspot Karhutla Kalsel</div><div onclick="tampilkanTrenHotspot(); closeSidebarMobile()">📊 Tren Hotspot 30 Hari</div></div></div>
-        <div class="menu-group"><div class="menu-parent" onclick="toggleMenu(this)">🔎 Filter ▼</div><div class="menu-child">
-            <label>Kabupaten</label><select id="filterKabupaten" multiple></select><label>Kawasan</label><select id="filterF2025" multiple></select><label>PBPH</label><select id="filterNama" multiple></select><label>Industri 6000 UP</label><select id="filterIndustri" multiple></select>
-            <div id="hotspotFilterPanel"><div class="hotspot-filter-title">🔥 Filter Hotspot</div><label class="hotspot-filter-item"><input type="checkbox" id="filterHotspotHigh" checked onchange="updateHotspotFilter()"><span class="hotspot-dot hotspot-dot--high"></span>High</label><label class="hotspot-filter-item"><input type="checkbox" id="filterHotspotMedium" checked onchange="updateHotspotFilter()"><span class="hotspot-dot hotspot-dot--medium"></span>Medium</label><label class="hotspot-filter-item"><input type="checkbox" id="filterHotspotLow" checked onchange="updateHotspotFilter()"><span class="hotspot-dot hotspot-dot--low"></span>Low</label></div>
-            <div id="rekapHotspot" class="hotspot-rekap"><b>📊 Rekapitulasi Hotspot</b><br><br>Data belum dihitung.</div><label>Upload SHP (.zip)</label><input type="file" id="uploadShp" accept=".zip" class="upload-shp-input"><div class="upload-shp-help"><b>Format Upload:</b><br>File harus dalam bentuk <b>.zip</b><br>dan berisi file:<br>• .shp<br>• .dbf<br>• .shx<br>• .prj</div><div id="pptInfo"><img src="Slide1.1.png" class="slide-img" alt="Slide 1"><img src="Slide2.png" class="slide-img" alt="Slide 2"><img src="Slide3.png" class="slide-img" alt="Slide 4"><img src="Slide4.png" class="slide-img" alt="Slide 4"></div>
-        </div></div>
-        <div class="menu-group menu-group--print"><button id="btnOpenPrintMap" type="button" class="print-map-menu-btn">🖨️ Cetak Peta PDF</button></div>
-    </div>
-
-    <button id="toggleSidebar" type="button" aria-label="Buka menu">☰</button>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://unpkg.com/shpjs@latest/dist/shp.min.js"></script>
-    <script src="assets/js/config.js"></script>
-    <script src="assets/js/map.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-    <script src="assets/js/turf.js"></script>
-    <script src="assets/js/app.js"></script>
-    <script src="assets/js/symbology-sk399.js"></script>
-    <script src="assets/js/monitoring-ui.js"></script>
-    <script src="assets/js/print-map.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-</body>
-</html>
+<div id="sidebar"><div class="sidebar-header"><div class="logo-area"><img src="logo-kemenhut.png" alt="Logo Kementerian Kehutanan"><div class="sidebar-title"><div class="main-title">BPHL XI Banjarbaru</div><div class="sub-title">Kementerian Kehutanan RI</div></div></div></div><div class="menu-group"><div class="menu-parent" onclick="toggleMenu(this)">📊 Monitoring ▼</div><div class="menu-child"><div onclick="loadKawasan(); closeSidebarMobile()">Luas Kawasan Hutan</div><div onclick="loadPenanaman(); closeSidebarMobile()">Penanaman PBPH</div><div onclick="loadProduksi(); closeSidebarMobile()">Produksi PBPH</div><div onclick="loadProduksiIndustri(); closeSidebarMobile()">Produksi Industri 6000 UP</div><div onclick="loadHotspotSipongi(); closeSidebarMobile()">🔥 Hotspot Karhutla Kalsel</div><div onclick="tampilkanTrenHotspot(); closeSidebarMobile()">📊 Tren Hotspot 30 Hari</div></div></div><div class="menu-group"><div class="menu-parent" onclick="toggleMenu(this)">🔎 Filter ▼</div><div class="menu-child"><label>Kabupaten</label><select id="filterKabupaten" multiple></select><label>Kawasan</label><select id="filterF2025" multiple></select><label>PBPH</label><select id="filterNama" multiple></select><label>Industri 6000 UP</label><select id="filterIndustri" multiple></select><div id="hotspotFilterPanel"><div class="hotspot-filter-title">🔥 Filter Hotspot</div><label class="hotspot-filter-item"><input type="checkbox" id="filterHotspotHigh" checked onchange="updateHotspotFilter()"><span class="hotspot-dot hotspot-dot--high"></span>High</label><label class="hotspot-filter-item"><input type="checkbox" id="filterHotspotMedium" checked onchange="updateHotspotFilter()"><span class="hotspot-dot hotspot-dot--medium"></span>Medium</label><label class="hotspot-filter-item"><input type="checkbox" id="filterHotspotLow" checked onchange="updateHotspotFilter()"><span class="hotspot-dot hotspot-dot--low"></span>Low</label></div><div id="rekapHotspot" class="hotspot-rekap"><b>📊 Rekapitulasi Hotspot</b><br><br>Data belum dihitung.</div><label>Upload SHP (.zip)</label><input type="file" id="uploadShp" accept=".zip" class="upload-shp-input"><div class="upload-shp-help"><b>Format Upload:</b><br>File harus dalam bentuk <b>.zip</b><br>dan berisi file:<br>• .shp<br>• .dbf<br>• .shx<br>• .prj</div><div id="pptInfo"><img src="Slide1.1.png" class="slide-img" alt="Slide 1"><img src="Slide2.png" class="slide-img" alt="Slide 2"><img src="Slide3.png" class="slide-img" alt="Slide 3"><img src="Slide4.png" class="slide-img" alt="Slide 4"></div></div></div><div class="menu-group menu-group--print"><button id="btnOpenPrintMap" type="button" class="print-map-menu-btn">🖨️ Cetak Peta PDF</button></div></div>
+<button id="toggleSidebar" type="button" aria-label="Buka menu">☰</button>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://unpkg.com/leaflet/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script><script src="https://code.jquery.com/jquery-3.6.0.min.js"></script><script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script><script src="https://unpkg.com/shpjs@latest/dist/shp.min.js"></script><script src="assets/js/config.js"></script><script src="assets/js/map.js"></script><script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script><script src="assets/js/turf.js"></script><script src="assets/js/app.js"></script><script src="assets/js/symbology-sk399.js"></script><script src="assets/js/monitoring-ui.js"></script><script src="assets/js/monitoring-produksi-fix.js"></script><script src="assets/js/print-map.js"></script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+</body></html>
