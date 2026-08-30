@@ -1,0 +1,28 @@
+/* =====================================================
+   CETAK PETA PDF - PENGATURAN APLIKASI
+===================================================== */
+
+.print-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.print-form-group--full{grid-column:1/-1;}
+.print-option-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px;}
+.print-option-item{display:flex!important;align-items:center;gap:9px;margin:0!important;padding:10px 11px;border:1px solid #dce4de;border-radius:9px;background:#fafcfb;font-size:13px;font-weight:600;cursor:pointer;}
+.print-option-item input{width:16px;height:16px;accent-color:#1b5e20;}
+.print-scale-help{font-size:11px;color:#667268;line-height:1.5;margin-top:5px;}
+
+/* Grid koordinat yang dibangkitkan oleh aplikasi saat cetak */
+.print-coordinate-grid{position:absolute;inset:0;pointer-events:none;z-index:6500;overflow:visible;}
+.print-coordinate-grid[hidden]{display:none!important;}
+.print-coordinate-grid .grid-v,.print-coordinate-grid .grid-h{position:absolute;background:rgba(0,0,0,.38);}
+.print-coordinate-grid .grid-v{top:0;bottom:0;width:1px;border-left:1px dashed rgba(0,0,0,.55);background:transparent;}
+.print-coordinate-grid .grid-h{left:0;right:0;height:1px;border-top:1px dashed rgba(0,0,0,.55);background:transparent;}
+.print-coordinate-grid .coord-label{position:absolute;background:rgba(255,255,255,.86);border:1px solid rgba(0,0,0,.2);padding:2px 4px;font:10px Arial,sans-serif;color:#111;line-height:1.1;white-space:nowrap;}
+.print-coordinate-grid .coord-top{top:2px;transform:translateX(-50%);}
+.print-coordinate-grid .coord-bottom{bottom:2px;transform:translateX(-50%);}
+.print-coordinate-grid .coord-left{left:2px;transform:translateY(-50%) rotate(-90deg);transform-origin:left center;}
+.print-coordinate-grid .coord-right{right:2px;transform:translateY(-50%) rotate(90deg);transform-origin:right center;}
+
+@media(max-width:768px){.print-settings-grid,.print-option-grid{grid-template-columns:1fr;}}
+
+@media print{
+  .print-coordinate-grid{display:block!important;}
+}
