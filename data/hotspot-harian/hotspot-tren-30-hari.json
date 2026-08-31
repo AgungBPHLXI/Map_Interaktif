@@ -22,5 +22,29 @@
       "PT. Hutan Rindang Banua": 2,
       "PT. Prima Multibuana": 1
     }
+  },
+  {
+    "tanggal": "2026-08-31",
+    "high": 1,
+    "medium": 170,
+    "low": 1,
+    "total": 172,
+    "pbph": 17,
+    "kawasan": 41,
+    "luar_kawasan": 131,
+    "rekap_kawasan": {
+      "HL": 8,
+      "HP": 22,
+      "HPT": 0,
+      "HPK": 11,
+      "HK": 0,
+      "Di Luar Kawasan": 131
+    },
+    "rekap_pbph": {
+      "PT. Dwima Intiga": 13,
+      "PT. Inni Joa": 1,
+      "PT. Inhutani I Unit Pulau Laut (Semaras)": 2,
+      "PT. Hutan Rindang Banua": 1
+    }
   }
 ]
