@@ -46,5 +46,28 @@
       "PT. Inhutani I Unit Pulau Laut (Semaras)": 2,
       "PT. Hutan Rindang Banua": 1
     }
+  },
+  {
+    "tanggal": "2026-09-01",
+    "high": 1,
+    "medium": 192,
+    "low": 3,
+    "total": 196,
+    "pbph": 23,
+    "kawasan": 60,
+    "luar_kawasan": 136,
+    "rekap_kawasan": {
+      "HL": 17,
+      "HP": 22,
+      "HPT": 0,
+      "HPK": 20,
+      "HK": 1,
+      "Di Luar Kawasan": 136
+    },
+    "rekap_pbph": {
+      "PT. Dwima Intiga": 15,
+      "PT. Hutan Rindang Banua": 7,
+      "PT. Inni Joa": 1
+    }
   }
 ]
