@@ -69,5 +69,29 @@
       "PT. Hutan Rindang Banua": 7,
       "PT. Inni Joa": 1
     }
+  },
+  {
+    "tanggal": "2026-09-02",
+    "high": 0,
+    "medium": 347,
+    "low": 0,
+    "total": 347,
+    "pbph": 33,
+    "kawasan": 103,
+    "luar_kawasan": 244,
+    "rekap_kawasan": {
+      "HL": 22,
+      "HP": 35,
+      "HPT": 0,
+      "HPK": 40,
+      "HK": 6,
+      "Di Luar Kawasan": 244
+    },
+    "rekap_pbph": {
+      "PT. Dwima Intiga": 16,
+      "PT. Hutan Rindang Banua": 9,
+      "PT. Borneo IndoTani": 3,
+      "PT. Inhutani I Unit Pelaihari": 5
+    }
   }
 ]
