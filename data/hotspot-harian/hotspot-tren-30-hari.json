@@ -93,5 +93,29 @@
       "PT. Borneo IndoTani": 3,
       "PT. Inhutani I Unit Pelaihari": 5
     }
+  },
+  {
+    "tanggal": "2026-09-03",
+    "high": 9,
+    "medium": 252,
+    "low": 0,
+    "total": 261,
+    "pbph": 28,
+    "kawasan": 119,
+    "luar_kawasan": 142,
+    "rekap_kawasan": {
+      "HL": 26,
+      "HP": 50,
+      "HPT": 0,
+      "HPK": 39,
+      "HK": 4,
+      "Di Luar Kawasan": 142
+    },
+    "rekap_pbph": {
+      "PT. Dwima Intiga": 14,
+      "PT. Hutan Rindang Banua": 12,
+      "PT. Inhutani I Unit Pulau Laut (Semaras)": 1,
+      "PT. Inhutani I Unit Pelaihari": 1
+    }
   }
 ]
