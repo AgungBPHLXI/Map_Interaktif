@@ -141,5 +141,29 @@
       "PT. Inhutani I Unit Pelaihari": 6,
       "PT. Hutan Rindang Banua": 3
     }
+  },
+  {
+    "tanggal": "2026-09-05",
+    "high": 0,
+    "medium": 306,
+    "low": 0,
+    "total": 306,
+    "pbph": 36,
+    "kawasan": 81,
+    "luar_kawasan": 225,
+    "rekap_kawasan": {
+      "HL": 21,
+      "HP": 29,
+      "HPT": 0,
+      "HPK": 24,
+      "HK": 7,
+      "Di Luar Kawasan": 225
+    },
+    "rekap_pbph": {
+      "PT. Kodeco Timber": 2,
+      "PT. Dwima Intiga": 16,
+      "PT. Hutan Rindang Banua": 16,
+      "PT. Inhutani I Unit Pelaihari": 2
+    }
   }
 ]
