@@ -165,5 +165,29 @@
       "PT. Hutan Rindang Banua": 16,
       "PT. Inhutani I Unit Pelaihari": 2
     }
+  },
+  {
+    "tanggal": "2026-09-06",
+    "high": 2,
+    "medium": 349,
+    "low": 0,
+    "total": 351,
+    "pbph": 22,
+    "kawasan": 75,
+    "luar_kawasan": 276,
+    "rekap_kawasan": {
+      "HL": 8,
+      "HP": 28,
+      "HPT": 0,
+      "HPK": 28,
+      "HK": 11,
+      "Di Luar Kawasan": 276
+    },
+    "rekap_pbph": {
+      "PT. Dwima Intiga": 11,
+      "PT. Hutan Rindang Banua": 6,
+      "PT. Inhutani I Unit Pelaihari": 1,
+      "PT. Inhutani I Unit Pulau Laut (Semaras)": 4
+    }
   }
 ]
