@@ -189,5 +189,29 @@
       "PT. Inhutani I Unit Pelaihari": 1,
       "PT. Inhutani I Unit Pulau Laut (Semaras)": 4
     }
+  },
+  {
+    "tanggal": "2026-09-07",
+    "high": 0,
+    "medium": 109,
+    "low": 0,
+    "total": 109,
+    "pbph": 11,
+    "kawasan": 17,
+    "luar_kawasan": 92,
+    "rekap_kawasan": {
+      "HL": 2,
+      "HP": 9,
+      "HPT": 1,
+      "HPK": 3,
+      "HK": 2,
+      "Di Luar Kawasan": 92
+    },
+    "rekap_pbph": {
+      "PT. Inhutani I Unit Riam Kiwa": 3,
+      "PT. Hutan Rindang Banua": 5,
+      "PT. Inhutani I Unit Pulau Laut (Semaras)": 1,
+      "PT. Dwima Intiga": 2
+    }
   }
 ]
