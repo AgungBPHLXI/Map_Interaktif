@@ -213,5 +213,27 @@
       "PT. Inhutani I Unit Pulau Laut (Semaras)": 1,
       "PT. Dwima Intiga": 2
     }
+  },
+  {
+    "tanggal": "2026-09-08",
+    "high": 0,
+    "medium": 19,
+    "low": 0,
+    "total": 19,
+    "pbph": 13,
+    "kawasan": 13,
+    "luar_kawasan": 6,
+    "rekap_kawasan": {
+      "HL": 0,
+      "HP": 13,
+      "HPT": 0,
+      "HPK": 0,
+      "HK": 0,
+      "Di Luar Kawasan": 6
+    },
+    "rekap_pbph": {
+      "PT. Dwima Intiga": 7,
+      "PT. Inhutani I Unit Pulau Laut (Semaras)": 6
+    }
   }
 ]
